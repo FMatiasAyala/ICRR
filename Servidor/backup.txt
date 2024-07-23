@@ -1,0 +1,282 @@
+const express = require("express");
+const { PrismaClient } = require("@prisma/client");
+const cors = require("cors");
+const WebSocket = require("ws");
+const prisma = new PrismaClient();
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(cors());
+
+// Servidor HTTP
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// Servidor WebSocket
+const wss = new WebSocket.Server({ server });
+
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+
+  ws.on("message", (message) => {
+    const data = JSON.parse(message);
+
+    if (data.type === "fetch") {
+      fetchAnuncios(ws);
+    } else if (
+      data.type === "create" ||
+      data.type === "update" ||
+      data.type === "delete"
+    ) {
+      broadcast(JSON.stringify({ type: "update" }));
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("Client disconnected");
+  });
+});
+
+const fetchAnuncios = async (ws) => {
+  const anuncios = await prisma.anuncio.findMany();
+  ws.send(JSON.stringify({ type: "init", anuncios }));
+};
+
+const broadcast = (data) => {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
+
+// Crear un anuncio
+app.post("/anuncios", async (req, res) => {
+  try {
+    const { name, title, content, sector } = req.body;
+    const newAnuncio = await prisma.anuncio.create({
+      data: {
+        name,
+        title,
+        content,
+        sector,
+      },
+    });
+
+    broadcast(JSON.stringify({ type: "update" }));
+    res.json(newAnuncio);
+  } catch (error) {
+    console.error("Error creating anuncio:", error);
+    res.status(500).json({ error: "Error creating anuncio" });
+  }
+});
+
+// Obtener todos los anuncios
+app.get("/anuncios", async (req, res) => {
+  const anuncios = await prisma.anuncio.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  res.json(anuncios);
+});
+
+// Obtener un anuncio por ID
+app.get("/anuncios/:id", async (req, res) => {
+  const { id } = req.params;
+  const anuncio = await prisma.anuncio.findUnique({
+    where: { id: parseInt(id) },
+  });
+  res.json(anuncio);
+});
+
+// Actualizar un anuncio por ID
+app.put("/anuncios/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, title, content, sector } = req.body;
+  const updatedAnuncio = await prisma.anuncio.update({
+    where: { id: parseInt(id) },
+    data: { name, title, content, sector },
+  });
+  broadcast(JSON.stringify({ type: "update" }));
+  res.json(updatedAnuncio);
+});
+
+// Eliminar un anuncio por ID
+app.delete("/anuncios/:id", async (req, res) => {
+  const { id } = req.params;
+  await prisma.anuncio.delete({
+    where: { id: parseInt(id) },
+  });
+  broadcast(JSON.stringify({ type: "update" }));
+  res.sendStatus(204);
+});
+
+
+
+
+
+-------------------
+const express = require("express");
+const { PrismaClient } = require("@prisma/client");
+const cors = require("cors");
+const WebSocket = require("ws");
+const prisma = new PrismaClient();
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(cors());
+
+// Servidor HTTP
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// Servidor WebSocket
+const wss = new WebSocket.Server({ server });
+
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+
+  ws.on("message", (message) => {
+    const data = JSON.parse(message);
+
+    if (data.type === "fetch") {
+      fetchAnuncios(ws);
+    } else if (
+      data.type === "create" ||
+      data.type === "update" ||
+      data.type === "delete"
+    ) {
+      broadcast(JSON.stringify({ type: "update" }));
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("Client disconnected");
+  });
+});
+
+const fetchAnuncios = async (ws) => {
+  const anuncios = await prisma.anuncio.findMany({
+    include: {
+      attachments: true,
+      authors: {
+        include: {
+          author: true,
+        },
+      },
+    },
+  });
+  ws.send(JSON.stringify({ type: "init", anuncios }));
+};
+
+const broadcast = (data) => {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
+
+// Crear un anuncio
+app.post("/anuncios", async (req, res) => {
+  try {
+    const { title, content, sector, attachments, authors } = req.body;
+    const newAnuncio = await prisma.anuncio.create({
+      data: {
+        title,
+        content,
+        sector,
+        attachments: {
+          create: attachments.map((url) => ({ url })),
+        },
+        authors: {
+          create: authors.map((authorId) => ({
+            author: { connect: { id: authorId } },
+          })),
+        },
+      },
+    });
+
+    broadcast(JSON.stringify({ type: "update" }));
+    res.json(newAnuncio);
+  } catch (error) {
+    console.error("Error creating anuncio:", error);
+    res.status(500).json({ error: "Error creating anuncio" });
+  }
+});
+
+// Obtener todos los anuncios
+app.get("/anuncios", async (req, res) => {
+  const anuncios = await prisma.anuncio.findMany({
+    include: {
+      attachments: true,
+      authors: {
+        include: {
+          author: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  res.json(anuncios);
+});
+
+// Obtener un anuncio por ID
+app.get("/anuncios/:id", async (req, res) => {
+  const { id } = req.params;
+  const anuncio = await prisma.anuncio.findUnique({
+    where: { id: parseInt(id) },
+    include: {
+      attachments: true,
+      authors: {
+        include: {
+          author: true,
+        },
+      },
+    },
+  });
+  res.json(anuncio);
+});
+
+// Actualizar un anuncio por ID
+app.put("/anuncios/:id", async (req, res) => {
+  const { id } = req.params;
+  const { title, content, sector, attachments, authors } = req.body;
+  const updatedAnuncio = await prisma.anuncio.update({
+    where: { id: parseInt(id) },
+    data: {
+      title,
+      content,
+      sector,
+      attachments: {
+        deleteMany: {}, // Borra todos los adjuntos actuales
+        create: attachments.map((url) => ({ url })), // Añade los nuevos adjuntos
+      },
+      authors: {
+        deleteMany: {}, // Borra todas las relaciones actuales de autores
+        create: authors.map((authorId) => ({
+          author: { connect: { id: authorId } },
+        })), // Añade las nuevas relaciones de autores
+      },
+    },
+  });
+  broadcast(JSON.stringify({ type: "update" }));
+  res.json(updatedAnuncio);
+});
+
+// Eliminar un anuncio por ID
+app.delete("/anuncios/:id", async (req, res) => {
+  const { id } = req.params;
+  await prisma.anuncio.delete({
+    where: { id: parseInt(id) },
+  });
+  broadcast(JSON.stringify({ type: "update" }));
+  res.sendStatus(204);
+});
