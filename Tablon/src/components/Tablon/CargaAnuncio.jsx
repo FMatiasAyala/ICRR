@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Select, SelectItem, Textarea } from "@nextui-org/react";
-import AdjuntarArchivo from "./hooks/AdjuntarArchivo";
+
 
 function CargaAnuncio({ onClose, onEventCreated, authors }) {
 
@@ -17,12 +17,6 @@ function CargaAnuncio({ onClose, onEventCreated, authors }) {
         { key: 'Gestion', name: 'Gestion' }
     ];
 
-    const [files, setFiles] = useState([]);
-
-    const handleFilesAdded = (newFiles) => {
-        setFiles(prevFiles => [...prevFiles, ...newFiles]);
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -32,10 +26,6 @@ function CargaAnuncio({ onClose, onEventCreated, authors }) {
         data.append('content', formData.content);
         data.append('sector', formData.sector);
         data.append('authorId',formData.authorId );
-        files.forEach(file => {
-            data.append('attachments', file);
-        });
-        console.log(files.name);
         try {
             await fetch('http://192.168.1.53:3000/anuncios', {
                 method: 'POST',
@@ -121,7 +111,7 @@ function CargaAnuncio({ onClose, onEventCreated, authors }) {
                 ))}
             </Select>
 
-            <AdjuntarArchivo onFilesAdded={handleFilesAdded} />
+
             <Button type="submit">Agregar anuncio</Button>
         </form>
     );
