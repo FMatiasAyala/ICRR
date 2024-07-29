@@ -1,31 +1,35 @@
 import React, { useState } from "react";
-import { Button, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Select, SelectItem, Textarea } from "@nextui-org/react";
+import {
+    Button,
+    Input,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    useDisclosure,
+    Select,
+    SelectItem,
+    Textarea
+} from "@nextui-org/react";
 
-
-function CargaAnuncio({ onClose, onEventCreated, authors }) {
-
+function CargaAnuncio({ onClose, onEventCreated, authors, sector }) {
     const [formData, setFormData] = useState({
         title: '',
         content: '',
-        sector: '',
+        sector: sector,
         authorId: null // Campo para el ID del autor
-
     });
-
-    const sectores = [
-        { key: 'Facturacion', name: 'Facturacion' },
-        { key: 'Gestion', name: 'Gestion' }
-    ];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const data = new FormData();      
+        const data = new FormData();
 
         data.append('title', formData.title);
         data.append('content', formData.content);
         data.append('sector', formData.sector);
-        data.append('authorId',formData.authorId );
+        data.append('authorId', formData.authorId);
         try {
             await fetch('http://192.168.1.53:3000/anuncios', {
                 method: 'POST',
@@ -34,7 +38,6 @@ function CargaAnuncio({ onClose, onEventCreated, authors }) {
 
             onEventCreated();
             onClose();
-
         } catch (error) {
             console.error('Error al agregar el anuncio:', error);
         }
@@ -54,6 +57,15 @@ function CargaAnuncio({ onClose, onEventCreated, authors }) {
             [name]: value
         }));
     };
+
+    const filteredAuthors = authors.filter((author) => {
+        if (sector === "Facturacion") {
+            return author.sector === "Facturacion";
+        } else if (sector === "RRHH") {
+            return author.sector === "Gestion";
+        }
+        return true;
+    });
 
     return (
         <form onSubmit={handleSubmit} className="flex gap-2 flex-col">
@@ -82,42 +94,25 @@ function CargaAnuncio({ onClose, onEventCreated, authors }) {
             />
             <Select
                 isRequired
-                aria-label="sector"
-                name="sector"
-                placeholder="Sector"
-                value={formData.sector}
-                labelPlacement="outsied-left"
-                onChange={(e) => handleSelectChange('sector', e.target.value)}
-            >
-                {sectores.map((sector) => (
-                    <SelectItem key={sector.key} value={sector.key} textValue={sector.name}>
-                        {sector.name}
-                    </SelectItem>
-                ))}
-            </Select>
-            <Select
-                isRequired
                 aria-label="author"
                 name="authorId"
                 placeholder="Selecciona un autor"
                 value={formData.authorId}
-                labelPlacement="outsied-left"
+                labelPlacement="outside-left" // Corregido aquí
                 onChange={(e) => handleSelectChange('authorId', e.target.value)}
             >
-                {authors && authors.map((author) => (
+                {filteredAuthors.map((author) => (
                     <SelectItem key={author.id} value={author.id} textValue={author.name}>
                         {author.name}
                     </SelectItem>
                 ))}
             </Select>
-
-
             <Button type="submit">Agregar anuncio</Button>
         </form>
     );
 }
 
-export function ModalCreate({ onEventCreate, authors }) {
+export function ModalCreate({ onEventCreate, authors, sector }) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     return (
@@ -129,7 +124,7 @@ export function ModalCreate({ onEventCreate, authors }) {
                         <>
                             <ModalHeader className="flex flex-col gap-1">Cargar anuncio</ModalHeader>
                             <ModalBody>
-                                <CargaAnuncio onClose={onClose} onEventCreated={onEventCreate} authors={authors} />
+                                <CargaAnuncio onClose={onClose} onEventCreated={onEventCreate} authors={authors} sector={sector} />
                             </ModalBody>
                             <ModalFooter>
                                 <Button color="danger" variant="light" onPress={onClose}>

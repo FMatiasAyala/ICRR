@@ -15,6 +15,9 @@ import {
 import { ModalEdit } from './EditarAnuncio/ModalEdit';
 import { ModalCreate } from './CargaAnuncio';
 import { useWebSocket } from './hooks/useWebSocket';
+import './anuncioStyle.css';
+import { Header, Logo } from './hooks/StyleComponents';
+import logo from './Img/logo.svg'
 
 export default function Anuncios() {
     const { anuncio, setAnuncio, sendWebSocketMessage } = useWebSocket();
@@ -115,13 +118,13 @@ export default function Anuncios() {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <header className="bg-gray-800 text-black p-4">
-                <h1 className="text-center text-xl">Tablón de anuncios</h1>
-            </header>
-
+            <Header>
+                <Logo src={logo} alt='logo' /> 
+                Tablon de anuncios
+            </Header>
             <div className="flex flex-1">
                 <aside className="w-1/4 p-4 ">
-                    <Card className="p-4">
+                    <Card className="filtro-card">
                         <p>Filtrar por sector:</p>
                         <Select value={sectorFilter} onChange={handleFilterChange} aria-label="sectorFilter">
                             <SelectItem value="" key="" aria-label="Todos">Todos</SelectItem>
@@ -151,41 +154,20 @@ export default function Anuncios() {
                 </aside>
 
                 <main className="flex-1 p-4">
-                    {(ifFacturacion || ifGestion) && <ModalCreate onEventCreate={() => sendWebSocketMessage({ type: 'fetch' })} authors={user} />}
+                    {(ifFacturacion || ifGestion) && <ModalCreate onEventCreate={() => sendWebSocketMessage({ type: 'fetch' })} authors={user}   sector={ifFacturacion ? "Facturacion" : "RRHH"}/>}
                     {filteredAnuncio.length > 0 ? (
-                        <div className="grid grid-cols-4 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                        <div className="grid grid-cols-4 gap-4">
                             {filteredAnuncio.map((anuncios, index) => (
-                                <Card key={index} className="flex flex-col items-center p-4">
+                                <Card key={index} className="anuncio" >
                                     <CardHeader className="relative w-full flex flex-col items-center">
                                         <div className="text-center mt-4">
-                                            <p className="text-md">{anuncios.title}</p>
-                                            <p className="text-small text-default-500">{anuncios.sector}</p>
-                                            {anuncios.authors && anuncios.authors.length > 0 && (
-                                                <p className="text-small">
-                                                    Cargado por: {anuncios.authors.map(author => author.author.name).join(', ')}
-                                                </p>
-                                            )}
+                                            <p className="text-xl font-bold">{anuncios.title}</p>
+                                            <p className="text-small text-default-500">{anuncios.sector}{anuncios.author ? ` - ${anuncios.author.name}` : ""}</p>
                                         </div>
                                     </CardHeader>
                                     <Divider />
-                                    <CardBody className="text-center max-w-[100px] overflow-auto">
+                                    <CardBody className="text-center max-w-[100px] overflow-auto font-bold text-large">
                                         {anuncios.content}
-                                        <div className="mt-4">
-                                            {anuncios.attachments && anuncios.attachments.length > 0 && (
-                                                <>
-                                                    <p className="text-md">Archivos adjuntos:</p>
-                                                    <ul>
-                                                        {anuncios.attachments.map((attachment, i) => (
-                                                            <li key={i}>
-                                                                <a href={`http://localhost:3000/${attachment.url}`} target="_blank" rel="noopener noreferrer">
-                                                                    {attachment.url.split('/').pop()}
-                                                                </a>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </>
-                                            )}
-                                        </div>
                                     </CardBody>
                                     <Divider />
                                     <CardFooter className="text-center">

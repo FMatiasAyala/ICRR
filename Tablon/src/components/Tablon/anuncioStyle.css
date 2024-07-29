@@ -1,0 +1,25 @@
+
+.filtro-card { 
+    padding: 1rem;
+    font-weight: bold;
+  }
+  
+.anuncio{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.descripcion-anuncio{
+  font-size: 1.70rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+
