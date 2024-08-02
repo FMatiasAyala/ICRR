@@ -1,11 +1,11 @@
 export const fetchAnuncios = async () => {
     try {
-        const response = await fetch ('http://192.168.1.53:3000/anuncios');
+        const response = await fetch('http://192.168.1.53:3000/anuncios');
         const data = await response.json();
-/*         const anuncio = data.sort((a,b) => new Date (b.createdAt) - new Date (a.createdAt)); */
+        /*         const anuncio = data.sort((a,b) => new Date (b.createdAt) - new Date (a.createdAt)); */
         return data;
-    }catch (err) {
-        console.error('Error fetching anuncios: '+ err.message)
+    } catch (err) {
+        console.error('Error fetching anuncios: ' + err.message)
     }
 }
 
@@ -33,11 +33,23 @@ export const updateAnuncio = async (id, updatedData) => {
 
 export const fetchUser = async () => {
     try {
-        const response = await fetch ('http://192.168.1.53:3000/user');
+        const response = await fetch('http://192.168.1.53:3000/user');
         const data = await response.json();
-/*         const anuncio = data.sort((a,b) => new Date (b.createdAt) - new Date (a.createdAt)); */
         return data;
-    }catch (err) {
-        console.error('Error fetching anuncios: '+ err.message)
+    } catch (err) {
+        console.error('Error fetching anuncios: ' + err.message)
     }
+}
+
+
+
+export const fetchObraSocial = async () => {
+    try {
+        const response = await fetch('http://192.168.1.53:3000/obraSociales')
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error('Error fetching obras sociales: ' + err.message)
+    }
+
 }

@@ -12,12 +12,15 @@ import {
     SelectItem,
     Button
 } from '@nextui-org/react';
-import { ModalEdit } from './EditarAnuncio/ModalEdit';
-import { ModalCreate } from './CargaAnuncio';
+import { ModalEdit } from './Modal/ModalEdit';
+import { ModalCreate } from './Modal/ModalCreate';
 import { useWebSocket } from './hooks/useWebSocket';
 import './anuncioStyle.css';
 import { Header, Logo } from './hooks/StyleComponents';
-import logo from './Img/logo.svg'
+import logo from './Img/logo.svg';
+import { ObraSocialSearch } from './Filtro/ObraSocialSearch';
+import { MesFilter } from './Filtro/MesFilter';
+import { SectorFilter } from './Filtro/SectorFilter';
 
 export default function Anuncios() {
     const { anuncio, setAnuncio, sendWebSocketMessage } = useWebSocket();
@@ -27,8 +30,8 @@ export default function Anuncios() {
     const [buttonCreated, setButtonCreated] = useState('');
     const [editingAnuncio, setEditingAnuncio] = useState(null);
     const [user, setUser] = useState([]);
+    const [obraSocialFilter, setObraSocialFilter] = useState('');
     const location = useLocation();
-
 
     useEffect(() => {
         const fetchUsuario = async () => {
@@ -47,7 +50,6 @@ export default function Anuncios() {
         fetchUsuario();
     }, []);
 
-
     useEffect(() => {
         const filterAnuncios = () => {
             let filtered = anuncio;
@@ -63,11 +65,15 @@ export default function Anuncios() {
                 });
             }
 
+            if (obraSocialFilter) {
+                filtered = filtered.filter(anuncio => anuncio.codigoObraSocial === obraSocialFilter);
+            }
+
             setFilteredAnuncio(filtered);
         };
 
         filterAnuncios();
-    }, [sectorFilter, mesFilter, anuncio]);
+    }, [sectorFilter, mesFilter, obraSocialFilter, anuncio]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -81,12 +87,13 @@ export default function Anuncios() {
         setSectorFilter(event.target.value);
     };
 
-    const handleMesChange = (e) => {
-        setMesFilter(e.target.value);
+    const handleMesChange = (event) => {
+        setMesFilter(event.target.value);
     };
 
-    const ifFacturacion = buttonCreated === 'FACTU';
-    const ifGestion = buttonCreated === 'GES';
+    const handleObraSocialChange = (value) => {
+        setObraSocialFilter(value === " " ? "" : value);
+    };
 
     const handleEdit = (id) => {
         const editedAnuncio = anuncio.find(a => a.id === id);
@@ -119,75 +126,69 @@ export default function Anuncios() {
     return (
         <div className="flex flex-col min-h-screen">
             <Header>
-                <Logo src={logo} alt='logo' /> 
+                <Logo src={logo} alt='logo' />
                 Tablon de anuncios
             </Header>
             <div className="flex flex-1">
-                <aside className="w-1/4 p-4 ">
+                <aside className="w-1/4 p-4">
                     <Card className="filtro-card">
-                        <p>Filtrar por sector:</p>
-                        <Select value={sectorFilter} onChange={handleFilterChange} aria-label="sectorFilter">
-                            <SelectItem value="" key="" aria-label="Todos">Todos</SelectItem>
-                            {[...new Set(anuncio.map(a => a.sector))].map(sector => (
-                                <SelectItem key={sector} value={sector} textValue={sector} aria-label={sector}>
-                                    {sector}
-                                </SelectItem>
-                            ))}
-                        </Select>
-                        <p>Filtrar por mes:</p>
-                        <Select value={mesFilter} onChange={handleMesChange} aria-label="monthFilter">
-                            <SelectItem value="" key="" aria-label="Todos">Todos</SelectItem>
-                            <SelectItem value="0" key="0" aria-label="Enero">Enero</SelectItem>
-                            <SelectItem value="1" key="1" aria-label="Febrero">Febrero</SelectItem>
-                            <SelectItem value="2" key="2" aria-label="Marzo">Marzo</SelectItem>
-                            <SelectItem value="3" key="3" aria-label="Abril">Abril</SelectItem>
-                            <SelectItem value="4" key="4" aria-label="Mayo">Mayo</SelectItem>
-                            <SelectItem value="5" key="5" aria-label="Junio">Junio</SelectItem>
-                            <SelectItem value="6" key="6" aria-label="Julio">Julio</SelectItem>
-                            <SelectItem value="7" key="7" aria-label="Agosto">Agosto</SelectItem>
-                            <SelectItem value="8" key="8" aria-label="Septiembre">Septiembre</SelectItem>
-                            <SelectItem value="9" key="9" aria-label="Octubre">Octubre</SelectItem>
-                            <SelectItem value="10" key="10" aria-label="Noviembre">Noviembre</SelectItem>
-                            <SelectItem value="11" key="11" aria-label="Diciembre">Diciembre</SelectItem>
-                        </Select>
+                        <SectorFilter
+                            sectorFilter={sectorFilter}
+                            handleFilterChange={handleFilterChange}
+                            anuncio={anuncio} />
+                        <ObraSocialSearch
+                            obraSocialFilter={obraSocialFilter}
+                            handleObraSocialChange={handleObraSocialChange}
+                        />
+                        <MesFilter
+                            mesFilter={mesFilter}
+                            handleMesChange={handleMesChange}
+                        />
                     </Card>
                 </aside>
-
                 <main className="flex-1 p-4">
-                    {(ifFacturacion || ifGestion) && <ModalCreate onEventCreate={() => sendWebSocketMessage({ type: 'fetch' })} authors={user}   sector={ifFacturacion ? "Facturacion" : "RRHH"}/>}
+                    {(buttonCreated === 'FACTU' || buttonCreated === 'GES') && (
+                        <ModalCreate
+                            onEventCreate={() => sendWebSocketMessage({ type: 'fetch' })}
+                            authors={user}
+                            sector={buttonCreated === 'FACTU' ? "Facturacion" : "RRHH"}
+                            obraSocial={[]}
+                        />
+                    )}
                     {filteredAnuncio.length > 0 ? (
                         <div className="grid grid-cols-4 gap-4">
-                            {filteredAnuncio.map((anuncios, index) => (
-                                <Card key={index} className="anuncio" >
+                            {filteredAnuncio.map((anuncio, index) => (
+                                <Card key={index} className="anuncio">
                                     <CardHeader className="relative w-full flex flex-col items-center">
                                         <div className="text-center mt-4">
-                                            <p className="text-xl font-bold">{anuncios.title}</p>
-                                            <p className="text-small text-default-500">{anuncios.sector}{anuncios.author ? ` - ${anuncios.author.name}` : ""}</p>
+                                            <p className="text-xl font-bold">{anuncio.title}</p>
+                                            <p className="text-small text-default-500">{anuncio.sector}{anuncio.author ? ` - ${anuncio.author.name}` : ""}</p>
+                                            <p className="text-small font-bold">{anuncio.obraSocial ? `${anuncio.obraSocial}` : ""}</p>
                                         </div>
                                     </CardHeader>
                                     <Divider />
-                                    <CardBody className="text-center max-w-[100px] overflow-auto font-bold text-large">
-                                        {anuncios.content}
+                                    <CardBody className="cardContent">
+                                        <p>{anuncio.content}</p>
                                     </CardBody>
                                     <Divider />
                                     <CardFooter className="text-center">
-                                        <p className="text-small text-default-500">{formateDate(anuncios.updatedAt)}</p>
+                                        <p className="text-small text-default-500">{formateDate(anuncio.updatedAt)}</p>
                                     </CardFooter>
-                                    {ifGestion && (
+                                    {buttonCreated === 'GES' && (
                                         <div className="flex gap-3">
                                             <Button
                                                 className="text-small"
                                                 color="success"
-                                                onClick={() => handleEdit(anuncios.id)}
-                                                aria-label={`Editar anuncio ${anuncios.title}`}
+                                                onClick={() => handleEdit(anuncio.id)}
+                                                aria-label={`Editar anuncio ${anuncio.title}`}
                                             >
                                                 Editar
                                             </Button>
                                             <Button
                                                 className="text-small"
                                                 color="danger"
-                                                onClick={() => handleDelete(anuncios.id)}
-                                                aria-label={`Eliminar anuncio ${anuncios.title}`}
+                                                onClick={() => handleDelete(anuncio.id)}
+                                                aria-label={`Eliminar anuncio ${anuncio.title}`}
                                             >
                                                 Eliminar anuncio
                                             </Button>
@@ -195,12 +196,9 @@ export default function Anuncios() {
                                     )}
                                 </Card>
                             ))}
-
                         </div>
                     ) : (
-                        <div>
-                            <h1 className="text-center">No hay anuncios para este sector y mes.</h1>
-                        </div>
+                        <p>No hay anuncios disponibles.</p>
                     )}
                 </main>
             </div>

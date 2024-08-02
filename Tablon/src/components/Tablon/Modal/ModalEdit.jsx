@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@nextui-org/react';
-import EditAnuncio from './EditAnuncio';
+import EditAnuncio from '../EditarAnuncio/EditAnuncio';
 
 export function ModalEdit({ anuncio, onSave, onClose}) {
     const [isOpen, setIsOpen] = useState(false);

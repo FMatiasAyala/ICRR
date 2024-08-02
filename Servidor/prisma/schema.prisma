@@ -15,15 +15,17 @@ datasource db {
 
 
 model Anuncio {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String
-  sector      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  attachments Attachment[]
-  authorId    Int      // Foreign key to Author
-  author      Author   @relation(fields: [authorId], references: [id])
+  id                Int      @id @default(autoincrement())
+  title             String
+  content           String   @db.Text 
+  sector            String
+  obraSocial        String
+  codigoObraSocial  String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  attachments       Attachment[]
+  authorId          Int      // Foreign key to Author
+  author            Author   @relation(fields: [authorId], references: [id])
 }
 
 model Attachment {

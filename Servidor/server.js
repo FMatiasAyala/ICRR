@@ -1,4 +1,5 @@
 const express = require("express");
+const executeQuery = require("./db");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
 const WebSocket = require("ws");
@@ -12,7 +13,10 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
-app.use('/uploads', express.static(path.join(__dirname, 'C:/ICRR/ICRR/Servidor/uploads')));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "C:/ICRR/ICRR/Servidor/uploads"))
+);
 
 // Middleware para crear la carpeta si no existe
 const createFolderIfNotExists = (folderPath) => {
@@ -24,7 +28,10 @@ const createFolderIfNotExists = (folderPath) => {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const authorId = req.body.authorId; // Obtén el ID del autor desde el cuerpo de la solicitud
-    const folderPath = path.join("C:/ICRR/ICRR/Servidor/uploads", authorId.toString()); // Crea una carpeta para cada autor
+    const folderPath = path.join(
+      "C:/ICRR/ICRR/Servidor/uploads",
+      authorId.toString()
+    ); // Crea una carpeta para cada autor
     createFolderIfNotExists(folderPath);
     cb(null, folderPath); // Carpeta donde se guardarán los archivos
   },
@@ -92,23 +99,29 @@ const broadcast = (data) => {
 
 app.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
   try {
-    const { title, content, sector, authorId  } = req.body;
-    const attachments = req.files ? req.files.map((file) => {
-      const filePath = path.relative(__dirname, file.path).replace(/\\/g, '/'); // Ruta relativa
-      return { url: filePath };
-    }) : [];
+    const { title, content, obraSocial,codigoObraSocial, sector, authorId } = req.body;
+    const attachments = req.files
+      ? req.files.map((file) => {
+          const filePath = path
+            .relative(__dirname, file.path)
+            .replace(/\\/g, "/"); // Ruta relativa
+          return { url: filePath };
+        })
+      : [];
 
     // Guardar el anuncio
     const newAnuncio = await prisma.anuncio.create({
       data: {
         title,
         content,
+        obraSocial,
+        codigoObraSocial,
         sector,
         attachments: {
           create: attachments.map((url) => ({ url })),
         },
         author: {
-          connect: { id: parseInt(authorId, 10)  }
+          connect: { id: parseInt(authorId, 10) },
         },
       },
     });
@@ -148,7 +161,7 @@ app.get("/anuncios/:id", async (req, res) => {
       where: { id: parseInt(id) },
       include: {
         attachments: true,
-        author:true,
+        author: true,
       },
     });
     res.json(anuncio);
@@ -248,5 +261,30 @@ app.get("/user", async (req, res) => {
   } catch (error) {
     console.error("Error fetching anuncios:", error);
     res.status(500).json({ error: "Error fetching anuncios" });
+  }
+});
+
+//Obetenes obras sociales
+app.get("/obrasociales", async (req, res) => {
+  const query =
+    "select RTRIM(nTarjeta) as id,  RTRIM(sInstitucion) as codigo, RTRIM(sRazonSocial) as razonSocial, RTRIM(sSigla) as sigla from stdInstitucionesMedicas WHERE sEstado = 'HAB'"; // Ajusta la consulta según tu tabla y necesidades
+  try {
+    const obrasSociales = await executeQuery(query);
+    res.json(obrasSociales);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener las obras sociales" });
+  }
+});
+
+app.get("/obrasociales/:searchTerm", async (req, res) => {
+  const { searchTerm } = req.params;
+  const query = `SELECT RTRIM(nTarjeta) AS id, RTRIM(sInstitucion) AS codigo, RTRIM(sRazonSocial) AS razonSocial, RTRIM(sSigla) AS sigla FROM stdInstitucionesMedicas 
+  WHERE sEstado = 'HAB' AND (sInstitucion LIKE '%${searchTerm}%' OR sRazonSocial LIKE '%${searchTerm}%')`;
+  try {
+    const obraSociales = await executeQuery(query);
+    res.json(obraSociales);
+  } catch (error) {
+    console.error("Error fetching obras sociales:", error);
+    res.status(500).json({ error: "Error fetching obra sociales" });
   }
 });

@@ -2,21 +2,18 @@ import React, { useState } from "react";
 import {
     Button,
     Input,
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    useDisclosure,
     Select,
     SelectItem,
-    Textarea
+    Textarea,
 } from "@nextui-org/react";
+import { ObraSocialSelect } from "../Buscador/ObraSocialSelect";
 
-function CargaAnuncio({ onClose, onEventCreated, authors, sector }) {
+export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSocial }) {
     const [formData, setFormData] = useState({
         title: '',
         content: '',
+        obraSocial: '',
+        codigoObraSocial: '',
         sector: sector,
         authorId: null // Campo para el ID del autor
     });
@@ -29,7 +26,10 @@ function CargaAnuncio({ onClose, onEventCreated, authors, sector }) {
         data.append('title', formData.title);
         data.append('content', formData.content);
         data.append('sector', formData.sector);
+        data.append('obraSocial', formData.obraSocial);
+        data.append('codigoObraSocial', formData.codigoObraSocial)
         data.append('authorId', formData.authorId);
+
         try {
             await fetch('http://192.168.1.53:3000/anuncios', {
                 method: 'POST',
@@ -58,6 +58,13 @@ function CargaAnuncio({ onClose, onEventCreated, authors, sector }) {
         }));
     };
 
+    const handleObraSelect = (obra) => {
+        setFormData(prevData => ({
+            ...prevData,
+            obraSocial: obra.razonSocial,
+            codigoObraSocial: obra.codigo
+        }));
+    };
     const filteredAuthors = authors.filter((author) => {
         if (sector === "Facturacion") {
             return author.sector === "Facturacion";
@@ -66,7 +73,6 @@ function CargaAnuncio({ onClose, onEventCreated, authors, sector }) {
         }
         return true;
     });
-
     return (
         <form onSubmit={handleSubmit} className="flex gap-2 flex-col">
             <Input
@@ -98,7 +104,7 @@ function CargaAnuncio({ onClose, onEventCreated, authors, sector }) {
                 name="authorId"
                 placeholder="Selecciona un autor"
                 value={formData.authorId}
-                labelPlacement="outside-left" // Corregido aquí
+                labelPlacement="outside-left"
                 onChange={(e) => handleSelectChange('authorId', e.target.value)}
             >
                 {filteredAuthors.map((author) => (
@@ -107,34 +113,8 @@ function CargaAnuncio({ onClose, onEventCreated, authors, sector }) {
                     </SelectItem>
                 ))}
             </Select>
+            <ObraSocialSelect handleObraSocial={handleObraSelect} />
             <Button type="submit">Agregar anuncio</Button>
         </form>
-    );
-}
-
-export function ModalCreate({ onEventCreate, authors, sector }) {
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-    return (
-        <>
-            <Button onPress={onOpen}>Nuevo anuncio</Button>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                <ModalContent>
-                    {(onClose) => (
-                        <>
-                            <ModalHeader className="flex flex-col gap-1">Cargar anuncio</ModalHeader>
-                            <ModalBody>
-                                <CargaAnuncio onClose={onClose} onEventCreated={onEventCreate} authors={authors} sector={sector} />
-                            </ModalBody>
-                            <ModalFooter>
-                                <Button color="danger" variant="light" onPress={onClose}>
-                                    Cerrar
-                                </Button>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-        </>
     );
 }
