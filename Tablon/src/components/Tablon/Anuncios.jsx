@@ -8,19 +8,19 @@ import {
     CardBody,
     CardFooter,
     Divider,
-    Select,
-    SelectItem,
     Button
 } from '@nextui-org/react';
 import { ModalEdit } from './Modal/ModalEdit';
 import { ModalCreate } from './Modal/ModalCreate';
 import { useWebSocket } from './hooks/useWebSocket';
+import { ModalDowloadFile } from './Modal/ModalDowladFile';
 import './anuncioStyle.css';
 import { Header, Logo } from './hooks/StyleComponents';
 import logo from './Img/logo.svg';
 import { ObraSocialSearch } from './Filtro/ObraSocialSearch';
 import { MesFilter } from './Filtro/MesFilter';
 import { SectorFilter } from './Filtro/SectorFilter';
+
 
 export default function Anuncios() {
     const { anuncio, setAnuncio, sendWebSocketMessage } = useWebSocket();
@@ -31,6 +31,8 @@ export default function Anuncios() {
     const [editingAnuncio, setEditingAnuncio] = useState(null);
     const [user, setUser] = useState([]);
     const [obraSocialFilter, setObraSocialFilter] = useState('');
+    const [selectedAnuncio, setSelectedAnuncio] = useState(null);
+    const [showFileModal, setShowFileModal] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
@@ -123,6 +125,12 @@ export default function Anuncios() {
         }
     };
 
+
+    const handleFileModalOpen = (anuncio) => {
+        setSelectedAnuncio(anuncio);
+        setShowFileModal(true);
+    };
+
     return (
         <div className="flex flex-col min-h-screen">
             <Header>
@@ -168,32 +176,43 @@ export default function Anuncios() {
                                     </CardHeader>
                                     <Divider />
                                     <CardBody className="cardContent">
-                                        <p>{anuncio.content}</p>
+                                        <p className='content-text'>{anuncio.content}</p>
                                     </CardBody>
                                     <Divider />
                                     <CardFooter className="text-center">
                                         <p className="text-small text-default-500">{formateDate(anuncio.updatedAt)}</p>
                                     </CardFooter>
-                                    {buttonCreated === 'GES' && (
-                                        <div className="flex gap-3">
+                                    <div className="flex gap-3">
+                                        <div className="attachments">
                                             <Button
-                                                className="text-small"
-                                                color="success"
-                                                onClick={() => handleEdit(anuncio.id)}
-                                                aria-label={`Editar anuncio ${anuncio.title}`}
+                                                auto
+                                                onClick={() => handleFileModalOpen(anuncio)}
+                                                aria-label="Ver archivos"
                                             >
-                                                Editar
-                                            </Button>
-                                            <Button
-                                                className="text-small"
-                                                color="danger"
-                                                onClick={() => handleDelete(anuncio.id)}
-                                                aria-label={`Eliminar anuncio ${anuncio.title}`}
-                                            >
-                                                Eliminar anuncio
+                                                Ver archivos
                                             </Button>
                                         </div>
-                                    )}
+                                        {buttonCreated === 'GES' && (
+                                            <div className="flex gap-3">
+                                                <Button
+                                                    className="text-small"
+                                                    color="success"
+                                                    onClick={() => handleEdit(anuncio.id)}
+                                                    aria-label={`Editar anuncio ${anuncio.title}`}
+                                                >
+                                                    Editar
+                                                </Button>
+                                                <Button
+                                                    className="text-small"
+                                                    color="danger"
+                                                    onClick={() => handleDelete(anuncio.id)}
+                                                    aria-label={`Eliminar anuncio ${anuncio.title}`}
+                                                >
+                                                    Eliminar anuncio
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </Card>
                             ))}
                         </div>
@@ -204,6 +223,12 @@ export default function Anuncios() {
             </div>
             {editingAnuncio && (
                 <ModalEdit anuncio={editingAnuncio} onSave={handleSave} onClose={() => setEditingAnuncio(null)} />
+            )}
+            {showFileModal && selectedAnuncio && (
+                <ModalDowloadFile
+                    anuncio={selectedAnuncio}
+                    onClose={() => setShowFileModal(false)}
+                />
             )}
         </div>
     );

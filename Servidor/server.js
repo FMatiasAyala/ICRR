@@ -1,7 +1,7 @@
 const express = require("express");
-const executeQuery = require("./db");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
+const executeQuery = require("./db");
 const WebSocket = require("ws");
 const multer = require("multer");
 const path = require("path");
@@ -13,10 +13,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "C:/ICRR/ICRR/Servidor/uploads"))
-);
+const uploadPath = path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploadPath));
 
 // Middleware para crear la carpeta si no existe
 const createFolderIfNotExists = (folderPath) => {
@@ -24,19 +22,20 @@ const createFolderIfNotExists = (folderPath) => {
     fs.mkdirSync(folderPath, { recursive: true });
   }
 };
+
 // Configuración de multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const authorId = req.body.authorId; // Obtén el ID del autor desde el cuerpo de la solicitud
-    const folderPath = path.join(
-      "C:/ICRR/ICRR/Servidor/uploads",
-      authorId.toString()
-    ); // Crea una carpeta para cada autor
+    const authorId = req.body.authorId;
+    const folderPath = path.join("C:/ICRR/ICRR/Servidor/uploads", authorId.toString());
     createFolderIfNotExists(folderPath);
-    cb(null, folderPath); // Carpeta donde se guardarán los archivos
+    cb(null, folderPath);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Renombra el archivo con un timestamp
+    const originalName = path.parse(file.originalname).name; // Obtiene el nombre original del archivo sin la extensión
+    const extension = path.extname(file.originalname); // Obtiene la extensión del archivo
+
+    cb(null, `${originalName}${extension}`);
   },
 });
 
@@ -99,12 +98,10 @@ const broadcast = (data) => {
 
 app.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
   try {
-    const { title, content, obraSocial,codigoObraSocial, sector, authorId } = req.body;
+    const { title, content, obraSocial, codigoObraSocial, sector, authorId } = req.body;
     const attachments = req.files
       ? req.files.map((file) => {
-          const filePath = path
-            .relative(__dirname, file.path)
-            .replace(/\\/g, "/"); // Ruta relativa
+          const filePath = path.relative(__dirname, file.path).replace(/\\/g, "/"); // Ruta relativa
           return { url: filePath };
         })
       : [];
@@ -118,7 +115,7 @@ app.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
         codigoObraSocial,
         sector,
         attachments: {
-          create: attachments.map((url) => ({ url })),
+          create: attachments.map((attachment) => ({ url: attachment.url })),
         },
         author: {
           connect: { id: parseInt(authorId, 10) },
@@ -133,6 +130,7 @@ app.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
     res.status(500).json({ error: "Error creating anuncio" });
   }
 });
+
 
 // Obtener todos los anuncios
 app.get("/anuncios", async (req, res) => {
@@ -171,13 +169,14 @@ app.get("/anuncios/:id", async (req, res) => {
   }
 });
 
-// Actualizar un anuncio por ID
-
 app.put("/anuncios/:id", upload.array("attachments", 10), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, sector } = req.body;
-    const attachments = req.files ? req.files.map((file) => file.path) : [];
+    const attachments = req.files ? req.files.map((file) => {
+      const filePath = path.relative(__dirname, file.path).replace(/\\/g, "/"); // Ruta relativa
+      return filePath;
+    }) : [];
 
     const data = {
       title,
@@ -194,14 +193,14 @@ app.put("/anuncios/:id", upload.array("attachments", 10), async (req, res) => {
 
       for (const attachment of oldAnuncio.attachments) {
         try {
-          fs.unlinkSync(attachment.url);
+          fs.unlinkSync(path.join(__dirname, attachment.url));
         } catch (err) {
-          console.error("Error al eliminar el archivo:", err);
+          console.error("Error deleting file:", err);
         }
       }
 
       data.attachments = {
-        deleteMany: {}, // Borra todos los adjuntos actuales
+        deleteMany: {}, // Elimina todos los adjuntos actuales
         create: attachments.map((url) => ({ url })), // Añade los nuevos adjuntos
       };
     }
@@ -219,7 +218,7 @@ app.put("/anuncios/:id", upload.array("attachments", 10), async (req, res) => {
   }
 });
 
-// Eliminar un anuncio por ID
+
 app.delete("/anuncios/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -230,9 +229,9 @@ app.delete("/anuncios/:id", async (req, res) => {
 
     for (const attachment of attachments) {
       try {
-        fs.unlinkSync(attachment.url);
+        fs.unlinkSync(path.join(__dirname, attachment.url));
       } catch (err) {
-        console.error("Error al eliminar el archivo:", err);
+        console.error("Error deleting file:", err);
       }
     }
 
@@ -248,19 +247,20 @@ app.delete("/anuncios/:id", async (req, res) => {
     broadcast(JSON.stringify({ type: "update" }));
     res.sendStatus(204);
   } catch (error) {
-    console.error("Error al eliminar el anuncio:", error);
-    res.status(500).json({ error: "Error al eliminar el anuncio" });
+    console.error("Error deleting anuncio:", error);
+    res.status(500).json({ error: "Error deleting anuncio" });
   }
 });
+
 
 // Obtener todos los usuarios
 app.get("/user", async (req, res) => {
   try {
-    const user = await prisma.author.findMany({});
-    res.json(user);
+    const users = await prisma.author.findMany({});
+    res.json(users);
   } catch (error) {
-    console.error("Error fetching anuncios:", error);
-    res.status(500).json({ error: "Error fetching anuncios" });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Error fetching users" });
   }
 });
 
