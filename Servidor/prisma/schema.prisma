@@ -23,7 +23,7 @@ model Anuncio {
   codigoObraSocial  String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  attachments       Attachment[]
+  attachments       Attachment[] 
   authorId          Int      // Foreign key to Author
   author            Author   @relation(fields: [authorId], references: [id])
 }
