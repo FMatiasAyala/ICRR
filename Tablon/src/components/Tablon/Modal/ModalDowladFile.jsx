@@ -34,19 +34,23 @@ export function ModalDowloadFile({ anuncio, onClose }) {
                 </ModalHeader>
                 <ModalBody>
                     <ul>
-                        {anuncio.attachments.map((attachment) => {
-                            const fileName = attachment.url.split('/').pop();
-                            return (
-                                <a
-                                    key={attachment.id}
-                                    href={`http://192.168.1.53:3000/${attachment.url}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="file-icon">
-                                    {renderFileIcon(attachment.url)} {fileName}
-                                </a>
-                            );
-                        })}
+                    {anuncio.attachments && anuncio.attachments.length > 0 ? (
+                                anuncio.attachments.map((attachment) => {
+                                    const fileName = attachment.url.split('/').pop();
+                                    return (
+                                        <a
+                                            key={attachment.id}
+                                            href={`http://192.168.1.53:3000/${attachment.url}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="file-icon">
+                                            {renderFileIcon(attachment.url)} {fileName}
+                                        </a>
+                                    );
+                                })
+                            ) : (
+                                <p>No hay archivos cargados</p>
+                            )}
                     </ul>
                 </ModalBody>
                 <ModalFooter>

@@ -20,6 +20,7 @@ import logo from './Img/logo.svg';
 import { ObraSocialSearch } from './Filtro/ObraSocialSearch';
 import { MesFilter } from './Filtro/MesFilter';
 import { SectorFilter } from './Filtro/SectorFilter';
+import { ServicioFilter } from './Filtro/ServicioFilter';
 
 
 export default function Anuncios() {
@@ -27,6 +28,7 @@ export default function Anuncios() {
     const [filteredAnuncio, setFilteredAnuncio] = useState([]);
     const [sectorFilter, setSectorFilter] = useState('');
     const [mesFilter, setMesFilter] = useState('');
+    const [servicioFilter, setServicioFilter] = useState('');
     const [buttonCreated, setButtonCreated] = useState('');
     const [editingAnuncio, setEditingAnuncio] = useState(null);
     const [user, setUser] = useState([]);
@@ -70,12 +72,15 @@ export default function Anuncios() {
             if (obraSocialFilter) {
                 filtered = filtered.filter(anuncio => anuncio.codigoObraSocial === obraSocialFilter);
             }
+            if (areaFilter) {
+                filtered = filtered.filter(anuncio => anuncio.servicio === servicioFilter);
+            }
 
             setFilteredAnuncio(filtered);
         };
 
         filterAnuncios();
-    }, [sectorFilter, mesFilter, obraSocialFilter, anuncio]);
+    }, [sectorFilter, mesFilter, obraSocialFilter, anuncio, servicioFilter]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -96,7 +101,9 @@ export default function Anuncios() {
     const handleObraSocialChange = (value) => {
         setObraSocialFilter(value === " " ? "" : value);
     };
-
+    const handleServicioChange = (value) => {
+        setServicioFilter(value === " " ? "" : value);
+    };
     const handleEdit = (id) => {
         const editedAnuncio = anuncio.find(a => a.id === id);
         setEditingAnuncio(editedAnuncio);
@@ -151,6 +158,11 @@ export default function Anuncios() {
                         <MesFilter
                             mesFilter={mesFilter}
                             handleMesChange={handleMesChange}
+                        />
+                        <ServicioFilter
+                            servicioFilter={servicioFilter}
+                            handleFilterChange={handleServicioChange}
+                            anuncio={anuncio}
                         />
                     </Card>
                 </aside>
