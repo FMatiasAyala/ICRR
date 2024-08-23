@@ -18,6 +18,7 @@ model Anuncio {
   id                Int      @id @default(autoincrement())
   title             String
   content           String   @db.Text 
+  servicio          String 
   sector            String
   obraSocial        String
   codigoObraSocial  String
@@ -38,6 +39,7 @@ model Attachment {
 model Author {
   id        Int      @id @default(autoincrement())
   name      String
+  servicio  String
   sector    String
   anuncios  Anuncio[]
 }
