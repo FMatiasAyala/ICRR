@@ -6,11 +6,12 @@ import Footer from './components/Tablon/Footer/Footer.jsx';
 function App() {
 
   return (
-    <>
-
-      <Anuncios />
-      <Footer/>
-    </>
+    <div className="app-container">
+      <div className="content-wrap">
+        <Anuncios />
+      </div>
+      <Footer />
+    </div>
   )
 }
 

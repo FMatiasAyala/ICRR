@@ -1,7 +1,7 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const cors = require("cors");
-const executeQuery = require("./db");
+const {executeMySql, executeQuery} = require("./db");
 const WebSocket = require("ws");
 const multer = require("multer");
 const path = require("path");
@@ -15,6 +15,11 @@ app.use(express.json());
 app.use(cors());
 const uploadPath = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadPath));
+
+
+
+
+
 
 // Middleware para crear la carpeta si no existe
 const createFolderIfNotExists = (folderPath) => {
@@ -73,7 +78,7 @@ wss.on("connection", (ws) => {
 
 const fetchAnuncios = async (ws) => {
   try {
-    const anuncios = await prisma.anuncio.findMany({
+    const anuncios = await prisma.anuncioDev.findMany({
       include: {
         attachments: true,
         author: true,
@@ -98,7 +103,7 @@ const broadcast = (data) => {
 
 app.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
   try {
-    const { title, content, obraSocial, codigoObraSocial, sector, authorId } = req.body;
+    const { title, content, obraSocial, codigoObraSocial, sector, authorId, servicio } = req.body;
     const attachments = req.files
       ? req.files.map((file) => {
           const filePath = path.relative(__dirname, file.path).replace(/\\/g, "/"); // Ruta relativa
@@ -107,13 +112,14 @@ app.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
       : [];
 
     // Guardar el anuncio
-    const newAnuncio = await prisma.anuncio.create({
+    const newAnuncio = await prisma.anuncioDev.create({
       data: {
         title,
         content,
         obraSocial,
         codigoObraSocial,
         sector,
+        servicio,
         attachments: {
           create: attachments.map((attachment) => ({ url: attachment.url })),
         },
@@ -135,7 +141,7 @@ app.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
 // Obtener todos los anuncios
 app.get("/anuncios", async (req, res) => {
   try {
-    const anuncios = await prisma.anuncio.findMany({
+    const anuncios = await prisma.anuncioDev.findMany({
       include: {
         attachments: true,
         author: true,
@@ -155,7 +161,7 @@ app.get("/anuncios", async (req, res) => {
 app.get("/anuncios/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const anuncio = await prisma.anuncio.findUnique({
+    const anuncio = await prisma.anuncioDev.findUnique({
       where: { id: parseInt(id) },
       include: {
         attachments: true,
@@ -186,14 +192,14 @@ app.put("/anuncios/:id", upload.array("attachments", 10), async (req, res) => {
 
     if (attachments.length > 0) {
       // Si hay nuevos archivos, elimina los antiguos y actualiza los adjuntos
-      const oldAnuncio = await prisma.anuncio.findUnique({
+      const oldAnuncio = await prisma.anuncioDev.findUnique({
         where: { id: parseInt(id) },
         include: { attachments: true },
       });
 
-      for (const attachment of oldAnuncio.attachments) {
+      for (const attachmentdev of oldAnuncio.attachments) {
         try {
-          fs.unlinkSync(path.join(__dirname, attachment.url));
+          fs.unlinkSync(path.join(__dirname, attachmentdev.url))
         } catch (err) {
           console.error("Error deleting file:", err);
         }
@@ -205,7 +211,7 @@ app.put("/anuncios/:id", upload.array("attachments", 10), async (req, res) => {
       };
     }
 
-    const updatedAnuncio = await prisma.anuncio.update({
+    const updatedAnuncio = await prisma.anuncioDev.update({
       where: { id: parseInt(id) },
       data,
     });
@@ -223,24 +229,24 @@ app.delete("/anuncios/:id", async (req, res) => {
   const { id } = req.params;
   try {
     // Eliminar los archivos adjuntos relacionados
-    const attachments = await prisma.attachment.findMany({
+    const attachments = await prisma.attachmentDev.findMany({
       where: { anuncioId: parseInt(id) },
     });
 
-    for (const attachment of attachments) {
+    for (const attachmentDev of attachments) {
       try {
-        fs.unlinkSync(path.join(__dirname, attachment.url));
+        fs.unlinkSync(path.join(__dirname, attachmentDev.url));
       } catch (err) {
         console.error("Error deleting file:", err);
       }
     }
 
-    await prisma.attachment.deleteMany({
+    await prisma.attachmentDev.deleteMany({
       where: { anuncioId: parseInt(id) },
     });
 
     // Eliminar el anuncio
-    await prisma.anuncio.delete({
+    await prisma.anuncioDev.delete({
       where: { id: parseInt(id) },
     });
 
@@ -256,13 +262,44 @@ app.delete("/anuncios/:id", async (req, res) => {
 // Obtener todos los usuarios
 app.get("/user", async (req, res) => {
   try {
-    const users = await prisma.author.findMany({});
+    const users = await prisma.authorDev.findMany({});
     res.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Error fetching users" });
   }
 });
+
+
+//Fitlra anuncios segun el servicio del usuario
+
+app.get("/anunciosFiltrados", async (req, res) => {
+  const { searchTerm } = req.query;
+  console.log("searchTerm:",searchTerm); // Verifica que `searchTerm` tiene un valor
+  
+  const query = `SELECT a.idemp FROM tblempleado a
+                WHERE a.idemp = ?
+                AND a.idemp IN (
+                  SELECT idemp  
+                  FROM tblempleado 
+                  WHERE encuesta = 'operador' 
+                  AND area = 'ADMISION' 
+                  AND estado = 'HAB' 
+                  AND servicio NOT IN ('RM')
+                )`;
+  try {
+    if (!searchTerm) {
+      return res.status(400).json({ error: "searchTerm is required" });
+    }
+    const anuncioFiltro = await executeMySql(query, [searchTerm]);
+    res.json(anuncioFiltro);
+  } catch (err) {
+    console.error("Error al ejecutar la consulta:", err);
+    res.status(500).json({ error: "Error al ejecutar la consulta" });
+  }
+});
+
+
 
 //Obetenes obras sociales
 app.get("/obrasociales", async (req, res) => {
@@ -278,13 +315,16 @@ app.get("/obrasociales", async (req, res) => {
 
 app.get("/obrasociales/:searchTerm", async (req, res) => {
   const { searchTerm } = req.params;
-  const query = `SELECT RTRIM(nTarjeta) AS id, RTRIM(sInstitucion) AS codigo, RTRIM(sRazonSocial) AS razonSocial, RTRIM(sSigla) AS sigla FROM stdInstitucionesMedicas 
-  WHERE sEstado = 'HAB' AND (sInstitucion LIKE '%${searchTerm}%' OR sRazonSocial LIKE '%${searchTerm}%')`;
+  const query = `SELECT RTRIM(nTarjeta) AS id, RTRIM(sInstitucion) AS codigo, RTRIM(sRazonSocial) AS razonSocial, RTRIM(sSigla) AS sigla 
+                 FROM stdInstitucionesMedicas 
+                 WHERE sEstado = 'HAB' AND (sInstitucion LIKE @searchTerm OR sRazonSocial LIKE @searchTerm)`;
+  
   try {
-    const obraSociales = await executeQuery(query);
+    const obraSociales = await executeQuery(query, { searchTerm: `%${searchTerm}%` });
     res.json(obraSociales);
   } catch (error) {
     console.error("Error fetching obras sociales:", error);
     res.status(500).json({ error: "Error fetching obra sociales" });
   }
 });
+

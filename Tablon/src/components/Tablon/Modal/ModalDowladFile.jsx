@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, Button, ModalHeader, ModalBody, ModalFooter, ModalContent } from '@nextui-org/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilePdf, faFileExcel, faFileImage, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { apiAttachments } from '../../../Api';
 
 export function ModalDowloadFile({ anuncio, onClose }) {
     const renderFileIcon = (fileUrl) => {
@@ -40,7 +41,7 @@ export function ModalDowloadFile({ anuncio, onClose }) {
                                     return (
                                         <a
                                             key={attachment.id}
-                                            href={`http://192.168.1.53:3000/${attachment.url}`}
+                                            href={`${apiAttachments}${attachment.url}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="file-icon">

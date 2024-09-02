@@ -45,3 +45,32 @@ model Author {
 }
 
 
+model AnuncioDev {
+  id                Int      @id @default(autoincrement())
+  title             String
+  content           String   @db.Text
+  servicio          String
+  sector            String
+  obraSocial        String
+  codigoObraSocial  String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  attachments       AttachmentDev[] 
+  authorId          Int      // Foreign key to AuthorDev
+  author            AuthorDev   @relation(fields: [authorId], references: [id])
+}
+
+model AttachmentDev {
+  id        Int      @id @default(autoincrement())
+  url       String
+  anuncio   AnuncioDev  @relation(fields: [anuncioId], references: [id])
+  anuncioId Int
+}
+
+model AuthorDev {
+  id        Int      @id @default(autoincrement())
+  name      String
+  servicio  String
+  sector    String
+  anuncios  AnuncioDev[]
+}

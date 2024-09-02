@@ -20,7 +20,8 @@ import logo from './Img/logo.svg';
 import { ObraSocialSearch } from './Filtro/ObraSocialSearch';
 import { MesFilter } from './Filtro/MesFilter';
 import { SectorFilter } from './Filtro/SectorFilter';
-import { ServicioFilter } from './Filtro/ServicioFilter';
+import { fetchFiltroUser } from './hooks/Fecth';
+import { apiUser, apiAnuncio } from '../../Api';
 
 
 export default function Anuncios() {
@@ -28,19 +29,19 @@ export default function Anuncios() {
     const [filteredAnuncio, setFilteredAnuncio] = useState([]);
     const [sectorFilter, setSectorFilter] = useState('');
     const [mesFilter, setMesFilter] = useState('');
-    const [servicioFilter, setServicioFilter] = useState('');
     const [buttonCreated, setButtonCreated] = useState('');
     const [editingAnuncio, setEditingAnuncio] = useState(null);
     const [user, setUser] = useState([]);
     const [obraSocialFilter, setObraSocialFilter] = useState('');
     const [selectedAnuncio, setSelectedAnuncio] = useState(null);
     const [showFileModal, setShowFileModal] = useState(false);
+    const [response, setResponse] = useState('');
     const location = useLocation();
 
     useEffect(() => {
         const fetchUsuario = async () => {
             try {
-                const response = await fetch('http://192.168.1.53:3000/user');
+                const response = await fetch(apiUser);
                 if (!response.ok) {
                     throw new Error('Error al obtener los datos de equipos');
                 }
@@ -54,33 +55,64 @@ export default function Anuncios() {
         fetchUsuario();
     }, []);
 
+    useEffect(() => { 
+        const params = new URLSearchParams(location.search);
+        const filtro = params.get('sector');
+        const fetchData = async () => {
+            try {
+                const userResponse = await fetchFiltroUser(filtro);
+                setResponse(userResponse);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                setResponse(null); // O maneja el error de alguna manera
+            }
+        };
+        fetchData();
+
+}, []);
+
     useEffect(() => {
+
         const filterAnuncios = () => {
             let filtered = anuncio;
-
+            const params = new URLSearchParams(location.search);
+            const filtro = params.get('sector');
             if (sectorFilter) {
                 filtered = filtered.filter(anuncio => anuncio.sector === sectorFilter);
             }
-
             if (mesFilter !== '') {
                 filtered = filtered.filter(anuncio => {
                     const anuncioDate = new Date(anuncio.createdAt);
                     return anuncioDate.getMonth() === parseInt(mesFilter, 10);
                 });
             }
-
             if (obraSocialFilter) {
                 filtered = filtered.filter(anuncio => anuncio.codigoObraSocial === obraSocialFilter);
             }
-            if (areaFilter) {
-                filtered = filtered.filter(anuncio => anuncio.servicio === servicioFilter);
+
+            console.log('s',filtro)
+            console.log('s',response)
+            
+            if (filtro === 'GESTION') {
+                // Mostrar todos los anuncios de GESTION y también los de Resonancia
+                filtered = filtered.filter(anuncio => 
+                    anuncio.sector === 'Gestion' || anuncio.sector === 'Facturacion');
+            } else if (filtro === 'FACTU') {
+                // Mostrar solo anuncios de FACTU (o modificar según lo que quieras hacer con FACTU)
+                filtered = filtered.filter(anuncio => anuncio.sector === 'Facturacion' || anuncio.sector === 'Gestion' );
+            } else if (response.length === 0) {
+                // Si la respuesta es un array vacío, mostrar solo los anuncios de Resonancia
+                filtered = filtered.filter(anuncio => anuncio.servicio === 'Resonancia' || anuncio.sector === 'Gestion' );
+            } else if (response.length > 0) {
+                // Si hay un idemp en la respuesta, mostrar todos los anuncios excepto los de Resonancia
+                filtered = filtered.filter(anuncio => anuncio.servicio !== 'Resonancia' || anuncio.sector === 'Gestion' );
             }
 
             setFilteredAnuncio(filtered);
         };
 
         filterAnuncios();
-    }, [sectorFilter, mesFilter, obraSocialFilter, anuncio, servicioFilter]);
+    }, [sectorFilter, mesFilter, obraSocialFilter, anuncio, response]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -101,9 +133,7 @@ export default function Anuncios() {
     const handleObraSocialChange = (value) => {
         setObraSocialFilter(value === " " ? "" : value);
     };
-    const handleServicioChange = (value) => {
-        setServicioFilter(value === " " ? "" : value);
-    };
+
     const handleEdit = (id) => {
         const editedAnuncio = anuncio.find(a => a.id === id);
         setEditingAnuncio(editedAnuncio);
@@ -122,7 +152,7 @@ export default function Anuncios() {
 
     const handleDelete = async (id) => {
         try {
-            await fetch(`http://192.168.1.53:3000/anuncios/${id}`, {
+            await fetch(apiAnuncio+`${id}`, {
                 method: 'DELETE',
             });
             setAnuncio(anuncio.filter(a => a.id !== id));
@@ -159,19 +189,14 @@ export default function Anuncios() {
                             mesFilter={mesFilter}
                             handleMesChange={handleMesChange}
                         />
-                        <ServicioFilter
-                            servicioFilter={servicioFilter}
-                            handleFilterChange={handleServicioChange}
-                            anuncio={anuncio}
-                        />
                     </Card>
                 </aside>
                 <main className="flex-1 p-4">
-                    {(buttonCreated === 'FACTU' || buttonCreated === 'GES') && (
+                    {(buttonCreated === 'FACTU' || buttonCreated === 'GESTION') && (
                         <ModalCreate
                             onEventCreate={() => sendWebSocketMessage({ type: 'fetch' })}
                             authors={user}
-                            sector={buttonCreated === 'FACTU' ? "Facturacion" : "RRHH"}
+                            sector={buttonCreated === 'FACTU' ? "Facturacion" : "Gestion"}
                             obraSocial={[]}
                         />
                     )}
@@ -184,6 +209,7 @@ export default function Anuncios() {
                                             <p className="text-xl font-bold">{anuncio.title}</p>
                                             <p className="text-small text-default-500">{anuncio.sector}{anuncio.author ? ` - ${anuncio.author.name}` : ""}</p>
                                             <p className="text-small font-bold">{anuncio.obraSocial ? `${anuncio.obraSocial}` : ""}</p>
+                                            <p>{anuncio.servicio}</p>
                                         </div>
                                     </CardHeader>
                                     <Divider />
@@ -204,7 +230,7 @@ export default function Anuncios() {
                                                 Ver archivos
                                             </Button>
                                         </div>
-                                        {buttonCreated === 'GES' && (
+                                        {buttonCreated === 'GESTION' && (
                                             <div className="flex gap-3">
                                                 <Button
                                                     className="text-small"

@@ -1,5 +1,6 @@
 // useWebSocket.js
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { apiWebSocket, apiAnuncio } from '../../../Api';
 
 const WebSocketContext = createContext(null);
 
@@ -8,7 +9,7 @@ export const WebSocketProvider = ({ children }) => {
   const socketRef = useRef(null);
 
   const connectWebSocket = () => {
-    socketRef.current = new WebSocket('ws://192.168.1.53:3000/anuncios');
+    socketRef.current = new WebSocket(apiWebSocket);
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');
@@ -18,7 +19,7 @@ export const WebSocketProvider = ({ children }) => {
     socketRef.current.onmessage = (event) => {
       const message = JSON.parse(event.data);
       if (message.type === 'init' || message.type === 'update') {
-        fetch('http://192.168.1.53:3000/anuncios')
+        fetch(apiAnuncio)
           .then(response => response.json())
           .then(data => setAnuncio(data));
       }

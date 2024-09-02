@@ -7,6 +7,7 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import { ObraSocialSelect } from "../Buscador/ObraSocialSelect";
+import { apiAnuncio } from "../../../Api";
 
 export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSocial }) {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     content: '',
     obraSocial: '',
     codigoObraSocial: '',
+    servicio: '',
     sector: sector,
     authorId: '', // Ajustado a string vacío en lugar de null
     attachments: [] // Campo para los archivos adjuntos
@@ -26,6 +28,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
 
     data.append('title', formData.title);
     data.append('content', formData.content);
+    data.append('servicio', formData.servicio);
     data.append('sector', formData.sector);
     data.append('obraSocial', formData.obraSocial);
     data.append('codigoObraSocial', formData.codigoObraSocial);
@@ -36,7 +39,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     }
 
     try {
-      await fetch('http://192.168.1.53:3000/anuncios', {
+      await fetch(apiAnuncio, {
         method: 'POST',
         body: data,
       });
@@ -63,12 +66,17 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     }));
   };
 
-  const handleSelectChange = (value) => {
-    setFormData(prevData => ({
-      ...prevData,
-      authorId: value
-    }));
+  const handleSelectChange = (authorId) => {
+    const selectedAuthor = filteredAuthors.find((author) => author.id === parseInt(authorId));
+    if (selectedAuthor) {
+      setFormData({
+        ...formData,
+        authorId: selectedAuthor.id,
+        servicio: selectedAuthor.servicio, // Actualiza el servicio según el autor seleccionado
+      });
+    }
   };
+
 
   const handleObraSelect = (obra) => {
     setFormData(prevData => ({
@@ -127,6 +135,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
           </SelectItem>
         ))}
       </Select>
+
       <ObraSocialSelect handleObraSocial={handleObraSelect} />
       <input
         type="file"
