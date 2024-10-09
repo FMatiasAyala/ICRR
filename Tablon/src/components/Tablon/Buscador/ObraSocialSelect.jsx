@@ -10,7 +10,7 @@ export function ObraSocialSelect({ handleObraSocial }) {
         const fetchObraSocial = async () => {
             if (searchTerm.length > 0) {
                 try {
-                    const response = await fetch(`http://192.168.1.6:3000/obrasociales/${searchTerm}`);
+                    const response = await fetch(`http://192.168.1.6:3000/tablon/obrasociales/${searchTerm}`);
                     if (!response.ok) {
                         throw new Error('Error al obtener las obras sociales');
                     }

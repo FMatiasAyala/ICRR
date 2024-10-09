@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {MySqlDatabaseCrr, executeQuery } = require("../db");
+const {MySqlDatabaseCrr, executeQuery,executeQueryParams } = require("../db");
 const { upload } = require("../middlewares/uploadMiddlewares");
 const { prisma } = require("../prismaClient/prismaClient");
 const { broadcast } = require("../websocket/webSocket");
@@ -252,7 +252,7 @@ router.get("/obrasociales/:searchTerm", async (req, res) => {
                    WHERE sEstado = 'HAB' AND (sInstitucion LIKE @searchTerm OR sRazonSocial LIKE @searchTerm)`;
 
   try {
-    const obraSociales = await executeQuery(query, {
+    const obraSociales = await executeQueryParams(query, {
       searchTerm: `%${searchTerm}%`,
     });
     res.json(obraSociales);

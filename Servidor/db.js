@@ -133,5 +133,34 @@ async function executeQuery(query) {
   }
 }
 
+async function executeQueryParams(query, params = {}) {
+  let pool;
 
-module.exports = { executeQuery, MySqlDatabaseCrr, MySqlDatabaseDev };
+  try {
+    // Conectar a la base de datos
+    pool = await sql.connect(config);
+    const request = pool.request();
+
+    // Agregar parámetros a la solicitud
+    for (const key in params) {
+      if (params.hasOwnProperty(key)) {
+        request.input(key, sql.VarChar, params[key]); // Asegúrate de especificar el tipo de dato
+      }
+    }
+
+    // Ejecutar la consulta
+    const result = await request.query(query);
+    return result.recordset; // Retornar los resultados
+  } catch (err) {
+    console.error("Error ejecutando la consulta:", err);
+    throw err; // Lanzar el error para que sea capturado en el controlador
+  } finally {
+    // Cerrar la conexión
+    if (pool) {
+      await pool.close();
+    }
+  }
+}
+
+
+module.exports = { executeQuery, executeQueryParams, MySqlDatabaseCrr, MySqlDatabaseDev };
