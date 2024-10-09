@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 const FooterContainer = styled.footer`
   background-color: #f8f9fa;
-  padding: 1rem;
+  padding: 0.5rem;
   text-align: center;
   font-size: 14px;
   color: #6c757d;
@@ -12,6 +12,7 @@ const FooterContainer = styled.footer`
   bottom: 0;
   width: 100%;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Asegura que el footer esté por encima de otros elementos */
 `;
 
 const Footer = () => {

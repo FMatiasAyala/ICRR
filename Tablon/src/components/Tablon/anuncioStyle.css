@@ -10,6 +10,7 @@
   align-items: center;
   padding: 1rem;
   margin-top: 1rem;
+
 }
 
 .font-bold {
@@ -27,7 +28,8 @@
   max-width: 500px;
   max-height: 200px;
   overflow: auto;
- }
+}
+
 
  .content-text {
   white-space: pre-wrap; /* Preserva los espacios y los saltos de línea */

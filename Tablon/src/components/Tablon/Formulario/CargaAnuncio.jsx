@@ -21,6 +21,12 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     attachments: [] // Campo para los archivos adjuntos
   });
 
+  const listaServicio = {
+    'RRHH': 'Todos',
+    'Resonancia': 'Resonancia',
+    'CRR': 'CRR'
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -72,7 +78,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
       setFormData({
         ...formData,
         authorId: selectedAuthor.id,
-        servicio: selectedAuthor.servicio, // Actualiza el servicio según el autor seleccionado
+        servicio: sector === "Gestion" ? formData.servicio : selectedAuthor.servicio, // Actualiza el servicio según el autor seleccionado
       });
     }
   };
@@ -89,7 +95,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
   const filteredAuthors = authors.filter((author) => {
     if (sector === "Facturacion") {
       return author.sector === "Facturacion";
-    } else if (sector === "RRHH") {
+    } else if (sector === "Gestion") {
       return author.sector === "Gestion";
     }
     return true;
@@ -135,8 +141,27 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
           </SelectItem>
         ))}
       </Select>
+      {sector === "Gestion" && (
+        <Select
+          isRequired
+          aria-label="servicio"
+          name="servicio"
+          placeholder="Selecciona un servicio"
+          value={formData.servicio}
+          labelPlacement="outside-left"
+          onChange={(e) => handleChange(e)}
+        >
+          {Object.entries(listaServicio).map(([key, value]) => (
+            <SelectItem key={key} value={value}>
+              {value}
+            </SelectItem>
+          ))}
+        </Select>
+      )}
 
-      <ObraSocialSelect handleObraSocial={handleObraSelect} />
+      {sector === "Facturacion" && (
+        <ObraSocialSelect handleObraSocial={handleObraSelect} />
+      )}
       <input
         type="file"
         name="attachments"

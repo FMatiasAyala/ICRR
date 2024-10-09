@@ -1,4 +1,4 @@
-import { apiAnuncio, apiUser } from "../../../Api";
+import { apiAnuncio, apiAnuncioFiltrados, apiUser } from "../../../Api";
 
 
 export const fetchAnuncios = async () => {
@@ -62,7 +62,7 @@ export const fetchFiltroUser = async (params) => {
         if (params == "FACTU" || params == "GESTION") {
             return;
         }
-        const response = await fetch(`http://192.168.1.53:3000/anunciosFiltrados?searchTerm=${params}`);
+        const response = await fetch(`${apiAnuncioFiltrados}?searchTerm=${params}`);
         const data = await response.json();
         /*         const anuncio = data.sort((a,b) => new Date (b.createdAt) - new Date (a.createdAt)); */
         return data;

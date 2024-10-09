@@ -22,6 +22,7 @@ import { MesFilter } from './Filtro/MesFilter';
 import { SectorFilter } from './Filtro/SectorFilter';
 import { fetchFiltroUser } from './hooks/Fecth';
 import { apiUser, apiAnuncio } from '../../Api';
+import { FilialFilter } from './Filtro/FilialFilter';
 
 
 export default function Anuncios() {
@@ -33,6 +34,7 @@ export default function Anuncios() {
     const [editingAnuncio, setEditingAnuncio] = useState(null);
     const [user, setUser] = useState([]);
     const [obraSocialFilter, setObraSocialFilter] = useState('');
+    const [filialFilter, setFilialFilter] = useState('');
     const [selectedAnuncio, setSelectedAnuncio] = useState(null);
     const [showFileModal, setShowFileModal] = useState(false);
     const [response, setResponse] = useState('');
@@ -80,6 +82,9 @@ export default function Anuncios() {
             if (sectorFilter) {
                 filtered = filtered.filter(anuncio => anuncio.sector === sectorFilter);
             }
+            if (filialFilter) {
+                filtered = filtered.filter(anuncio => anuncio.servicio === filialFilter);
+            }
             if (mesFilter !== '') {
                 filtered = filtered.filter(anuncio => {
                     const anuncioDate = new Date(anuncio.createdAt);
@@ -90,8 +95,6 @@ export default function Anuncios() {
                 filtered = filtered.filter(anuncio => anuncio.codigoObraSocial === obraSocialFilter);
             }
 
-            console.log('s',filtro)
-            console.log('s',response)
             
             if (filtro === 'GESTION') {
                 // Mostrar todos los anuncios de GESTION y también los de Resonancia
@@ -102,17 +105,17 @@ export default function Anuncios() {
                 filtered = filtered.filter(anuncio => anuncio.sector === 'Facturacion' || anuncio.sector === 'Gestion' );
             } else if (response.length === 0) {
                 // Si la respuesta es un array vacío, mostrar solo los anuncios de Resonancia
-                filtered = filtered.filter(anuncio => anuncio.servicio === 'Resonancia' || anuncio.sector === 'Gestion' );
+                filtered = filtered.filter(anuncio => anuncio.servicio === 'Resonancia' || anuncio.servicio === 'RRHH');
             } else if (response.length > 0) {
                 // Si hay un idemp en la respuesta, mostrar todos los anuncios excepto los de Resonancia
-                filtered = filtered.filter(anuncio => anuncio.servicio !== 'Resonancia' || anuncio.sector === 'Gestion' );
+                filtered = filtered.filter(anuncio => anuncio.servicio !== 'Resonancia' || anuncio.servicio === 'RRHH' );
             }
 
             setFilteredAnuncio(filtered);
         };
 
         filterAnuncios();
-    }, [sectorFilter, mesFilter, obraSocialFilter, anuncio, response]);
+    }, [sectorFilter, mesFilter, obraSocialFilter,filialFilter, anuncio, response]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -124,6 +127,9 @@ export default function Anuncios() {
 
     const handleFilterChange = (event) => {
         setSectorFilter(event.target.value);
+    };
+    const handleFilialChange = (event) => {
+        setFilialFilter(event.target.value);
     };
 
     const handleMesChange = (event) => {
@@ -181,6 +187,14 @@ export default function Anuncios() {
                             sectorFilter={sectorFilter}
                             handleFilterChange={handleFilterChange}
                             anuncio={anuncio} />
+                    {buttonCreated === 'FACTU' && (
+
+                        <FilialFilter 
+                        filialFilter={filialFilter}
+                        handleFilialChange={handleFilialChange}
+                        anuncio={anuncio}
+                        />
+                    )}
                         <ObraSocialSearch
                             obraSocialFilter={obraSocialFilter}
                             handleObraSocialChange={handleObraSocialChange}
