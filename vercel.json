@@ -1,14 +1,14 @@
 {
     "builds": [
       {
-        "src": "frontend/package.json",
+        "src": "Tablon/package.json",
         "use": "@vercel/static-build"
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "/frontend/$1"
+        "dest": "/Tablon/$1"
       }
     ]
   }
