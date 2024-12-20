@@ -10,7 +10,34 @@
   align-items: center;
   padding: 1rem;
   margin-top: 1rem;
+}
 
+.anuncio-alta {
+  background: #5CB85C;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  border: 5px solid #4a7c3c; /* Borde verde más oscuro */
+}
+
+.anuncio-baja {
+  background-color: #D9534F;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  border: 5px solid #7d3f3f; /* Borde rojo más oscuro */
+}
+
+.anuncio-notificacion {
+  background-color: #4c6ea8;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  border: 5px solid #365c8e; /* Borde azul más oscuro */
+}
+
+.text-anuncio{
+  color: #fff;
 }
 
 .font-bold {

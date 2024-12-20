@@ -16,10 +16,20 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     obraSocial: '',
     codigoObraSocial: '',
     servicio: '',
+    tipo: '',
     sector: sector,
     authorId: '', // Ajustado a string vacío en lugar de null
     attachments: [] // Campo para los archivos adjuntos
   });
+
+  const handleConfirmOpen = () => setOpenModal(true);
+  const handleConfirmClose = () => setOpenModal(false);
+
+  const tiposAnuncio = {
+    'Alta': 'Alta de servicio',
+    'Baja': 'Suspensión de servicio',
+    'Notificacion': 'Notificación'
+  };
 
   const listaServicio = {
     'RRHH': 'Todos',
@@ -37,6 +47,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     data.append('servicio', formData.servicio);
     data.append('sector', formData.sector);
     data.append('obraSocial', formData.obraSocial);
+    data.append('tipo', formData.tipo);
     data.append('codigoObraSocial', formData.codigoObraSocial);
     data.append('authorId', formData.authorId);
 
@@ -52,6 +63,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
 
       onEventCreated();
       onClose();
+      handleConfirmClose();
     } catch (error) {
       console.error('Error al agregar el anuncio:', error);
     }
@@ -64,6 +76,8 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
       [name]: value
     }));
   };
+
+
 
   const handleFileChange = (e) => {
     setFormData(prevData => ({
@@ -100,6 +114,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     }
     return true;
   });
+
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 flex-col">
@@ -141,6 +156,23 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
           </SelectItem>
         ))}
       </Select>
+
+      <Select
+        aria-label="tipoAnuncio"
+        name="tipo"
+        placeholder="Tipo de anuncio"
+        value={formData.tipo}
+        labelPlacement="outside-left"
+        onChange={(e) => handleChange(e)}
+      >
+        {Object.entries(tiposAnuncio).map(([key, value]) => (
+          <SelectItem key={key} value={value}>
+            {value}
+          </SelectItem>
+        ))}
+      </Select>
+
+
       {sector === "Gestion" && (
         <Select
           isRequired
@@ -172,3 +204,4 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
     </form>
   );
 }
+

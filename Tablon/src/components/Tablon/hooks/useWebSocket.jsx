@@ -18,6 +18,11 @@ export const WebSocketProvider = ({ children }) => {
 
     socketRef.current.onmessage = (event) => {
       const message = JSON.parse(event.data);
+
+      if (message.title && message.body) {
+        sendNotification(message.title, message.body);
+      }
+
       if (message.type === 'init' || message.type === 'update') {
         fetch(apiAnuncio)
           .then(response => response.json())
@@ -32,19 +37,32 @@ export const WebSocketProvider = ({ children }) => {
 
     socketRef.current.onerror = (error) => {
       console.error('WebSocket error:', error);
-      console.log(error);
     };
 
   };
 
+
   useEffect(() => {
-    connectWebSocket();
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission().catch((error) =>
+        console.error('Error al solicitar permisos de notificación:', error)
+      );
+    }
+
+    connectWebSocket(); // Conecta el WebSocket al montar
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.close();
+        socketRef.current.close(); // Cierra el WebSocket al desmontar
       }
     };
+  }, []);
+
+  // Simulación de mensaje de prueba (puedes eliminar esto en producción)
+  useEffect(() => {
+    setTimeout(() => {
+      sendNotification("Nuevo Anuncio", "Un nuevo anuncio ha sido publicado");
+    }, 3000);
   }, []);
 
   const sendWebSocketMessage = (message) => {
@@ -61,3 +79,15 @@ export const WebSocketProvider = ({ children }) => {
 };
 
 export const useWebSocket = () => useContext(WebSocketContext);
+
+function sendNotification(title, body) {
+  if (Notification.permission === "granted") {
+    new Notification(title, { body });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        new Notification(title, { body });
+      }
+    });
+  }
+}

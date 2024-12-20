@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Textarea } from '@nextui-org/react';
+import { Input, Button, Textarea, Select, SelectItem } from '@nextui-org/react';
 
 function EditAnuncio({ anuncio, onSave, onClose }) {
     const [formData, setFormData] = useState({
@@ -7,11 +7,20 @@ function EditAnuncio({ anuncio, onSave, onClose }) {
         content: '',
     });
 
+
+    const tiposAnuncio = {
+        'Alta': 'Alta de servicio',
+        'Baja': 'Suspensión de servicio',
+        'Notificacion': 'Notificación'
+      };
+
+
     useEffect(() => {
         if (anuncio) {
             setFormData({
                 title: anuncio.title,
                 content: anuncio.content,
+                tipo: anuncio.tipo,
             });
         }
     }, [anuncio]);
@@ -60,8 +69,22 @@ function EditAnuncio({ anuncio, onSave, onClose }) {
                 className={{
                     base: "max-w-xs",
                     input: "resize-y min-h-[40px]",
-                  }}
+                }}
             />
+            <Select
+                aria-label="tipoAnuncio"
+                name="tipo"
+                placeholder="Tipo de anuncio"
+                value={formData.tipo}
+                labelPlacement="outside-left"
+                onChange={(e) => handleChange(e)}
+            >
+                {Object.entries(tiposAnuncio).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                        {value}
+                    </SelectItem>
+                ))}
+            </Select>
             <Button type="submit">Guardar cambios</Button>
         </form>
     );

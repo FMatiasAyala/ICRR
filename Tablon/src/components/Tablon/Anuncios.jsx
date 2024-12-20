@@ -57,7 +57,7 @@ export default function Anuncios() {
         fetchUsuario();
     }, []);
 
-    useEffect(() => { 
+    useEffect(() => {
         const params = new URLSearchParams(location.search);
         const filtro = params.get('sector');
         const fetchData = async () => {
@@ -71,7 +71,7 @@ export default function Anuncios() {
         };
         fetchData();
 
-}, []);
+    }, []);
 
     useEffect(() => {
 
@@ -95,27 +95,27 @@ export default function Anuncios() {
                 filtered = filtered.filter(anuncio => anuncio.codigoObraSocial === obraSocialFilter);
             }
 
-            
+
             if (filtro === 'GESTION') {
                 // Mostrar todos los anuncios de GESTION y también los de Resonancia
-                filtered = filtered.filter(anuncio => 
+                filtered = filtered.filter(anuncio =>
                     anuncio.sector === 'Gestion' || anuncio.sector === 'Facturacion');
             } else if (filtro === 'FACTU') {
                 // Mostrar solo anuncios de FACTU (o modificar según lo que quieras hacer con FACTU)
-                filtered = filtered.filter(anuncio => anuncio.sector === 'Facturacion' || anuncio.sector === 'Gestion' );
+                filtered = filtered.filter(anuncio => anuncio.sector === 'Facturacion' || anuncio.sector === 'Gestion');
             } else if (response.length === 0) {
                 // Si la respuesta es un array vacío, mostrar solo los anuncios de Resonancia
                 filtered = filtered.filter(anuncio => anuncio.servicio === 'Resonancia' || anuncio.servicio === 'RRHH');
             } else if (response.length > 0) {
                 // Si hay un idemp en la respuesta, mostrar todos los anuncios excepto los de Resonancia
-                filtered = filtered.filter(anuncio => anuncio.servicio !== 'Resonancia' || anuncio.servicio === 'RRHH' );
+                filtered = filtered.filter(anuncio => anuncio.servicio !== 'Resonancia' || anuncio.servicio === 'RRHH');
             }
 
             setFilteredAnuncio(filtered);
         };
 
         filterAnuncios();
-    }, [sectorFilter, mesFilter, obraSocialFilter,filialFilter, anuncio, response]);
+    }, [sectorFilter, mesFilter, obraSocialFilter, filialFilter, anuncio, response]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -158,7 +158,7 @@ export default function Anuncios() {
 
     const handleDelete = async (id) => {
         try {
-            await fetch(apiAnuncio+`${id}`, {
+            await fetch(apiAnuncio + `${id}`, {
                 method: 'DELETE',
             });
             setAnuncio(anuncio.filter(a => a.id !== id));
@@ -174,6 +174,34 @@ export default function Anuncios() {
         setShowFileModal(true);
     };
 
+    const getAnuncioClass = (tipo) => {
+        switch (tipo) {
+            case 'Alta':
+                return 'anuncio-alta';
+            case 'Baja':
+                return 'anuncio-baja';
+            case 'Notificacion':
+                return 'anuncio-notificacion';
+            default:
+                return '';
+        }
+    };
+
+
+    function getTextColorBasedOnBackground(tipo) {
+        // Aquí puedes decidir el color del texto según el tipo de anuncio
+        switch (tipo) {
+            case 'alta':
+                return 'text-white';  // Texto blanco para anuncios "alta"
+            case 'baja':
+                return 'text-white';  // Texto blanco para anuncios "baja"
+            case 'notificacion':
+                return 'text-white';  // Texto blanco para anuncios "notificacion"
+            default:
+                return 'text-black';  // Texto negro como valor por defecto
+        }
+    }
+
     return (
         <div className="flex flex-col min-h-screen">
             <Header>
@@ -187,14 +215,14 @@ export default function Anuncios() {
                             sectorFilter={sectorFilter}
                             handleFilterChange={handleFilterChange}
                             anuncio={anuncio} />
-                    {buttonCreated === 'FACTU' && (
+                        {buttonCreated === 'FACTU' && (
 
-                        <FilialFilter 
-                        filialFilter={filialFilter}
-                        handleFilialChange={handleFilialChange}
-                        anuncio={anuncio}
-                        />
-                    )}
+                            <FilialFilter
+                                filialFilter={filialFilter}
+                                handleFilialChange={handleFilialChange}
+                                anuncio={anuncio}
+                            />
+                        )}
                         <ObraSocialSearch
                             obraSocialFilter={obraSocialFilter}
                             handleObraSocialChange={handleObraSocialChange}
@@ -217,11 +245,11 @@ export default function Anuncios() {
                     {filteredAnuncio.length > 0 ? (
                         <div className="grid grid-cols-4 gap-4">
                             {filteredAnuncio.map((anuncio, index) => (
-                                <Card key={index} className="anuncio">
-                                    <CardHeader className="relative w-full flex flex-col items-center">
+                                <Card key={index} className={`anuncio ${getAnuncioClass(anuncio.tipo)}`}>
+                                    <CardHeader className={`relative w-full flex flex-col items-center ${getAnuncioClass(anuncio.tipo)}`}>
                                         <div className="text-center mt-4">
                                             <p className="text-xl font-bold">{anuncio.title}</p>
-                                            <p className="text-small text-default-500">{anuncio.sector}{anuncio.author ? ` - ${anuncio.author.name}` : ""}</p>
+                                            <p className={`text-small font-bold ${getTextColorBasedOnBackground(anuncio.tipo)}`}>{anuncio.sector}{anuncio.author ? ` - ${anuncio.author.name}` : ""}</p>
                                             <p className="text-small font-bold">{anuncio.obraSocial ? `${anuncio.obraSocial}` : ""}</p>
                                             <p>{anuncio.servicio}</p>
                                         </div>
@@ -244,7 +272,7 @@ export default function Anuncios() {
                                                 Ver archivos
                                             </Button>
                                         </div>
-                                        {buttonCreated === 'GESTION' && (
+                                        {(buttonCreated === 'GESTION'|| buttonCreated === 'FACTU') && (
                                             <div className="flex gap-3">
                                                 <Button
                                                     className="text-small"
@@ -254,6 +282,10 @@ export default function Anuncios() {
                                                 >
                                                     Editar
                                                 </Button>
+                                            </div>
+                                        )}
+                                        {buttonCreated === 'GESTION' && (
+                                            <div className="flex gap-3">
                                                 <Button
                                                     className="text-small"
                                                     color="danger"
