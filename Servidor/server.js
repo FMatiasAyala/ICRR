@@ -1,26 +1,46 @@
 const express = require("express");
+const fs = require("fs");
 const prisma =require("./prismaClient/prismaClient")
 const cors = require("cors");
+const crypto = require("crypto");
 const {initWebSocket} = require("./websocket/webSocket");
+const {initWebSocketCmms} = require("./websocket/webSocketCmms");
 const path = require("path");
 const routerTablon = require('./routes/tablonAnuncios.routes');
-const routerCmms = require('./routes/cmms.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 app.use(express.json());
 app.use(cors());
 const uploadPath = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadPath));
 app.use('/tablon', routerTablon);
-app.use('/cmms', routerCmms);
 
-
-// Servidor HTTP
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Servidor WebSocket Tablon
+const serverTablon = app.listen(PORT, () => {
+  console.log(`WebSocket Tablon running on port 3000`);
 });
+initWebSocket(serverTablon);
 
-// Servidor WebSocket
-initWebSocket(server);
+
+
+
+//Server Cmms
+const routerCmms = require('./routes/cmms.routes');
+const http = require('http');
+const appCmms = express();
+const serverCmms = http.createServer (appCmms)
+const PORT_CMMS = 3002;
+const contratosPath = path.join(__dirname, 'contratos');
+
+
+
+appCmms.use(express.json());
+appCmms.use('/contratos', express.static(contratosPath));
+appCmms.use(cors());
+appCmms.use('/cmms', routerCmms);
+
+initWebSocketCmms(serverCmms);
+serverCmms.listen(PORT_CMMS, () => {
+  console.log(`WebSocket CMMS running on port 3002`);
+});
 

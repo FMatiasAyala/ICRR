@@ -14,6 +14,7 @@ router.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
       obraSocial,
       codigoObraSocial,
       sector,
+      tipo,
       authorId,
       servicio,
     } = req.body;
@@ -33,6 +34,7 @@ router.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
         content,
         obraSocial,
         codigoObraSocial,
+        tipo,
         sector,
         servicio,
         attachments: {
@@ -45,6 +47,7 @@ router.post("/anuncios", upload.array("attachments", 10), async (req, res) => {
     });
 
     broadcast(JSON.stringify({ type: "update" }));
+    console.log(newAnuncio.tipo);
     res.json(newAnuncio);
   } catch (error) {
     console.error("Error creating anuncio:", error);
@@ -95,7 +98,7 @@ router.put(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { title, content, sector } = req.body;
+      const { title, content, sector, tipo } = req.body;
       const attachments = req.files
         ? req.files.map((file) => {
             const filePath = path
@@ -109,6 +112,7 @@ router.put(
         title,
         content,
         sector,
+        tipo,
       };
 
       if (attachments.length > 0) {

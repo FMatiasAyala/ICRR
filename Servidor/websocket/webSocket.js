@@ -5,8 +5,11 @@ let wss;
 
 const initWebSocket = (server) => {
     wss = new WebSocket.Server({ server });
+
     wss.on("connection", (ws) => {
-      console.log("Client connected");
+
+      console.log(`Client connected.`);
+
       ws.on("message", (message) => {
         const data = JSON.parse(message);
         if (data.type === "fetch") {
