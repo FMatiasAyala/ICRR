@@ -209,7 +209,7 @@ export default function Anuncios() {
                 Tablon de anuncios
             </Header>
             <div className="flex flex-1">
-                <aside className="w-1/4 p-4">
+                <aside className="w-1/8 p-4">
                     <Card className="filtro-card">
                         <SectorFilter
                             sectorFilter={sectorFilter}
