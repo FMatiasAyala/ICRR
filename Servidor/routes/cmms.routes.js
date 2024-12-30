@@ -5,7 +5,7 @@ const { contrato } = require("../middlewares/contratosMiddlewares");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
-const { MySqlDatabaseCrr, MySqlDatabaseDev } = require("../db");
+const { MySqlDatabaseDev } = require("../db");
 const { broadcastUpdate } = require("../websocket/webSocketCmms");
 const path = require("path");
 require("dotenv").config();
@@ -24,7 +24,7 @@ const configMySqlDev = {
 const dbMysqlDev = new MySqlDatabaseDev(configMySqlDev);
 
 router.get("/equipos", (req, res) => {
-  const query = "select * from tbl_equipomedico";
+  const query = "select * from dev.tbl_equipomedico where id not in (select id from dev.tbl_equipomedico where baja is not null)";
 
   const obtenerEquipos = async () => {
     try {
@@ -37,6 +37,24 @@ router.get("/equipos", (req, res) => {
   obtenerEquipos();
 });
 //Equipos medicos
+
+router.post("/bajaEquipo", (req, res) => {
+
+  const {id_equipo} = req.body;
+  const query = "update tbl_equipomedico set baja = now() where id = ?";
+
+  const bajaEquipo = async () => {
+    try {
+      const equipos = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
+      res.json(equipos);
+
+    } catch (err) {
+      res.status(500).json({ error: "Error al obtener equipos medicos" });
+    }
+  };
+  bajaEquipo();
+});
+
 router.post("/altaEquipos", async (req, res) => {
   try {
     console.log("Datos recibidos en el body:", req.body);
@@ -88,7 +106,6 @@ router.post("/altaEquipos", async (req, res) => {
       message: "Registro creado exitosamente",
     });
 
-    broadcastUpdate("eventoActualizado", { modelo });
   } catch (err) {
     console.error("Error al cargar el equipo:", err);
     res.status(500).json({ error: "Error al cargar equipo" });
@@ -114,7 +131,7 @@ router.get("/tecnicos", (req, res) => {
 
 // Eventos de equipos
 router.get("/eventos", (req, res) => {
-  const query = "select * from tbl_estados";
+  const query = "select * from dev.tbl_estados  where id_equipo  not in (select id from dev.tbl_equipomedico where baja is not null)";
 
   const obtenerEventos = async () => {
     try {
@@ -150,7 +167,7 @@ router.get("/eventosFiltrados", (req, res) => {
 // Cantidad de eventos por equipo
 router.get("/cantidadEventos", (req, res) => {
   const query =
-    "SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM dev.tbl_estados where estado in ('NO OPERATIVO','REVISION') GROUP BY id_equipo ORDER BY cantidad_eventos DESC";
+    " SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM dev.tbl_estados where estado in ('NO OPERATIVO','REVISION') and id_equipo not in (select id from dev.tbl_equipomedico where baja is not null)GROUP BY id_equipo ORDER BY cantidad_eventos DESC";
 
   const obtenerCantidades = async () => {
     try {
@@ -168,6 +185,7 @@ router.post("/eventos", async (req, res) => {
 
   // Validación de parámetros
   if (!descripcion || !id_equipo || !estado || !tipo_falla || !id_usuario) {
+    console.log(descripcion, id_equipo, estado, tipo_falla);
     return res.status(400).json({ err: "Faltan parámetros requeridos" });
   }
 
@@ -233,7 +251,7 @@ router.get("/salas", (req, res) => {
 
 //Mantenimientos
 router.get("/mantenimiento", (req, res) => {
-  const query = "select * from tbl_mantenimientos";
+  const query = "select * from dev.tbl_mantenimientos order by fecha";
 
   const obtenerMantenimientos = async () => {
     try {

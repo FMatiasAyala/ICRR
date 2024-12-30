@@ -27,16 +27,9 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
 
 
   useEffect(() => {
-    if (searchTerm) {
-      setFilteredEquipos(
-        equipos.filter((equipo) =>
-          equipo.modelo.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    } else {
       setFilteredEquipos(equipos);
-    }
-  }, [searchTerm, equipos]);
+    
+  }, [equipos]);
 
   const groupedEquipos = filteredEquipos.reduce((acc, equipo) => {
     const servicio = equipo.servicio;
@@ -129,7 +122,7 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
                   gap: '16px',
                 }}
               >
-                {groupedEquipos[servicio].map((equipo) => (
+                {groupedEquipos[servicio].filter((equipo) => equipo.tipo === "MODALITY").map((equipo) => (
 
                   <Card
                     key={equipo.id}

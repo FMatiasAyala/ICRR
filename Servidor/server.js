@@ -2,7 +2,6 @@ const express = require("express");
 const fs = require("fs");
 const prisma =require("./prismaClient/prismaClient")
 const cors = require("cors");
-const crypto = require("crypto");
 const {initWebSocket} = require("./websocket/webSocket");
 const {initWebSocketCmms} = require("./websocket/webSocketCmms");
 const path = require("path");
@@ -10,7 +9,11 @@ const routerTablon = require('./routes/tablonAnuncios.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://192.168.1.6:3700',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // enable set cookies
+}));
 const uploadPath = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadPath));
 app.use('/tablon', routerTablon);
@@ -36,7 +39,11 @@ const contratosPath = path.join(__dirname, 'contratos');
 
 appCmms.use(express.json());
 appCmms.use('/contratos', express.static(contratosPath));
-appCmms.use(cors());
+appCmms.use(cors({
+  origin: 'http://192.168.1.6:3701',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // enable set cookies
+}));
 appCmms.use('/cmms', routerCmms);
 
 initWebSocketCmms(serverCmms);

@@ -2,33 +2,37 @@
 import React from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
 
 const NavBar = ({ onMenuClick, handleLogout }) => {
   const token = localStorage.getItem('token');
   let userName = null;
   let userLastname = null;
+  const navigate = useNavigate(); // Inicializar el hook
+
 
   if (token) {
-      const decodedToken = jwtDecode(token);
-      userName = decodedToken.name;
-      userLastname = decodedToken.lastname;
+    const decodedToken = jwtDecode(token);
+    userName = decodedToken.name;
+    userLastname = decodedToken.lastname;
   }
 
   return (
-    <AppBar 
-      position="static" 
-      sx={{ 
-        bgcolor: '#1E1E1E', 
-        boxShadow: 'none', 
+    <AppBar
+      position="static"
+      sx={{
+        bgcolor: '#1E1E1E',
+        boxShadow: 'none',
         padding: '0 16px',
       }}
     >
       <Toolbar sx={{ minHeight: '64px' }}>
-        <IconButton 
-          edge="start" 
-          color="inherit" 
-          aria-label="menu" 
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
           onClick={onMenuClick}
           sx={{
             color: '#FFFFFF',
@@ -41,11 +45,11 @@ const NavBar = ({ onMenuClick, handleLogout }) => {
           <MenuIcon />
         </IconButton>
 
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontWeight: 700, 
-            letterSpacing: 1, 
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            letterSpacing: 1,
             color: '#FFFFFF',
             flexGrow: 1, // Centro del texto
             textAlign: 'center',
@@ -54,47 +58,47 @@ const NavBar = ({ onMenuClick, handleLogout }) => {
           Sistemas - ICRR
         </Typography>
 
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 2 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
           }}
         >
-          <Typography 
-            variant="subtitle1" 
-            sx={{ 
-              color: '#CCCCCC', 
-              fontWeight: 500, 
+          <Typography
+            variant="subtitle1"
+            sx={{
+              color: '#CCCCCC',
+              fontWeight: 500,
               display: { xs: 'none', sm: 'block' },
             }}
           >
-          {userName} {userLastname} 
+            {userName} {userLastname}
           </Typography>
-{/*           <Button 
-            variant="contained" 
-            color="secondary" 
-            onClick={handleLogout}
+          <IconButton
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate('/cmms')}
             sx={{
-              bgcolor: '#00796b', 
+              bgcolor: '#00796b',
               color: '#FFFFFF',
               fontWeight: 'bold',
               '&:hover': {
-                bgcolor: '#00500b',
+                bgcolor: '#00780b',
               },
               borderRadius: '8px',
               padding: '6px 16px',
               textTransform: 'none',
             }}
           >
-            Cambiar Clave
-          </Button> */}
-          <Button 
-            variant="contained" 
-            color="secondary" 
+            <HomeIcon/>
+          </IconButton>
+          <Button
+            variant="contained"
+            color="secondary"
             onClick={handleLogout}
             sx={{
-              bgcolor: '#D32F2F', 
+              bgcolor: '#D32F2F',
               color: '#FFFFFF',
               fontWeight: 'bold',
               '&:hover': {

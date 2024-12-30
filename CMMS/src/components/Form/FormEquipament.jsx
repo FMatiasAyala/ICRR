@@ -2,7 +2,7 @@ import React, { useState, forwardRef } from 'react';
 import { Box, Typography, TextField, Button, MenuItem, FormControl, InputLabel, Select, Modal, useMediaQuery } from '@mui/material';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { apiEventos } from '../../utils/Fetch';
+import { apiBajaEquipo, apiEventos } from '../../utils/Fetch';
 import { jwtDecode } from 'jwt-decode';
 import { ArrowBack } from '@mui/icons-material';
 import TaskIcon from '@mui/icons-material/Task';
@@ -71,6 +71,76 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
     handleClose();
 
   };
+
+  const handleSubmitDown = async (event) => {
+    event.preventDefault();
+  
+    const token = localStorage.getItem('token');
+    let userId = null;
+  
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      userId = decodedToken.id; // Asumiendo que el ID del usuario está en el token
+    }
+  
+    const nuevaTarea = {
+      descripcion: taskDescription,
+      id_equipo: equipo.id,
+      estado: "no operativo",
+      tipo_falla: "dado de baja",
+      id_usuario: userId,
+    };
+  
+    try {
+      // Solicitud para dar de baja el equipo
+      const responseDown = await fetch(apiBajaEquipo, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_equipo: equipo.id }), // Enviar como objeto
+      });
+  
+      if (responseDown.ok) {
+        const data = await responseDown.json();
+        console.log('Equipo dado de baja:', data);
+      } else {
+        const errorData = await responseDown.json();
+        console.error('Error al dar de baja el equipo:', errorData);
+        return; // Detener si hay error
+      }
+  
+      // Solicitud para guardar la tarea
+      const responseTask = await fetch(apiEventos, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nuevaTarea),
+      });
+  
+      if (responseTask.ok) {
+        const data = await responseTask.json();
+        console.log('Tarea guardada correctamente:', data);
+      } else {
+        const errorData = await responseTask.json();
+        console.error('Error al guardar la tarea:', errorData);
+        return; // Detener si hay error
+      }
+  
+      // Llamar a onEventCreate si todo fue exitoso
+      onEventCreate();
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+    } finally {
+      // Resetear campos y cerrar modal
+      setTaskDescription('');
+      setFalla('');
+      setCondicion('');
+      handleClose();
+    }
+  };
+  
 
 
 
@@ -157,13 +227,14 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
             gap: 2,
           }}
         >
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmitDown}>
             <TextField
-              label="Descripción"
-              value={taskDescription || "Equipo vendido"} // Valor predeterminado
-              disabled // Campo no editable
+              label="Descripcion"
+              value={taskDescription} 
+              onChange={(e) => setTaskDescription(e.target.value)}// Valor predeterminado
               fullWidth
               margin="normal"
+              required
               multiline
               rows={3}
             />
@@ -171,7 +242,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
             <FormControl fullWidth>
               <InputLabel>Condición</InputLabel>
               <Select
-                value={condicion || "no operativo"} // Valor predeterminado
+                value={"no operativo"} // Valor predeterminado
                 disabled // Campo no editable
                 sx={{ marginBottom: '5px' }}
               >
@@ -184,27 +255,29 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
             <FormControl fullWidth>
               <InputLabel>Tipo de Evento</InputLabel>
               <Select
-                value={falla || "dado de baja"} // Valor predeterminado
+                value={"dado de baja"} // Valor predeterminado
                 disabled // Campo no editable
               >
                 <MenuItem value="dado de baja">Dado de baja</MenuItem>
               </Select>
             </FormControl>
+            <Box mt={2} display="flex" justifyContent="center" gap={2}>
+              <Button
+                variant="contained"
+                color="error"
+                type='submit'
+                startIcon={<PowerOffIcon />}
+                sx={{
+                  fontSize: '16px',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                }}
+              >
+                Dar de baja
+              </Button>
+            </Box>
           </form>
-
-          <Button
-            variant="contained"
-            color="error"
-            startIcon={<PowerOffIcon />}
-            sx={{
-              fontSize: '16px',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              textTransform: 'none',
-            }}
-          >
-            Dar de baja
-          </Button>
           <Button
             variant="outlined"
             color="primary"

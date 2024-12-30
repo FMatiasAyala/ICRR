@@ -149,7 +149,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose }, r
             value={selectedEquipo}
             onChange={(event, newValue) => setSelectedEquipo(newValue)}
             isOptionEqualToValue={(option, value) => option.id === value.id} // Comparar por ID único
-            getOptionLabel={(option) => `${option.modelo} - ${option.modalidad} (${salas.find(sala => sala.ubicacion === option.sala)?.sala || 'Desconocida'})`}
+            getOptionLabel={(option) => `${option.modelo} - ${option.servicio} (${salas.find(sala => sala.ubicacion === option.sala)?.sala || 'Desconocida'})`}
             renderInput={(params) => (
               <TextField {...params} label="Seleccionar Equipo" margin="normal" required />
             )}

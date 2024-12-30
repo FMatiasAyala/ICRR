@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import {
   Box,
-  Checkbox,
-  FormControlLabel,
-  MenuItem,
-  Select,
   Typography,
 } from '@mui/material';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { apiCantidadesEventos, apiEquipos } from '../utils/Fetch';
 
 
 // Registrar elementos de Chart.js
@@ -72,18 +67,6 @@ const prepareChartData = () => {
   };
 };
 
-
-
-  // Manejar cambio de la vista (anual o por mes)
-  const handleViewChange = (event) => {
-    setIsYearlyView(event.target.checked);
-  };
-
-  // Manejar cambio de mes
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-  };
-
   return (
     <Box   sx={{ 
       textAlign: 'center', 
@@ -96,30 +79,6 @@ const prepareChartData = () => {
       border: '1px solid #e0e0e0' // Borde para darle un mejor acabado
     }}>
       <Typography variant="h5">Cantidad de Eventos por Equipo</Typography>
-
-      {/* Checkbox para cambiar entre vista anual y por mes */}
-      <FormControlLabel
-        control={<Checkbox checked={isYearlyView} onChange={handleViewChange} />}
-        label="Vista Anual"
-      />
-
-      {/* Selector de mes cuando se selecciona la vista mensual */}
-      {!isYearlyView && (
-        <Select value={selectedMonth} onChange={handleMonthChange} displayEmpty>
-          <MenuItem value={1}>Enero</MenuItem>
-          <MenuItem value={2}>Febrero</MenuItem>
-          <MenuItem value={3}>Marzo</MenuItem>
-          <MenuItem value={4}>Abril</MenuItem>
-          <MenuItem value={5}>Mayo</MenuItem>
-          <MenuItem value={6}>Junio</MenuItem>
-          <MenuItem value={7}>Julio</MenuItem>
-          <MenuItem value={8}>Agosto</MenuItem>
-          <MenuItem value={9}>Septiembre</MenuItem>
-          <MenuItem value={10}>Octubre</MenuItem>
-          <MenuItem value={11}>Noviembre</MenuItem>
-          <MenuItem value={12}>Diciembre</MenuItem>
-        </Select>
-      )}
 
       {/* Gráfico de torta */}
       <Box sx={{ width: '100%', maxWidth: 400, margin: '0 auto'}}>

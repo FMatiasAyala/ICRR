@@ -1,24 +1,26 @@
 import React from 'react';
-import Dashboard from './components/Home/Dashboard';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Auth/Login';
-import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom'; 
+import Layout from './components/Home/Layout';
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/" />;
+  const token = localStorage.getItem('token'); // Verificar token en localStorage
+  return token ? children : <Navigate to="/" />; // Redirigir a Login si no hay token
 };
-
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Ruta pública para Login */}
         <Route path="/" element={<Login />} />
-        <Route 
-          path="/cmms" 
+
+        {/* Rutas protegidas */}
+        <Route
+          path="/*"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Layout /> {/* Usa el Layout para gestionar rutas protegidas */}
             </PrivateRoute>
           }
         />

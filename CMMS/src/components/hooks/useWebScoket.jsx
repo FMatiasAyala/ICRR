@@ -29,6 +29,8 @@ export const useWebSocket = (initialState = []) => {
       console.log('Recibido evento de actualización de estado:', data);
     });
 
+
+
     newSocket.on('disconnect', () => {
       console.log('Conexión WebSocket cerrada');
     });
@@ -54,3 +56,6 @@ export const useWebSocket = (initialState = []) => {
     sendSocketMessage,
   };
 };
+
+
+
