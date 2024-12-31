@@ -4,7 +4,7 @@ import EquipamentModal from '../Modal/EquipamentModal';
 import NewTask from '../Modal/NewTask';
 import NewMaintenance from '../Modal/NewMaintenance';
 
-const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos }) => {
+const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos, user }) => {
 
   const [filteredEquipos, setFilteredEquipos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,14 +72,16 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
 
   return (
     <>
+    {user.role === 'sistemas'&& ( 
       <Grid item xs={12} md={4.5} container spacing={1}>
-        <Grid item xs={12} sm={5}>
+       <Grid item xs={12} sm={5}>
           <NewTask onEventCreate={reload} equipo={equipo} salas={salas}/> {/* Llamar a handleTaskCreate aquí */}
         </Grid>
         <Grid item xs={12} sm={7}>
           <NewMaintenance onMaintenanceCreate={reload} equipos={equipos} tecnicos={tecnicos} salas={salas}/> {/* Llamar a handleMaintenanceCreate */}
         </Grid>
       </Grid>
+      )}
       <Paper
         sx={{
           p: 2,
@@ -176,6 +178,7 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
           tecnico={tecnicos.find((tecnico) => tecnico.descripcion === selectedEquipo.contrato)}
           onEventCreate ={reload}
           tecnicos = {tecnicos}
+          user = {user}
         />
       )}
     </>

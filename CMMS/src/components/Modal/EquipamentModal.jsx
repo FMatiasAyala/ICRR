@@ -7,7 +7,7 @@ import FormEquipamentModal from './FormEquipamentModal';
 import FormMaintenanceModal from './FormMaintenanceModal';
 import FileDownloadButton from '../hooks/FileDownloadButton';
 
-const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onEventCreate, tecnicos }) => {
+const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onEventCreate, tecnicos, user }) => {
   const [eventos, setEventos] = useState([]);
   const [contratos, setContratos] = useState([]);
   const [currentTab, setCurrentTab] = useState('main'); // 'main', 'technician', 'events', 'contracts'
@@ -174,11 +174,12 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
               </Grid>
               {/* Otros datos aquí */}
             </Grid>
+            {user.role === 'sistemas'&&(
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2, flexDirection: isSmallScreen ? 'column' : 'row' }}>
               <FormEquipamentModal  equipo={equipo} onEventCreate={onEventCreate} />
               <FormMaintenanceModal equipos={equipo} tecnicos={tecnicos} onEventCreate={onEventCreate} />
-            </Box>
-
+            </Box>)
+}
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
               <Button
                 variant="contained"

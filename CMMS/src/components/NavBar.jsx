@@ -6,19 +6,8 @@ import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 
-const NavBar = ({ onMenuClick, handleLogout }) => {
-  const token = localStorage.getItem('token');
-  let userName = null;
-  let userLastname = null;
+const NavBar = ({ onMenuClick, handleLogout, user }) => {
   const navigate = useNavigate(); // Inicializar el hook
-
-
-  if (token) {
-    const decodedToken = jwtDecode(token);
-    userName = decodedToken.name;
-    userLastname = decodedToken.lastname;
-  }
-
   return (
     <AppBar
       position="static"
@@ -73,7 +62,7 @@ const NavBar = ({ onMenuClick, handleLogout }) => {
               display: { xs: 'none', sm: 'block' },
             }}
           >
-            {userName} {userLastname}
+            {user.name} {user.lastname} - {user.role}
           </Typography>
           <IconButton
             variant="contained"
