@@ -5,113 +5,47 @@ const { contrato } = require("../middlewares/contratosMiddlewares");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
-const { MySqlDatabaseDev } = require("../db");
-const { broadcastUpdate } = require("../websocket/webSocketCmms");
+const dbMysqlDev = require("../DataBase/MySqlDatabaseDev");
+const equiposControllers = require("../controllers/cmms/equiposController");
+const mantenimientoControllers = require("../controllers/cmms/mantenimientosController");
+const eventosControllers = require("../controllers/cmms/eventosControllers");
 const path = require("path");
 require("dotenv").config();
 
 
-/* ------------ MYSQL DEV -------------------- */
+//Equipo medicos
+router.get("/equipos", equiposControllers.obtenerEquipos);
+router.post("/bajaEquipo", equiposControllers.bajaEquipo);
+router.post("/altaEquipos", equiposControllers.altaEquipo);
 
-const configMySqlDev = {
-  host: process.env.DB_HOST_MYSQL,
-  user: process.env.DB_USER_MYSQL,
-  password: process.env.DB_PASSWORD_MYSQL,
-  database: process.env.DB_NAME_MYSQL_DEV,
-};
+// Eventos de equipos
+router.get("/eventos", eventosControllers.obtenerEventos);
+router.get("/eventosFiltrados", eventosControllers.eventosFiltrados);
+router.get("/cantidadEventos", eventosControllers.cantidadEventos); 
+router.post("/eventos", eventosControllers.nuevoEvento);
+
+//Mantenimientos
+router.get("/mantenimiento", mantenimientoControllers.obtenerMantenimientos);
+router.post("/mantenimiento", mantenimientoControllers.nuevoMantenimiento);
+router.put("/mantenimiento/:id", mantenimientoControllers.actualizarMantenimiento);
+router.put("/mantenimientoPostpone/:id", mantenimientoControllers.reprogramarManteminiento);
 
 
-const dbMysqlDev = new MySqlDatabaseDev(configMySqlDev);
+//obtenes ups
+router.get("/ups", (req, res) => {
+  const query = "select * from tbl_ups";
 
-router.get("/equipos", (req, res) => {
-  const query = "select * from dev.tbl_equipomedico where id not in (select id from dev.tbl_equipomedico where baja is not null)";
-
-  const obtenerEquipos = async () => {
+  const obtenerUps = async () => {
     try {
-      const equipos = await dbMysqlDev.executeQuery(query);
-      res.json(equipos);
+      const ups = await dbMysqlDev.executeQuery(query);
+      res.json(ups);
     } catch (err) {
       res.status(500).json({ error: "Error al obtener equipos medicos" });
     }
   };
-  obtenerEquipos();
+
+  obtenerUps();
 });
-//Equipos medicos
-
-router.post("/bajaEquipo", (req, res) => {
-
-  const {id_equipo} = req.body;
-  const query = "update tbl_equipomedico set baja = now() where id = ?";
-
-  const bajaEquipo = async () => {
-    try {
-      const equipos = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
-      res.json(equipos);
-
-    } catch (err) {
-      res.status(500).json({ error: "Error al obtener equipos medicos" });
-    }
-  };
-  bajaEquipo();
-});
-
-router.post("/altaEquipos", async (req, res) => {
-  try {
-    console.log("Datos recibidos en el body:", req.body);
-
-    const {
-      marca,
-      modelo,
-      serial_number,
-      tipo,
-      servicio,
-      ip,
-      mascara,
-      gateway,
-      aetitle,
-      puerto,
-      compra_año,
-      sala,
-    } = req.body;
-
-    if (!marca || !modelo || !servicio) {
-      return res.status(400).json({ error: "Campos obligatorios faltantes" });
-    }
-
-    const values = [
-      marca ?? null,
-      modelo ?? null,
-      serial_number ?? null,
-      tipo ?? null,
-      servicio ?? null,
-      ip ?? null,
-      mascara ?? null,
-      gateway ?? null,
-      aetitle ?? null,
-      puerto ?? null,
-      compra_año ?? null,
-      sala ?? null,
-    ];
-
-    console.log("Valores que se enviarán a la BD:", values);
-
-    const insertQuery = `
-      INSERT INTO tbl_equipomedico (marca, modelo, serial_number, tipo, servicio, ip, mascara, gateway, aetitle, puerto, compra_año, sala, alta) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-    `;
-
-    await dbMysqlDev.executeQueryParams(insertQuery, values);
-
-    res.status(201).json({
-      message: "Registro creado exitosamente",
-    });
-
-  } catch (err) {
-    console.error("Error al cargar el equipo:", err);
-    res.status(500).json({ error: "Error al cargar equipo" });
-  }
-});
-
 
 // Ficha Tecnicos
 router.get("/tecnicos", (req, res) => {
@@ -129,111 +63,6 @@ router.get("/tecnicos", (req, res) => {
   obtenerTecnicos();
 });
 
-// Eventos de equipos
-router.get("/eventos", (req, res) => {
-  const query = "select * from dev.tbl_estados  where id_equipo  not in (select id from dev.tbl_equipomedico where baja is not null)";
-
-  const obtenerEventos = async () => {
-    try {
-      const eventos = await dbMysqlDev.executeQuery(query);
-      res.json(eventos);
-    } catch (err) {
-      console.error("Error al obtener los eventos: ", err);
-    }
-  };
-  obtenerEventos();
-});
-
-// Eventos de equipos
-router.get("/eventosFiltrados", (req, res) => {
-  const { id_equipo } = req.query;
-  const query =
-    "select * from dev.tbl_estados where id_equipo = ? order by desde desc";
-
-  const obtenerEventos = async () => {
-    try {
-      if (!id_equipo) {
-        return res.status(400).json({ error: "searchTerm is required" });
-      }
-      const eventos = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
-      res.json(eventos);
-    } catch (err) {
-      console.error("Error al obtener los eventos: ", err);
-    }
-  };
-  obtenerEventos();
-});
-
-// Cantidad de eventos por equipo
-router.get("/cantidadEventos", (req, res) => {
-  const query =
-    " SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM dev.tbl_estados where estado in ('NO OPERATIVO','REVISION') and id_equipo not in (select id from dev.tbl_equipomedico where baja is not null)GROUP BY id_equipo ORDER BY cantidad_eventos DESC";
-
-  const obtenerCantidades = async () => {
-    try {
-      const eventos = await dbMysqlDev.executeQuery(query);
-      res.json(eventos);
-    } catch (err) {
-      console.error("Error al obtener los eventos: ", err);
-    }
-  };
-  obtenerCantidades();
-});
-
-router.post("/eventos", async (req, res) => {
-  const { descripcion, id_equipo, estado, tipo_falla, id_usuario } = req.body;
-
-  // Validación de parámetros
-  if (!descripcion || !id_equipo || !estado || !tipo_falla || !id_usuario) {
-    console.log(descripcion, id_equipo, estado, tipo_falla);
-    return res.status(400).json({ err: "Faltan parámetros requeridos" });
-  }
-
-  const updateQuery = `
-    UPDATE tbl_estados 
-    SET hasta = NOW() 
-    WHERE id_equipo = ? AND estado IN ('OPERATIVO', 'NO OPERATIVO', 'REVISION') AND hasta IS NULL
-    ORDER BY desde DESC 
-    LIMIT 1
-  `;
-
-  const insertQuery = `
-    INSERT INTO tbl_estados (descripcion, id_equipo, estado, tipo_falla, id_usuario, desde) 
-    VALUES (?, ?, ?, ?, ?, NOW())
-  `;
-
-  const selectQuery = `
-    SELECT * FROM tbl_estados 
-  `;
-
-  try {
-    await dbMysqlDev.executeQueryParams(updateQuery, [id_equipo]);
-    await dbMysqlDev.executeQueryParams(insertQuery, [
-      descripcion,
-      id_equipo,
-      estado,
-      tipo_falla,
-      id_usuario,
-    ]);
-    const [latestState] = await dbMysqlDev.executeQuery(selectQuery);
-
-    if (!latestState) {
-      return res.status(404).json({ err: "Estado no encontrado" });
-    }
-
-    res.status(201).json({
-      message: "Registro creado exitosamente",
-      estado: latestState,
-    });
-
-    // Broadcast de la actualización
-    broadcastUpdate("eventoActualizado", { id_equipo, estado });
-  } catch (err) {
-    console.error("Error al crear evento:", err);
-    res.status(500).json({ err: "Error al crear evento" });
-  }
-});
-
 // Salas
 router.get("/salas", (req, res) => {
   const query = "select * from tbl_salas";
@@ -249,172 +78,7 @@ router.get("/salas", (req, res) => {
   obtenerEvetnos();
 });
 
-//Mantenimientos
-router.get("/mantenimiento", (req, res) => {
-  const query = "select * from dev.tbl_mantenimientos order by fecha";
-
-  const obtenerMantenimientos = async () => {
-    try {
-      const mantenimiento = await dbMysqlDev.executeQuery(query);
-      res.json(mantenimiento);
-    } catch (err) {
-      console.error("Error al obtener los eventos: ", err);
-    }
-  };
-  obtenerMantenimientos();
-});
-
-router.post("/mantenimiento", (req, res) => {
-  const {
-    fecha,
-    empresa,
-    id_tecnico,
-    id_equipo,
-    descripcion,
-    estado,
-    desde,
-    hasta,
-    id_usuario,
-  } = req.body;
-
-  // Asegurarse de que los parámetros no sean undefined, de lo contrario usar null
-  const safeFecha = fecha || null;
-  const safeEmpresa = empresa || null;
-  const safeIdTecnico = id_tecnico || null;
-  const safeIdEquipo = id_equipo || null;
-  const safeDescripcion = descripcion || null;
-  const safeEstado = estado || null;
-  const safeDesde = desde || null;
-  const safeHasta = hasta || null;
-  const safeId_usuario = id_usuario || null;
-  // Verificar que la fecha no sea anterior a la fecha actual
-  const fechaActual = new Date();
-  const fechaInput = new Date(safeFecha);
-
-  // Ajustamos ambas fechas para que la hora sea 00:00:00
-  fechaActual.setHours(0, 0, 0, 0);
-  fechaInput.setHours(0, 0, 0, 0);
-
-  if (fechaInput < fechaActual) {
-    return res
-      .status(400)
-      .json({ error: "La fecha no puede ser anterior al día actual." });
-  }
-
-  const query =
-    "INSERT INTO tbl_mantenimientos (fecha, empresa, id_tecnico, id_equipo, descripcion, estado, desde, hasta, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-  const fetchMantenimientos = async () => {
-    try {
-      const params = await dbMysqlDev.executeQueryParams(query, [
-        safeFecha,
-        safeEmpresa,
-        safeIdTecnico,
-        safeIdEquipo,
-        safeDescripcion,
-        safeEstado,
-        safeDesde,
-        safeHasta,
-        safeId_usuario,
-      ]);
-      res.status(201).json({
-        message: "Registro creado exitosamente",
-      });
-      broadcastUpdate(
-        JSON.stringify({
-          type: "update",
-          data: {
-            safeFecha,
-            safeEmpresa,
-            safeIdTecnico,
-            safeIdEquipo,
-            safeDescripcion,
-            safeEstado,
-            safeDesde,
-            safeHasta,
-            safeId_usuario,
-          },
-        })
-      );
-    } catch (err) {
-      console.error("Error al crear evento:", err);
-      res.status(500).json({ err: "Error al crear evento" });
-    }
-  };
-
-  fetchMantenimientos();
-});
-
-router.put("/mantenimiento/:id", (req, res) => {
-  const id = req.params.id;
-  const { estado } = req.body;
-
-  const query = `
-    UPDATE tbl_mantenimientos
-    SET estado = ?
-    WHERE id_mantenimiento = ?;
-  `;
-
-  const actualizarMantenimiento = async () => {
-    try {
-      const result = await dbMysqlDev.executeQueryParams(query, [estado, id]);
-
-      if (result.affectedRows > 0) {
-        res.json({ message: "Mantenimiento actualizado correctamente" });
-      } else {
-        res.status(404).json({ message: "Mantenimiento no encontrado" });
-      }
-    } catch (err) {
-      console.error("Error al actualizar el mantenimiento: ", err);
-      res.status(500).json({ message: "Error en el servidor" });
-    }
-  };
-
-  actualizarMantenimiento();
-  broadcastUpdate({
-    event: "update",
-    data: { id, estado },
-  });
-});
-
-router.put("/mantenimientoPostpone/:id", (req, res) => {
-  const id = req.params.id;
-  const { estado, fecha, desde, hasta } = req.body;
-
-  const query = `
-    UPDATE tbl_mantenimientos
-    SET estado = ?,fecha = ?, desde = ?, hasta = ?
-    WHERE id_mantenimiento = ?;
-  `;
-
-  const actualizarMantenimiento = async () => {
-    try {
-      const result = await dbMysqlDev.executeQueryParams(query, [
-        estado,
-        fecha,
-        desde,
-        hasta,
-        id,
-      ]);
-
-      if (result.affectedRows > 0) {
-        res.json({ message: "Mantenimiento actualizado correctamente" });
-      } else {
-        res.status(404).json({ message: "Mantenimiento no encontrado" });
-      }
-    } catch (err) {
-      console.error("Error al actualizar el mantenimiento: ", err);
-      res.status(500).json({ message: "Error en el servidor" });
-    }
-  };
-
-  actualizarMantenimiento();
-  broadcastUpdate({
-    event: "update",
-    data: { id, estado, fecha, desde, hasta },
-  });
-});
-
+//Descarga del contrato
 router.get("/datosContrato", async (req, res) => {
   const { id_equipo } = req.query;
 
@@ -436,8 +100,6 @@ router.get("/datosContrato", async (req, res) => {
 
   datosContrato();
 });
-
-//Descarga del contrato
 router.get("/fileContrato", async (req, res) => {
   const { id_equipo } = req.query;
 
@@ -535,7 +197,7 @@ router.post("/cargaContratos", contrato.single("file"), async (req, res) => {
   }
 });
 
-//Generar usuario
+//Usuarios
 router.post("/newUsers", async (req, res) => {
   const { username, password, role, name, lastname } = req.body;
 
@@ -568,7 +230,6 @@ router.post("/newUsers", async (req, res) => {
   nuevoUsuario();
 });
 
-//Cambiar contraseña
 router.put("/changePassword", async (req, res) => {
   const { username, password, id } = req.body;
   const query = "UPDATE tbl_usuarios SET password =? WHERE id =?";
@@ -588,8 +249,6 @@ router.put("/changePassword", async (req, res) => {
     res.status(500).json({ error: "Error en el servidor" });
   }
 });
-
-//login usuario
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 

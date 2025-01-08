@@ -269,7 +269,6 @@ const NewEquipamentForm = forwardRef(({ handleClose, sala }, ref) => {
                     <Button variant="contained" color="primary" type="submit">Cargar equipo</Button>
                 </Box >
             </form >
-
             {/* Snackbar */}
             < Snackbar
                 open={snackbarOpen}

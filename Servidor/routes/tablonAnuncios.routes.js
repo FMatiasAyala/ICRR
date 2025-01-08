@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {MySqlDatabaseCrr, executeQuery,executeQueryParams } = require("../db");
+const {MySqlDatabaseCrr, executeQuery,executeQueryParams } = require("../DataBase/db");
 const { upload } = require("../middlewares/uploadMiddlewares");
 const { prisma } = require("../prismaClient/prismaClient");
 const { broadcast } = require("../websocket/webSocket");

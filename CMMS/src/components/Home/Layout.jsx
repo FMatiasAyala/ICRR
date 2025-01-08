@@ -4,10 +4,10 @@ import SideMenu from '../Menu/SideMenu';
 import NavBar from '../NavBar';
 import { Box } from '@mui/material';
 import Dashboard from './Dashboard';
-import EquipamentsVarious from './EquipamentsVarious';
+import UpsTable from './UpsTable';
 import { jwtDecode } from 'jwt-decode';
 import { useWebSocket } from '../hooks/useWebScoket';
-import { apiEquipos, apiSalas, apiTecnicos, apiCantidadesEventos, apiMantenimiento, apiEventos } from '../../utils/Fetch';
+import { apiEquipos, apiSalas, apiTecnicos, apiCantidadesEventos, apiMantenimiento, apiEventos, apiUps } from '../../utils/Fetch';
 
 
 const Layout = () => {
@@ -20,6 +20,7 @@ const Layout = () => {
     const [mantenimiento, setMantenimiento] = useState([]);
     const [cantidadEventos, setCantidadEventos] = useState([]);
     const [ultimoEstado, setUltimoEstado] = useState([]);
+    const [ups, setUps] = useState([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -93,6 +94,18 @@ const Layout = () => {
             console.error('Error al cargar las salas:', error);
         }
     };
+    const fetchUps= async () => {
+        try {
+            const response = await fetch(apiUps);
+            const data = await response.json();
+            setUps(data);
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error al cargar las salas:', error);
+        }
+    };
 
     const fetchTecnicos = async () => {
         try {
@@ -132,6 +145,7 @@ const Layout = () => {
         fetchSalas();
         fetchEquipos();
         fetchTecnicos();
+        fetchUps();
         obtenerMantenimiento();
         fetchCantidadEventos();
     }, []);
@@ -164,7 +178,7 @@ const Layout = () => {
                             reloadEquipos={reloadEquipos}
                             estadoEquipos={estadoEquipos}
                         />} />
-                    <Route path="/ups" element={<EquipamentsVarious equipos={equipos} salas={salas} />} />
+                    <Route path="/ups" element={<UpsTable salas={salas} ups={ups} />} />
                 </Routes>
                 <Outlet />
             </div>

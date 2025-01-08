@@ -13,3 +13,4 @@ export const apiDatosContrato = "http://192.168.1.6:3002/cmms/datosContrato";
 export const apiContrato = "http://192.168.1.6:3002/cmms/fileContrato";
 export const apiUser = "http://192.168.1.6:3002/cmms/login";
 export const apiWebSocket = "http://192.168.1.6:3002/";
+export const apiUps = "http://192.168.1.6:3002/cmms/ups";

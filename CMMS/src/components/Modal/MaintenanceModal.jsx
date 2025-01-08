@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import ClearIcon from '@mui/icons-material/Clear';
 import { apiMantenimiento, apiMantenimientoPostpone } from '../../utils/Fetch';
 
 const MaintenanceModal = ({ open, handleClose, equipos }) => {
@@ -175,7 +176,7 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
                       <TableCell align="center">{obtenerNombreEquipo(mantenimiento.id_equipo)}</TableCell>
                       <TableCell align="center">{mantenimiento.descripcion}</TableCell>
                       <TableCell align="center">{new Date(mantenimiento.fecha).toLocaleDateString()}</TableCell>
-                      <TableCell align="center">{new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: false})} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: false})}</TableCell>
+                      <TableCell align="center">{new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</TableCell>
                       <TableCell align="center">
                         <IconButton
                           onClick={() => handleActualizarEstado(mantenimiento.id_mantenimiento, 'REALIZADO')}
@@ -206,6 +207,9 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
 
         {showPostponeForm && (
           <Box sx={{ flex: 1, pl: 4 }}>
+            <IconButton sx={{display:'flex', justifyContent: ''}} color="primary" onClick={() => { setShowPostponeForm(false) }}>
+              <ClearIcon />
+            </IconButton>
             <Typography variant="h6" align="center" sx={{ mb: 2 }}>
               Reprogramar Mantenimiento
             </Typography>
@@ -246,10 +250,11 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
             <Button variant="contained" color="primary" fullWidth onClick={handlePostpone}>
               Guardar Cambios
             </Button>
+
           </Box>
         )}
       </Box>
-    </Modal>
+    </Modal >
   );
 };
 
