@@ -8,14 +8,13 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 const UpsTable = ({ salas, ups}) => {
 
-  
-
-
-
-  
   const getSala = (idSala) => {
     const sala = salas.find((sala)=> sala.ubicacion === idSala);
     return sala? sala.sala : 'Desconocida';
+  }
+  const getSalaSector = (idSala) => {
+    const sala = salas.find((sala)=> sala.ubicacion === idSala);
+    return sala? sala.sector : 'Desconocida';
   }
 
   return (
@@ -26,8 +25,9 @@ const UpsTable = ({ salas, ups}) => {
             <TableRow>
               <TableCell>MODELO</TableCell>
               <TableCell align="right">MARCA</TableCell>
-              <TableCell align="right">SERVICIO</TableCell>
+              <TableCell align="right">POTENCIA</TableCell>
               <TableCell align="right">SERIAL</TableCell>
+              <TableCell align="right">SERVICO</TableCell>
               <TableCell align="right">UBICACION</TableCell>
               <TableCell align="right">ACCIONES</TableCell>
             </TableRow>
@@ -44,6 +44,7 @@ const UpsTable = ({ salas, ups}) => {
                 <TableCell align="right">{equipo.marca}</TableCell>
                 <TableCell align="right">{equipo.potencia}</TableCell>
                 <TableCell align="right">{equipo.serial}</TableCell>
+                <TableCell align="right">{getSalaSector(equipo.ubicacion)}</TableCell>
                 <TableCell align="right">{getSala(equipo.ubicacion)}</TableCell>
                 <TableCell align="right">
                 {/* Botones o íconos para las acciones */}

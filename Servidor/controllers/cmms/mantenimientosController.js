@@ -18,6 +18,7 @@ exports.nuevoMantenimiento = async (req, res) => {
     id_tecnico,
     id_equipo,
     descripcion,
+    comentario,
     estado,
     desde,
     hasta,
@@ -30,6 +31,7 @@ exports.nuevoMantenimiento = async (req, res) => {
   const safeIdTecnico = id_tecnico || null;
   const safeIdEquipo = id_equipo || null;
   const safeDescripcion = descripcion || null;
+  const safeComentario = comentario || null;
   const safeEstado = estado || null;
   const safeDesde = desde || null;
   const safeHasta = hasta || null;
@@ -49,7 +51,7 @@ exports.nuevoMantenimiento = async (req, res) => {
   }
 
   const query =
-    "INSERT INTO tbl_mantenimientos (fecha, empresa, id_tecnico, id_equipo, descripcion, estado, desde, hasta, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO tbl_mantenimientos (fecha, empresa, id_tecnico, id_equipo, descripcion,comentario, estado, desde, hasta, id_usuario) VALUES (?, ?, ?,? , ?, ?, ?, ?, ?, ?)";
 
   try {
     const params = await dbMysqlDev.executeQueryParams(query, [
@@ -58,6 +60,7 @@ exports.nuevoMantenimiento = async (req, res) => {
       safeIdTecnico,
       safeIdEquipo,
       safeDescripcion,
+      safeComentario,
       safeEstado,
       safeDesde,
       safeHasta,
@@ -75,6 +78,7 @@ exports.nuevoMantenimiento = async (req, res) => {
           safeIdTecnico,
           safeIdEquipo,
           safeDescripcion,
+          safeComentario,
           safeEstado,
           safeDesde,
           safeHasta,

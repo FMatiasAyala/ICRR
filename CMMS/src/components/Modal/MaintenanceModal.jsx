@@ -132,7 +132,7 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: showPostponeForm ? 800 : 600,
+          width: showPostponeForm ? 1000 : 800,
           bgcolor: 'background.paper',
           boxShadow: 24,
           p: 4,
@@ -156,6 +156,9 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
                     Equipo
                   </TableCell>
                   <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                    Tipo
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
                     Detalle
                   </TableCell>
                   <TableCell align="center" sx={{ fontWeight: 'bold' }}>
@@ -175,6 +178,7 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
                     <TableRow key={mantenimiento.id_mantenimiento}>
                       <TableCell align="center">{obtenerNombreEquipo(mantenimiento.id_equipo)}</TableCell>
                       <TableCell align="center">{mantenimiento.descripcion}</TableCell>
+                      <TableCell align="center">{mantenimiento.comentario}</TableCell>
                       <TableCell align="center">{new Date(mantenimiento.fecha).toLocaleDateString()}</TableCell>
                       <TableCell align="center">{new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</TableCell>
                       <TableCell align="center">
