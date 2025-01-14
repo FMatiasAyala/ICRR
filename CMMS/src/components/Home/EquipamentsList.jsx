@@ -4,12 +4,18 @@ import EquipamentModal from '../Modal/EquipamentModal';
 import NewTask from '../Modal/NewTask';
 import NewMaintenance from '../Modal/NewMaintenance';
 
-const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos, user }) => {
+const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos, user, mantenimiento }) => {
+
 
   const [filteredEquipos, setFilteredEquipos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+
   const [selectedEquipo, setSelectedEquipo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+
+
+
 
   const reload = () => {
     reloadEquipos(); // Después de crear la tarea, recargamos los equipos
@@ -65,6 +71,8 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
         return '#E0E0E0';
     }
   };
+
+  
 
   if (!estadoEquipos || estadoEquipos.length === 0) {
     return <p>No hay datos disponibles o están cargando...</p>;
@@ -175,9 +183,9 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
           handleClose={handleCloseModal}
           equipo={selectedEquipo}
           estadoActual={estadoEquipos[selectedEquipo.id]}
-          tecnico={tecnicos.find((tecnico) => tecnico.descripcion === selectedEquipo.contrato)}
+          tecnicos={tecnicos?.filter((tecnico) => tecnico.id_tecnico === selectedEquipo.id_tecnico)}
           onEventCreate ={reload}
-          tecnicos = {tecnicos}
+          mantenimiento={mantenimiento.filter((mantenimiento) => mantenimiento.id_equipo === selectedEquipo.id)}
           user = {user}
         />
       )}

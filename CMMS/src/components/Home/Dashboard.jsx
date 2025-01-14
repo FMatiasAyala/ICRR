@@ -30,6 +30,7 @@ const Dashboard = ({user, reloadEquipos, equipos, tecnicos, uniqueEquipos, salas
             equipo={equipos || []}
             tecnicos={tecnicos || []}
             salas={salas || []}
+            mantenimiento={mantenimiento || []}
             reloadEquipos={reloadEquipos}
             user={user}
           />

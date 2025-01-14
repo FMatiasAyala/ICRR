@@ -4,7 +4,7 @@ import SideMenu from '../Menu/SideMenu';
 import NavBar from '../NavBar';
 import { Box } from '@mui/material';
 import Dashboard from './Dashboard';
-import UpsTable from './UpsTable';
+import UpsDashboard from './UpsDashboard';
 import { jwtDecode } from 'jwt-decode';
 import { useWebSocket } from '../hooks/useWebScoket';
 import { apiEquipos, apiSalas, apiTecnicos, apiCantidadesEventos, apiMantenimiento, apiEventos, apiUps } from '../../utils/Fetch';
@@ -178,7 +178,7 @@ const Layout = () => {
                             reloadEquipos={reloadEquipos}
                             estadoEquipos={estadoEquipos}
                         />} />
-                    <Route path="/ups" element={<UpsTable salas={salas} ups={ups} />} />
+                    <Route path="/ups" element={<UpsDashboard salas={salas} ups={ups} />} />
                 </Routes>
                 <Outlet />
             </div>

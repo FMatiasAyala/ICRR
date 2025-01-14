@@ -1,4 +1,4 @@
-const dbMysqlDev = require("../../DataBase/MySqlDatabaseDev")
+const dbMysqlDev = require("../../DataBase/MySqlDatabaseDev");
 const { broadcastUpdate } = require("../../websocket/webSocketCmms");
 
 exports.obtenerMantenimientos = async (req, res) => {
@@ -17,7 +17,8 @@ exports.nuevoMantenimiento = async (req, res) => {
     empresa,
     id_tecnico,
     id_equipo,
-    descripcion,
+    tipo,
+    detalle,
     comentario,
     estado,
     desde,
@@ -30,7 +31,8 @@ exports.nuevoMantenimiento = async (req, res) => {
   const safeEmpresa = empresa || null;
   const safeIdTecnico = id_tecnico || null;
   const safeIdEquipo = id_equipo || null;
-  const safeDescripcion = descripcion || null;
+  const safeTipo = tipo || null;
+  const safeDetalle = detalle || null;
   const safeComentario = comentario || null;
   const safeEstado = estado || null;
   const safeDesde = desde || null;
@@ -51,7 +53,7 @@ exports.nuevoMantenimiento = async (req, res) => {
   }
 
   const query =
-    "INSERT INTO tbl_mantenimientos (fecha, empresa, id_tecnico, id_equipo, descripcion,comentario, estado, desde, hasta, id_usuario) VALUES (?, ?, ?,? , ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO tbl_mantenimientos (fecha, empresa, id_tecnico, id_equipo, tipo,detalle,comentario, estado, desde, hasta, id_usuario) VALUES (?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?)";
 
   try {
     const params = await dbMysqlDev.executeQueryParams(query, [
@@ -59,7 +61,8 @@ exports.nuevoMantenimiento = async (req, res) => {
       safeEmpresa,
       safeIdTecnico,
       safeIdEquipo,
-      safeDescripcion,
+      safeTipo,
+      safeDetalle,
       safeComentario,
       safeEstado,
       safeDesde,
@@ -77,7 +80,8 @@ exports.nuevoMantenimiento = async (req, res) => {
           safeEmpresa,
           safeIdTecnico,
           safeIdEquipo,
-          safeDescripcion,
+          safeTipo,
+          safeDetalle,
           safeComentario,
           safeEstado,
           safeDesde,
@@ -94,15 +98,19 @@ exports.nuevoMantenimiento = async (req, res) => {
 
 exports.actualizarMantenimiento = async (req, res) => {
   const id = req.params.id;
-  const { estado } = req.body;
+  const { estado, comentario } = req.body;
 
   const query = `
-      UPDATE tbl_mantenimientos
-      SET estado = ?
-      WHERE id_mantenimiento = ?;
-    `;
+  UPDATE tbl_mantenimientos
+  SET estado = ?, comentario = ?
+  WHERE id_mantenimiento = ?;
+`;
   try {
-    const result = await dbMysqlDev.executeQueryParams(query, [estado, id]);
+    const result = await dbMysqlDev.executeQueryParams(query, [
+      estado,
+      comentario,
+      id,
+    ]);
 
     if (result.affectedRows > 0) {
       res.json({ message: "Mantenimiento actualizado correctamente" });

@@ -10,6 +10,7 @@ const equiposControllers = require("../controllers/cmms/equiposController");
 const mantenimientoControllers = require("../controllers/cmms/mantenimientosController");
 const eventosControllers = require("../controllers/cmms/eventosControllers");
 const path = require("path");
+
 require("dotenv").config();
 
 

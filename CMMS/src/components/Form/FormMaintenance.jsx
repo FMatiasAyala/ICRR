@@ -57,8 +57,8 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose }, r
       desde: startTime ? format(startTime, "HH:mm") : null, // Hora de inicio
       hasta: endTime ? format(endTime, "HH:mm") : null, // Hora de fin
       empresa: selectedTechnician?.empresa || null,
-      descripcion: tipoMantenimiento || null,
-      comentario: taskDescription || null,
+      tipo: tipoMantenimiento || null,
+      detalle: taskDescription || null,
       id_tecnico: selectedTechnician?.id_tecnico || null,
       id_equipo: selectedEquipo?.id || null,
       estado: 'PROGRAMADO',

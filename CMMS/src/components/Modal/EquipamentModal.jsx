@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery } from '@mui/material';
-import EventIcon from '@mui/icons-material/Event'; // Para el ícono de eventos
-import DescriptionIcon from '@mui/icons-material/Description';
 import { apiDatosContrato, apiEventosFiltrados } from '../../utils/Fetch';
 import FormEquipamentModal from './FormEquipamentModal';
 import FormMaintenanceModal from './FormMaintenanceModal';
 import FileDownloadButton from '../hooks/FileDownloadButton';
 
-const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onEventCreate, tecnicos, user }) => {
+const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onEventCreate, tecnicos, user, mantenimiento }) => {
   const [eventos, setEventos] = useState([]);
   const [contratos, setContratos] = useState([]);
   const [currentTab, setCurrentTab] = useState('main'); // 'main', 'technician', 'events', 'contracts'
+
+
+
+
+  console.log(tecnico)
 
   const handleTabChange = (tab) => {
     setCurrentTab(tab);
 
   };
+
+
   const isSmallScreen = useMediaQuery('(max-width:600px)');
 
   // Colores según el estado
@@ -23,9 +28,16 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
     switch (estado) {
       case 'OPERATIVO':
         return { bgColor: '#c8e6c9', borderColor: '#43a047', textColor: '#2e7d32' }; // Verde
+      case 'REALIZADO':
+        return { bgColor: '#c8e6c9', borderColor: '#43a047', textColor: '#2e7d32' };
+      // Verde
       case 'NO OPERATIVO':
         return { bgColor: '#ffcdd2', borderColor: '#e53935', textColor: '#b71c1c' }; // Rojo
+      case 'PROGRAMADO':
+        return { bgColor: '#ffcdd2', borderColor: '#e53935', textColor: '#b71c1c' }; // Rojo
       case 'REVISION':
+        return { bgColor: '#fff9c4', borderColor: '#fbc02d', textColor: '#f57f17' }; // Amarillo
+      case 'POSTERGADO':
         return { bgColor: '#fff9c4', borderColor: '#fbc02d', textColor: '#f57f17' }; // Amarillo
       default:
         return { bgColor: '#e0e0e0', borderColor: '#757575', textColor: '#424242' }; // Gris
@@ -174,19 +186,19 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
               </Grid>
               {/* Otros datos aquí */}
             </Grid>
-            {user.role === 'sistemas'&&(
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2, flexDirection: isSmallScreen ? 'column' : 'row' }}>
-              <FormEquipamentModal  equipo={equipo} onEventCreate={onEventCreate} />
-              <FormMaintenanceModal equipos={equipo} tecnicos={tecnicos} onEventCreate={onEventCreate} />
-            </Box>)
-}
+            {user.role === 'sistemas' && (
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2, flexDirection: isSmallScreen ? 'column' : 'row' }}>
+                <FormEquipamentModal equipo={equipo} onEventCreate={onEventCreate} />
+                <FormMaintenanceModal equipos={equipo} tecnicos={tecnicos} onEventCreate={onEventCreate} />
+              </Box>)
+            }
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
               <Button
                 variant="contained"
-                onClick={() => handleTabChange('technician')}
+                onClick={() => handleTabChange('maintenance')}
                 sx={{ bgcolor: '#00796b', color: '#fff' }}
               >
-                Ver Técnico
+                HISTORIAL DE MANTENIMIENTOS
               </Button>
               <Button
                 variant="contained"
@@ -209,30 +221,110 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
           </Box>
         )}
 
-        {currentTab === 'technician' && (
-          <Box>
-            <Typography variant="h5" gutterBottom align="center" sx={{ color: '#388e3c' }}>
-              Información del Técnico
-            </Typography>
-            <Button onClick={() => handleTabChange('main')} sx={{ mt: 4 }}>
+        {currentTab === 'maintenance' && (
+          <Box sx={{ p: 3, bgcolor: '#f4f6f8', borderRadius: 2 }}>
+
+            <Button
+              onClick={() => handleTabChange('main')}
+              sx={{
+                mt: 2,
+                color: '#ffffff',
+                bgcolor: '#388e3c',
+                '&:hover': { bgcolor: '#2e7d32' },
+              }}
+            >
               Volver a Detalles del Equipo
             </Button>
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="body1">
-                <strong>Nombre:</strong> {tecnico?.nombre}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Empresa:</strong> {tecnico?.empresa}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Contacto:</strong> {tecnico?.numero}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Equipo que cubre:</strong> {tecnico?.cobertura}
-              </Typography>
-            </Box>
+
+            {tecnicos.length > 0 && (
+
+              tecnicos.map((tecnico) => <Box sx={{ mt: 3, p: 2, bgcolor: '#ffffff', borderRadius: 1, boxShadow: 1 }}>
+                <Typography
+                  variant="h5"
+                  gutterBottom
+                  align="center"
+                  sx={{ color: '#388e3c', mb: 2 }}
+                >
+                  Información del Técnico
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Nombre:</strong> {tecnico?.nombre || 'No disponible'}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Empresa:</strong> {tecnico?.empresa || 'No disponible'}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Contacto:</strong> {tecnico?.numero || 'No disponible'}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>Equipo que cubre:</strong> {tecnico?.cobertura || 'No disponible'}
+                </Typography>
+              </Box>)
+            )
+            }
+
+            <Typography
+              variant="h5"
+              gutterBottom
+              align="center"
+              sx={{ color: '#004d99', mt: 4 }}
+            >
+              Historial de Mantenimientos
+            </Typography>
+            <TableContainer
+              component={Paper}
+              sx={{
+                mt: 2,
+                maxHeight: 300, // Para agregar scroll si hay muchos eventos
+                overflowY: 'auto',
+              }}
+            >
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold', color: '#004d99' }}>Fecha</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: '#004d99' }}>Descripción</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: '#004d99' }}>Comentario</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: '#004d99' }}>Estado</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(mantenimiento.length > 0) ? (
+                    mantenimiento
+                      .slice() // Crear una copia del array para no mutarlo directamente
+                      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha)) // Ordenar por fecha descendente
+                      .map((man) => (
+                        <TableRow key={man.id_mantenimiento}>
+                          <TableCell>{new Date(man.fecha).toLocaleDateString()}</TableCell>
+                          <TableCell sx={{ fontWeight: 'bold' }}>{man.tipo}</TableCell>
+                          <TableCell>
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {man.comentario || 'Sin comentario'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 'bold' }}>{man.estado}</TableCell>
+
+                        </TableRow>
+                      ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} align="center">
+                        No hay mantenimiento disponibles.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+
+              </Table>
+            </TableContainer>
           </Box>
         )}
+
 
         {currentTab === 'events' && (
           <Box>

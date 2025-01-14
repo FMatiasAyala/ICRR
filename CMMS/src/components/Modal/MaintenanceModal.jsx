@@ -21,6 +21,8 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
   const [mantenimientos, setMantenimientos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showPostponeForm, setShowPostponeForm] = useState(false);
+  const [showDoneForm, setShowDoneForm] = useState(false);
+  const [comentarios, setComentarios] = useState(null);
   const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
   const [newFecha, setNewFecha] = useState('');
   const [newHoraDesde, setNewHoraDesde] = useState('');
@@ -52,17 +54,21 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
     return equipo ? equipo.modelo : 'Equipo no encontrado';
   };
 
-  const handleActualizarEstado = async (id_mantenimiento, nuevoEstado) => {
+
+  const handleDoneMantenimiento = async (id_mantenimiento, nuevoEstado) => {
+
+    const doneMantenimiento = { ...mantenimientos, comentario: comentarios, estado: nuevoEstado };
+
     try {
-      const response = await fetch(`${apiMantenimiento}${id_mantenimiento}`, {
+      const responseDone = await fetch(`${apiMantenimiento}${id_mantenimiento}`, {
+
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ estado: nuevoEstado }),
+        body: JSON.stringify(doneMantenimiento),
       });
-
-      if (response.ok) {
+      if (responseDone.ok) {
         setMantenimientos((prevMantenimientos) =>
           prevMantenimientos.map((mantenimiento) =>
             mantenimiento.id_mantenimiento === id_mantenimiento
@@ -70,19 +76,29 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
               : mantenimiento
           )
         );
+        setComentarios(null)
+        setShowDoneForm(false);
         console.log('Mantenimiento actualizado');
       } else {
-        console.error('Error al actualizar el mantenimiento:', response.statusText);
+        console.error('Error al actualizar el mantenimiento:', responseDone.statusText);
       }
     } catch (error) {
       console.error('Error al realizar la solicitud:', error);
     }
+
   };
 
   const handleOpenPostponeForm = (mantenimiento) => {
     setSelectedMantenimiento(mantenimiento);
     setShowPostponeForm(true);
+    setShowDoneForm(false);
   };
+  const handleOpenDoneForm = (mantenimiento) => {
+    setSelectedMantenimiento(mantenimiento);
+    setShowDoneForm(true);
+    setShowPostponeForm(false);
+  };
+
 
   const handlePostpone = async () => {
     if (!selectedMantenimiento) return;
@@ -132,7 +148,7 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: showPostponeForm ? 1000 : 800,
+          width: (showPostponeForm || showDoneForm) ? 1000 : 800,
           bgcolor: 'background.paper',
           boxShadow: 24,
           p: 4,
@@ -177,13 +193,13 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
                   mantenimientosProgramados.map((mantenimiento) => (
                     <TableRow key={mantenimiento.id_mantenimiento}>
                       <TableCell align="center">{obtenerNombreEquipo(mantenimiento.id_equipo)}</TableCell>
-                      <TableCell align="center">{mantenimiento.descripcion}</TableCell>
-                      <TableCell align="center">{mantenimiento.comentario}</TableCell>
+                      <TableCell align="center">{mantenimiento.tipo}</TableCell>
+                      <TableCell align="center">{mantenimiento.detalle}</TableCell>
                       <TableCell align="center">{new Date(mantenimiento.fecha).toLocaleDateString()}</TableCell>
                       <TableCell align="center">{new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</TableCell>
                       <TableCell align="center">
                         <IconButton
-                          onClick={() => handleActualizarEstado(mantenimiento.id_mantenimiento, 'REALIZADO')}
+                          onClick={() => handleOpenDoneForm(mantenimiento)/* handleDoneMantenimiento(mantenimiento.id_mantenimiento, 'REALIZADO') */}
                           color="primary"
                         >
                           <DoneIcon />
@@ -209,9 +225,33 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
           )}
         </Box>
 
+        {showDoneForm && (
+          <Box sx={{ flex: 1, pl: 4 }}>
+            <IconButton sx={{ display: 'flex', justifyContent: '' }} color="primary" onClick={() => { setShowDoneForm(false) }}>
+              <ClearIcon />
+            </IconButton>
+            <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+              Confirmar Mantenimiento
+            </Typography>
+            <TextField
+              label="Comentario"
+              value={comentarios}
+              onChange={(e) => setComentarios(e.target.value)} // Correcto
+              multiline
+              rows={4}
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+
+            <Button variant="contained" color="primary" fullWidth onClick={() => handleDoneMantenimiento(selectedMantenimiento.id_mantenimiento, 'REALIZADO')}>
+              Guardar Cambios
+            </Button>
+
+          </Box>
+        )}
         {showPostponeForm && (
           <Box sx={{ flex: 1, pl: 4 }}>
-            <IconButton sx={{display:'flex', justifyContent: ''}} color="primary" onClick={() => { setShowPostponeForm(false) }}>
+            <IconButton sx={{ display: 'flex', justifyContent: '' }} color="primary" onClick={() => { setShowPostponeForm(false) }}>
               <ClearIcon />
             </IconButton>
             <Typography variant="h6" align="center" sx={{ mb: 2 }}>
