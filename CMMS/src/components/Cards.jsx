@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Card, CardContent, Typography } from '@mui/material';
-import { apiEquipos, apiEventos, apiSalas } from '../utils/Fetch';
 import TaskModal from './Modal/TaskModal';
 
 const Cards = ({equipo, sala, estadoEquipo}) => {
