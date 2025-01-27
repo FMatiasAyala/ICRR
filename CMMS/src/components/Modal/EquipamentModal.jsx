@@ -184,6 +184,22 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
                   </Typography>
                 </Box>
               </Grid>
+              {equipo.serial_number && (
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: '#bbdefb',
+                      boxShadow: 1,
+                      borderRadius: '8px',
+                      borderLeft: '5px solid #1e88e5',
+                    }}
+                  >
+                    <Typography variant="body1" sx={{ color: '#1e88e5' }}>
+                      <strong>SERIAL NUMBER:</strong> {equipo.serial_number}
+                    </Typography>
+                  </Box>
+                </Grid>)}
               {/* Otros datos aquí */}
             </Grid>
             {user.role === 'sistemas' && (
