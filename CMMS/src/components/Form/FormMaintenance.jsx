@@ -8,7 +8,7 @@ import { apiMantenimiento } from '../../utils/Fetch';
 import { format } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
 
-const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose }, ref) => {
+const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tecnicosEquipo }, ref) => {
   const [taskDescription, setTaskDescription] = useState('');
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [selectedEquipo, setSelectedEquipo] = useState(null);

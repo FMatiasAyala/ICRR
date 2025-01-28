@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery } from '@mui/material';
-import { apiDatosContrato, apiEventosFiltrados } from '../../utils/Fetch';
+import { apiDatosContrato, apiEventosFiltrados, apiTecnicosEquipo } from '../../utils/Fetch';
 import FormEquipamentModal from './FormEquipamentModal';
 import FormMaintenanceModal from './FormMaintenanceModal';
 import FileDownloadButton from '../hooks/FileDownloadButton';
 
 const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onEventCreate, tecnicos, user, mantenimiento }) => {
+  const [tecnicosEquipo, setTecnicosEquipo] = useState([])
   const [eventos, setEventos] = useState([]);
   const [contratos, setContratos] = useState([]);
   const [currentTab, setCurrentTab] = useState('main'); // 'main', 'technician', 'events', 'contracts'
@@ -13,7 +14,7 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
 
 
 
-  console.log(tecnico)
+
 
   const handleTabChange = (tab) => {
     setCurrentTab(tab);
@@ -62,6 +63,19 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
         console.error("Error al cargar los datos del contrato:", error);
       };
     }
+    const fetchTecnicosEquipo = async () => {
+
+      try {
+        const response = await fetch(`${apiTecnicosEquipo}${equipo.id}`);
+        if (!response.ok) {
+          throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+        }
+        const data = await response.json();
+        setTecnicosEquipo(data);
+      } catch (error) {
+        console.error('Error al cargar los técnicos del equipo:', error);
+      }
+    }
 
 
     const fetchEventosFiltrados = async () => {
@@ -80,6 +94,7 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
     if (open && equipo && equipo.id) {
       fetchEventosFiltrados();
       fecthDatosContrato();
+      fetchTecnicosEquipo();
     }
   }, [equipo, open]);
 
@@ -251,18 +266,19 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
             >
               Volver a Detalles del Equipo
             </Button>
+            <Typography
+              variant="h5"
+              gutterBottom
+              align="center"
+              sx={{ color: '#388e3c', mb: 2 }}
+            >
+              Información del Técnico
+            </Typography>
 
-            {tecnicos.length > 0 && (
+            {tecnicosEquipo.length > 0 && (
 
-              tecnicos.map((tecnico) => <Box sx={{ mt: 3, p: 2, bgcolor: '#ffffff', borderRadius: 1, boxShadow: 1 }}>
-                <Typography
-                  variant="h5"
-                  gutterBottom
-                  align="center"
-                  sx={{ color: '#388e3c', mb: 2 }}
-                >
-                  Información del Técnico
-                </Typography>
+
+              tecnicosEquipo.map((tecnico) => <Box sx={{ mt: 3, p: 2, bgcolor: '#ffffff', borderRadius: 1, boxShadow: 1 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   <strong>Nombre:</strong> {tecnico?.nombre || 'No disponible'}
                 </Typography>

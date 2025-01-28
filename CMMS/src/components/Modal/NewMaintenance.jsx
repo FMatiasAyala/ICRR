@@ -5,7 +5,7 @@ import FormMaintenance from '../Form/FormMaintenance';
 
 
 
-const NewMaintenance = ({ equipos, tecnicos, salas }) => {
+const NewMaintenance = ({ equipos, tecnicos, salas, tecnicosEquipo }) => {
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -58,7 +58,7 @@ const NewMaintenance = ({ equipos, tecnicos, salas }) => {
 
         {/* Modal */}
         <Modal open={open} onClose={handleClose}>
-          <FormMaintenance equipos={equipos} tecnicos={tecnicos} salas={salas} handleClose={handleClose} />
+          <FormMaintenance equipos={equipos} tecnicos={tecnicos} tecnicosEquipo={tecnicosEquipo}salas={salas} tecnihandleClose={handleClose} />
         </Modal>
       </Box>
 

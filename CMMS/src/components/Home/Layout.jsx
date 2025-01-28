@@ -119,7 +119,6 @@ const Layout = () => {
             console.error('Error al cargar los técnicos:', error);
         }
     };
-
     const obtenerMantenimiento = async () => {
         try {
             const response = await fetch(apiMantenimiento);

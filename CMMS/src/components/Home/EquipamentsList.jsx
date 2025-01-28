@@ -4,7 +4,7 @@ import EquipamentModal from '../Modal/EquipamentModal';
 import NewTask from '../Modal/NewTask';
 import NewMaintenance from '../Modal/NewMaintenance';
 
-const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos, user, mantenimiento }) => {
+const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos, user, mantenimiento, tecnicosEquipo }) => {
 
 
   const [filteredEquipos, setFilteredEquipos] = useState([]);
@@ -86,7 +86,7 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
           <NewTask onEventCreate={reload} equipo={equipo} salas={salas}/> {/* Llamar a handleTaskCreate aquí */}
         </Grid>
         <Grid item xs={12} sm={7}>
-          <NewMaintenance onMaintenanceCreate={reload} equipos={equipos} tecnicos={tecnicos} salas={salas}/> {/* Llamar a handleMaintenanceCreate */}
+          <NewMaintenance onMaintenanceCreate={reload} equipos={equipos} tecnicos={tecnicos} salas={salas} tecnicosEquipo={tecnicosEquipo}/> {/* Llamar a handleMaintenanceCreate */}
         </Grid>
       </Grid>
       )}
