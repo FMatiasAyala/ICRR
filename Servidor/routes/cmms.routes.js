@@ -16,6 +16,7 @@ require("dotenv").config();
 
 //Equipo medicos
 router.get("/equipos", equiposControllers.obtenerEquipos);
+router.get("/tecnicosEquipo/:equipoId", equiposControllers.tecnicoEquipo);
 router.post("/bajaEquipo", equiposControllers.bajaEquipo);
 router.post("/altaEquipos", equiposControllers.altaEquipo);
 

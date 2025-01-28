@@ -1,7 +1,5 @@
 const dbMysqlDev = require("../../DataBase/MySqlDatabaseDev");
 
-
-
 exports.obtenerEquipos = async (req, res) => {
   const query =
     "select * from dev.tbl_equipomedico where id not in (select id from dev.tbl_equipomedico where baja is not null)";
@@ -77,5 +75,22 @@ exports.altaEquipo = async (req, res) => {
   } catch (err) {
     console.error("Error al cargar el equipo:", err);
     res.status(500).json({ error: "Error al cargar equipo" });
+  }
+};
+
+exports.tecnicoEquipo = async (req, res) => {
+  const {equipoId} = req.params;
+  const query = `select t.* from tbl_tecnicos t join tbl_equipo_tecnico et on t.id_tecnico  = et.tecnico_id 
+where et.equipo_id = ?`
+
+  try {
+    const tenicosEquipo = await dbMysqlDev.executeQueryParams(
+      query,
+      [equipoId]
+    );
+    res.json(tenicosEquipo);
+  } catch (error) {
+    console.error("Error al obtener técnicos:", error);
+    res.status(500).json({ error: "Error al obtener técnicos." });
   }
 };
