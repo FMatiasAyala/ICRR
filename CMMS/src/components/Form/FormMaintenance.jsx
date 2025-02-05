@@ -7,6 +7,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { apiMantenimiento } from '../../utils/Fetch';
 import { format } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
+import enGB from 'date-fns/locale/en-GB';
 
 const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tecnicosEquipo }, ref) => {
   const [taskDescription, setTaskDescription] = useState('');
@@ -30,10 +31,6 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tec
     // Validamos si la fecha es anterior o igual a la actual
     if (chosenDate < currentDate) {
       setSnackbarMessage("No se puede seleccionar una fecha anterior al día actual.");
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    } else if (chosenDate.getTime() === currentDate.getTime()) {
-      setSnackbarMessage("No se puede seleccionar la fecha actual.");
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
     } else {
@@ -150,7 +147,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tec
         options={tecnicos}
         value={selectedTechnician}
         onChange={(event, newValue) => setSelectedTechnician(newValue)}
-        getOptionLabel={(option) => option?.nombre || ""}
+        getOptionLabel={(option) => option?.nombre + (option?.apellido ? ' ' + option.apellido : '')}
         renderInput={(params) => (
           <TextField {...params} label="Seleccionar Técnico" margin="normal" required />
         )}
@@ -169,13 +166,13 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tec
       />
 
       {/* Selector de fecha */}
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mt: 2 }}>
           <DatePicker
             label="Fecha"
             value={selectedDate}
             onChange={(newValue) => setSelectedDate(newValue)}
-            inputFormat="dd/MM/yyyy" // Formato dd/MM/yyyy
+            inputFormat="dd/mm/yyyy" // Formato dd/MM/yyyy
             disableOpenPicker
             renderInput={(params) => (
               <TextField {...params} fullWidth required />

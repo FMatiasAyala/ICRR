@@ -138,18 +138,22 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
                     key={equipo.id}
                     onClick={() => handleOpenModal(equipo)}
                     sx={{
-                      p: 1,
+                      p: 2, // Aumenta el padding para más espacio interno
                       cursor: 'pointer',
                       '&:hover': { backgroundColor: getHoverColorByEstado(estadoEquipos[equipo.id]) },
                       height: 'auto',
-                      minWidth: '150px',
-                      minHeight: '100px',
+                      minWidth: '180px', // Un poco más ancho
+                      minHeight: '120px', // Un poco más alto
                       backgroundColor: getColorByEstado(estadoEquipos[equipo.id]),
-                      
+                      borderRadius: '8px', // Bordes redondeados
+                      boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', // Sombra suave
+                      transition: 'transform 0.2s ease-in-out', // Suaviza cambios
+                      '&:active': { transform: 'scale(0.98)' }, // Efecto de clic
                     }}
+                    
                   >
                     <CardContent sx={{ padding: '8px' }}>
-                      <Typography variant="body2" align="center">
+                      <Typography variant="body2" align="center" sx={{fontWeight:'bold'}}>
                         {equipo.modelo}
                       </Typography>
                       {salas &&

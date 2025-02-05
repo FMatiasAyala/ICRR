@@ -7,6 +7,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { apiMantenimiento } from '../../utils/Fetch';
 import { format } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
+import { enGB } from 'date-fns/locale';
 
 const FormEquipamentM = forwardRef(({ equipos, tecnicos, handleClose, onEventCreate }, ref) => {
     const [taskDescription, setTaskDescription] = useState('');
@@ -171,7 +172,7 @@ const FormEquipamentM = forwardRef(({ equipos, tecnicos, handleClose, onEventCre
                 </Box>
 
                 {/* Bloque Selección de Fecha y Horas */}
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
                     <Box sx={{ display: 'flex', gap: 2 }}>
 
                     </Box>

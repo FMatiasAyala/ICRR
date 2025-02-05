@@ -215,12 +215,27 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
                     </Typography>
                   </Box>
                 </Grid>)}
-              {/* Otros datos aquí */}
+                {equipo.compra_año && (
+                <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: '#bbdefb',
+                      boxShadow: 1,
+                      borderRadius: '8px',
+                      borderLeft: '5px solid #1e88e5',
+                    }}
+                  >
+                    <Typography variant="body1" sx={{ color: '#1e88e5' }}>
+                      <strong>COMPRA AÑO:</strong> {equipo.compra_año}
+                    </Typography>
+                  </Box>
+                </Grid>)}
             </Grid>
             {user.role === 'sistemas' && (
               <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2, flexDirection: isSmallScreen ? 'column' : 'row' }}>
                 <FormEquipamentModal equipo={equipo} onEventCreate={onEventCreate} />
-                <FormMaintenanceModal equipos={equipo} tecnicos={tecnicos} onEventCreate={onEventCreate} />
+                <FormMaintenanceModal equipos={equipo} tecnicos={tecnicosEquipo} onEventCreate={onEventCreate} />
               </Box>)
             }
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
@@ -280,7 +295,7 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
 
               tecnicosEquipo.map((tecnico) => <Box sx={{ mt: 3, p: 2, bgcolor: '#ffffff', borderRadius: 1, boxShadow: 1 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Nombre:</strong> {tecnico?.nombre || 'No disponible'}
+                  <strong>Nombre:</strong> {tecnico?.nombre || 'No disponible'} {tecnico?.apellido || 'No disponible'} 
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   <strong>Empresa:</strong> {tecnico?.empresa || 'No disponible'}

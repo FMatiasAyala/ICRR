@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Auth/Login';
 import Layout from './components/Home/Layout';
+import './App.css';
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token'); // Verificar token en localStorage
