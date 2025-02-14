@@ -3,7 +3,7 @@ import { Box, Typography, Modal, ListItemIcon, Card, CardContent, IconButton, Gr
 import HandymanIcon from '@mui/icons-material/Handyman';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { apiTecnicos } from '../../utils/Fetch';
-
+import { Close } from '@mui/icons-material';
 const TechniciansList = () => {
     const [technicians, setTechnicians] = useState([]);
     const [selectedTechnician, setSelectedTechnician] = useState(null);
@@ -77,6 +77,9 @@ const TechniciansList = () => {
 
                     }}
                 >
+                    <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                        <Close />
+                    </IconButton>
                     <Box display="flex" alignItems="center" mb={2}>
                         <Typography variant="h4" gutterBottom align="center" sx={{ color: '#004d99' }}>Ficha de tecnicos</Typography>
                     </Box>

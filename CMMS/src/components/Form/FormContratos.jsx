@@ -1,13 +1,11 @@
 import React, { useState, forwardRef, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Snackbar, Alert, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { Box, Typography, TextField, Button, Snackbar, Alert, MenuItem, FormControl, InputLabel, Select, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { format, set } from 'date-fns';
 import { apiCargaContrato } from '../../utils/Fetch';
 
 
-const FormContratos = forwardRef(({ handleClose, equipo, salas }, ref) => {
+const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {
     const [description, setDescription] = useState('');
     const [update, setUpdate] = useState('');
     const [desde, setDesde] = useState(null);
@@ -117,6 +115,9 @@ const FormContratos = forwardRef(({ handleClose, equipo, salas }, ref) => {
                 gap: 3,
             }}
         >
+            <IconButton onClick={contratoClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                <Close />
+            </IconButton>
             <Typography variant="h6" mb={2}>Cargar Contrato</Typography>
             <form onSubmit={handleSubmit}>
                 <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" gap={2} mb={2}>
@@ -156,7 +157,7 @@ const FormContratos = forwardRef(({ handleClose, equipo, salas }, ref) => {
                         onChange={(e) => setDescription(e.target.value)}
                         fullWidth
                         multiline
-                        sx={{marginBottom:'5px'}}
+                        sx={{ marginBottom: '5px' }}
                         rows={3}
                         required
                     />
@@ -168,7 +169,7 @@ const FormContratos = forwardRef(({ handleClose, equipo, salas }, ref) => {
                         onChange={(e) => setUpdate(e.target.value)}
                         fullWidth
                         multiline
-                        sx={{marginBottom:'5px'}}
+                        sx={{ marginBottom: '5px' }}
                         rows={3}
                         required
                     />
@@ -180,7 +181,7 @@ const FormContratos = forwardRef(({ handleClose, equipo, salas }, ref) => {
                         label="Cobertura Partes"
                         value={coberturaPartes}
                         onChange={(e) => setCoberturaPartes(e.target.value)}
-                        sx={{marginBottom:'5px'}}
+                        sx={{ marginBottom: '5px' }}
                         fullWidth
                         required
                     />
@@ -188,7 +189,7 @@ const FormContratos = forwardRef(({ handleClose, equipo, salas }, ref) => {
                         label="Cobertura Mano de Obra"
                         value={coberturaManoDeObra}
                         onChange={(e) => setCoberturaManoDeObra(e.target.value)}
-                        sx={{marginBottom:'5px'}}
+                        sx={{ marginBottom: '5px' }}
                         fullWidth
                         required
                     />

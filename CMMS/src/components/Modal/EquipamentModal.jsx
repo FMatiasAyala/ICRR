@@ -12,10 +12,6 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
   const [currentTab, setCurrentTab] = useState('main'); // 'main', 'technician', 'events', 'contracts'
 
 
-
-
-
-
   const handleTabChange = (tab) => {
     setCurrentTab(tab);
 
@@ -215,7 +211,7 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
                     </Typography>
                   </Box>
                 </Grid>)}
-                {equipo.compra_año && (
+              {equipo.compra_año && (
                 <Grid item xs={12} sm={6}>
                   <Box
                     sx={{
@@ -233,12 +229,12 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
                 </Grid>)}
             </Grid>
             {user.role === 'sistemas' && (
-              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2, flexDirection: isSmallScreen ? 'column' : 'row' }}>
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2, flexDirection:  'row' }}>
                 <FormEquipamentModal equipo={equipo} onEventCreate={onEventCreate} />
                 <FormMaintenanceModal equipos={equipo} tecnicos={tecnicosEquipo} onEventCreate={onEventCreate} />
               </Box>)
             }
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
               <Button
                 variant="contained"
                 onClick={() => handleTabChange('maintenance')}
@@ -273,7 +269,10 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
             <Button
               onClick={() => handleTabChange('main')}
               sx={{
-                mt: 2,
+                mt: { xs: 1, md: 2 }, // Menos margen en móvil
+                fontSize: { xs: '12px', md: '14px' }, // Texto más pequeño en móvil
+                padding: { xs: '6px 10px', md: '10px 20px' }, // Padding menor en móvil
+                width: { xs: '100%', sm: 'auto' }, // Ocupa todo el ancho en móviles
                 color: '#ffffff',
                 bgcolor: '#388e3c',
                 '&:hover': { bgcolor: '#2e7d32' },
@@ -295,7 +294,7 @@ const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onE
 
               tecnicosEquipo.map((tecnico) => <Box sx={{ mt: 3, p: 2, bgcolor: '#ffffff', borderRadius: 1, boxShadow: 1 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Nombre:</strong> {tecnico?.nombre || 'No disponible'} {tecnico?.apellido || 'No disponible'} 
+                  <strong>Nombre:</strong> {tecnico?.nombre || 'No disponible'} {tecnico?.apellido || 'No disponible'}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   <strong>Empresa:</strong> {tecnico?.empresa || 'No disponible'}

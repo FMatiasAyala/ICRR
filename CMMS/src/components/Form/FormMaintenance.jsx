@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
 import enGB from 'date-fns/locale/en-GB';
 
-const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tecnicosEquipo }, ref) => {
+const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tec, tecnihandleClose }, ref) => {
   const [taskDescription, setTaskDescription] = useState('');
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [selectedEquipo, setSelectedEquipo] = useState(null);
@@ -105,6 +105,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tec
     ref={ref}
     sx={{
       position: 'absolute',
+      overflow: 'hidden',
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
@@ -204,7 +205,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, handleClose, tec
       {/* Bloque Botones */}
       <Box mt={3} display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="flex-end" gap={2}>
         <Button variant="contained" color="primary" type="submit" fullWidth={true}>Guardar</Button>
-        <Button variant="outlined" color="secondary" onClick={handleClose} fullWidth={true}>Cancelar</Button>
+        <Button variant="outlined" color="secondary" onClick={tecnihandleClose} fullWidth={true}>Cancelar</Button>
       </Box>
     </form>
 

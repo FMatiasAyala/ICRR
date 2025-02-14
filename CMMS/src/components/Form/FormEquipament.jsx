@@ -1,11 +1,10 @@
 import React, { useState, forwardRef } from 'react';
-import { Box, Typography, TextField, Button, MenuItem, FormControl, InputLabel, Select, Modal, useMediaQuery } from '@mui/material';
+import { Box, Typography, TextField, Button, MenuItem, FormControl, InputLabel, Select, useMediaQuery, IconButton } from '@mui/material';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { apiBajaEquipo, apiEventos } from '../../utils/Fetch';
 import { jwtDecode } from 'jwt-decode';
-import { ArrowBack } from '@mui/icons-material';
 import TaskIcon from '@mui/icons-material/Task';
+import { Cancel } from '@mui/icons-material';
 
 
 
@@ -74,15 +73,15 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
 
   const handleSubmitDown = async (event) => {
     event.preventDefault();
-  
+
     const token = localStorage.getItem('token');
     let userId = null;
-  
+
     if (token) {
       const decodedToken = jwtDecode(token);
       userId = decodedToken.id; // Asumiendo que el ID del usuario está en el token
     }
-  
+
     const nuevaTarea = {
       descripcion: taskDescription,
       id_equipo: equipo.id,
@@ -90,7 +89,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
       tipo_falla: "dado de baja",
       id_usuario: userId,
     };
-  
+
     try {
       // Solicitud para dar de baja el equipo
       const responseDown = await fetch(apiBajaEquipo, {
@@ -100,7 +99,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
         },
         body: JSON.stringify({ id_equipo: equipo.id }), // Enviar como objeto
       });
-  
+
       if (responseDown.ok) {
         const data = await responseDown.json();
         console.log('Equipo dado de baja:', data);
@@ -109,7 +108,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
         console.error('Error al dar de baja el equipo:', errorData);
         return; // Detener si hay error
       }
-  
+
       // Solicitud para guardar la tarea
       const responseTask = await fetch(apiEventos, {
         method: 'POST',
@@ -118,7 +117,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
         },
         body: JSON.stringify(nuevaTarea),
       });
-  
+
       if (responseTask.ok) {
         const data = await responseTask.json();
         console.log('Tarea guardada correctamente:', data);
@@ -127,7 +126,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
         console.error('Error al guardar la tarea:', errorData);
         return; // Detener si hay error
       }
-  
+
       // Llamar a onEventCreate si todo fue exitoso
       onEventCreate();
     } catch (error) {
@@ -140,7 +139,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
       handleClose();
     }
   };
-  
+
 
 
 
@@ -148,11 +147,12 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
     <Box
       sx={{
         position: 'absolute',
+        bgcolor: 'background.paper',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: { xs: '80%', sm: 600 },
-        height: '50%',
+        width: { xs: '80%', md: 600 },
+        height: { xs: '60%', md: '50%' },
         maxWidth: '90%',
         maxHeight: '90vh',
         overflowY: 'auto',
@@ -166,16 +166,16 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
             display: 'flex',
             justifyContent: 'center',
             gap: 2, // Espaciado entre las barras
-            bgcolor: 'background.paper',
             flexDirection: 'column', // Los elementos estarán en columna
             alignItems: 'center',
-            boxShadow: 24,
-            borderRadius: 4,
+            mt: 8,
             height: '60%',
-            mt: 2, // Margen superior
-            width: '100%', // Asegura que las barras se ajusten al contenedor
+            width: '100%',
           }}
         >
+          <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
+            <Cancel />
+          </IconButton>
           <Button
             variant="contained"
             color="primary"
@@ -186,7 +186,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
               padding: '15px 20px',
               borderRadius: '8px',
               textTransform: 'none',
-              width: '100%', // Ocupa todo el ancho del contenedor
+              width: { xs: '80%', md: '100%' }, // Ocupa todo el ancho del contenedor
               maxWidth: '400px', // Ancho máximo para evitar que sean demasiado grandes
             }}
           >
@@ -202,7 +202,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
               padding: '15px 20px',
               borderRadius: '8px',
               textTransform: 'none',
-              width: '100%', // Ocupa todo el ancho del contenedor
+              width: { xs: '80%', md: '100%' }, // Ocupa todo el ancho del contenedor
               maxWidth: '400px', // Ancho máximo para evitar que sean demasiado grandes
             }}
           >
@@ -210,92 +210,6 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
           </Button>
         </Box>
       )}
-
-
-
-
-      {current === 'down' && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            borderRadius: 4,
-            bgcolor: 'background.paper',
-            alignItems: 'center',
-            height: 400,
-            gap: 2,
-          }}
-        >
-          <form onSubmit={handleSubmitDown}>
-            <TextField
-              label="Descripcion"
-              value={taskDescription} 
-              onChange={(e) => setTaskDescription(e.target.value)}// Valor predeterminado
-              fullWidth
-              margin="normal"
-              required
-              multiline
-              rows={3}
-            />
-
-            <FormControl fullWidth>
-              <InputLabel>Condición</InputLabel>
-              <Select
-                value={"no operativo"} // Valor predeterminado
-                disabled // Campo no editable
-                sx={{ marginBottom: '5px' }}
-              >
-                <MenuItem value="operativo">Operativo</MenuItem>
-                <MenuItem value="no operativo">No Operativo</MenuItem>
-                <MenuItem value="revision">Revisión</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel>Tipo de Evento</InputLabel>
-              <Select
-                value={"dado de baja"} // Valor predeterminado
-                disabled // Campo no editable
-              >
-                <MenuItem value="dado de baja">Dado de baja</MenuItem>
-              </Select>
-            </FormControl>
-            <Box mt={2} display="flex" justifyContent="center" gap={2}>
-              <Button
-                variant="contained"
-                color="error"
-                type='submit'
-                startIcon={<PowerOffIcon />}
-                sx={{
-                  fontSize: '16px',
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                }}
-              >
-                Dar de baja
-              </Button>
-            </Box>
-          </form>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => handleTab('options')}
-            sx={{
-              fontSize: '16px',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              textTransform: 'none',
-            }}
-          >
-            Volver
-          </Button>
-        </Box>
-      )}
-
-
-
       {current === 'task' && (
         <Box
           ref={ref}
@@ -305,7 +219,7 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
             left: '50%',
             transform: 'translate(-50%, -50%)',
             bgcolor: 'background.paper',
-            width: { xs: '90%', sm: 600 },
+            width: { xs: '100%', sm: 600 },
             borderRadius: 4,
             p: 4,
             display: 'flex',
@@ -364,6 +278,91 @@ const FormEquipament = forwardRef(({ open, handleClose, onEventCreate, equipo },
           </form>
         </Box>
       )}
+
+      {current === 'down' && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            width: { xs: '100%', sm: 600 },
+            borderRadius: 4,
+            p: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6">Baja de equipo</Typography>
+          <form onSubmit={handleSubmitDown}>
+            <TextField
+              label="Descripcion"
+              value={taskDescription}
+              onChange={(e) => setTaskDescription(e.target.value)}// Valor predeterminado
+              fullWidth
+              margin="normal"
+              required
+              multiline
+              rows={3}
+            />
+
+            <FormControl fullWidth>
+              <InputLabel>Condición</InputLabel>
+              <Select
+                value={"no operativo"} // Valor predeterminado
+                disabled // Campo no editable
+                sx={{ marginBottom: '5px' }}
+              >
+                <MenuItem value="operativo">Operativo</MenuItem>
+                <MenuItem value="no operativo">No Operativo</MenuItem>
+                <MenuItem value="revision">Revisión</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Tipo de Evento</InputLabel>
+              <Select
+                value={"dado de baja"} // Valor predeterminado
+                disabled // Campo no editable
+              >
+                <MenuItem value="dado de baja">Dado de baja</MenuItem>
+              </Select>
+            </FormControl>
+            <Box mt={2} display="flex" justifyContent="center" gap={2}>
+              <Button
+                variant="contained"
+                color="error"
+                type='submit'
+                startIcon={<PowerOffIcon />}
+                sx={{
+                  fontSize: '16px',
+                  padding: '10px 10px',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                }}
+              >
+                Dar de baja
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => handleTab('options')}
+                sx={{
+                  fontSize: '16px',
+                  padding: '10px 10px',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                }}
+              >
+                Volver
+              </Button>
+            </Box>
+          </form>
+        </Box>
+      )}
+
 
     </Box>
 

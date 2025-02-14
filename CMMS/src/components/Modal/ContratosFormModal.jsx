@@ -31,7 +31,7 @@ const ContratoFormModal = ({equipos, salas}) => {
                 <Typography sx={{ fontWeight: 'bold' }}>Cargar contrato</Typography>
             </CardContent>
             <Modal open={open} onClose={handleClose}>
-                <FormContratos handleClose={handleClose}  equipo={equipos} salas={salas}/>
+                <FormContratos contratoClose={handleClose}  equipo={equipos} salas={salas}/>
             </Modal>
         </Card>
 

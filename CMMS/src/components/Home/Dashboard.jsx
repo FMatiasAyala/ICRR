@@ -19,7 +19,7 @@ const Dashboard = ({user, reloadEquipos, equipos, tecnicos, uniqueEquipos, salas
                 <CardsMantenimiento equipos={equipos || []} mantenimiento={mantenimiento || []} />
               </Grid>
           </Grid>
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} sx={{display:{xs:'none', md:'block'}}}>
             <Graphic equipos={equipos || []} cantidadEventos={cantidadEventos || []} />
           </Grid>
         </Grid>

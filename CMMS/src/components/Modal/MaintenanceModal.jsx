@@ -11,10 +11,12 @@ import {
   IconButton,
   TextField,
   Button,
+  useMediaQuery
 } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ClearIcon from '@mui/icons-material/Clear';
+import { Close } from '@mui/icons-material';
 import { apiMantenimiento, apiMantenimientoPostpone } from '../../utils/Fetch';
 
 const MaintenanceModal = ({ open, handleClose, equipos }) => {
@@ -27,6 +29,10 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
   const [newFecha, setNewFecha] = useState('');
   const [newHoraDesde, setNewHoraDesde] = useState('');
   const [newHoraHasta, setNewHoraHasta] = useState('');
+
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:900px)');
+
 
 
   const obtenerMantenimientos = async () => {
@@ -148,14 +154,20 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: (showPostponeForm || showDoneForm) ? 1000 : 800,
+          width: isMobile ? '90%' : isTablet ? '80%' : (showPostponeForm || showDoneForm) ? 1000 : 800,
           bgcolor: 'background.paper',
           boxShadow: 24,
-          p: 4,
+          p: 3,
           borderRadius: '12px',
           display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          maxHeight: '90vh',
+          overflowY: 'auto',
         }}
       >
+        <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
+          <Close />
+        </IconButton>
         <Box sx={{ flex: 1 }}>
           <Typography variant="h6" align="center" sx={{ mb: 2 }}>
             Listado de Mantenimientos Programados
@@ -165,27 +177,15 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
               Cargando mantenimientos...
             </Typography>
           ) : (
-            <Table>
+            <Table size={isMobile ? 'small' : 'medium'}>
               <TableHead>
                 <TableRow>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    Equipo
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    Tipo
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    Detalle
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    Fecha
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    Horario
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>
-                    Acciones
-                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Equipo</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Tipo</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Detalle</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Fecha</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Horario</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -196,18 +196,14 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
                       <TableCell align="center">{mantenimiento.tipo}</TableCell>
                       <TableCell align="center">{mantenimiento.detalle}</TableCell>
                       <TableCell align="center">{new Date(mantenimiento.fecha).toLocaleDateString()}</TableCell>
-                      <TableCell align="center">{new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</TableCell>
                       <TableCell align="center">
-                        <IconButton
-                          onClick={() => handleOpenDoneForm(mantenimiento)/* handleDoneMantenimiento(mantenimiento.id_mantenimiento, 'REALIZADO') */}
-                          color="primary"
-                        >
+                        {new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton onClick={() => handleOpenDoneForm(mantenimiento)} color="primary">
                           <DoneIcon />
                         </IconButton>
-                        <IconButton
-                          onClick={() => handleOpenPostponeForm(mantenimiento)}
-                          color="secondary"
-                        >
+                        <IconButton onClick={() => handleOpenPostponeForm(mantenimiento)} color="secondary">
                           <ScheduleIcon />
                         </IconButton>
                       </TableCell>
@@ -215,90 +211,48 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell align="center" colSpan={4}>
-                      No hay mantenimientos programados disponibles
-                    </TableCell>
+                    <TableCell align="center" colSpan={6}>No hay mantenimientos programados disponibles</TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
           )}
         </Box>
-
-        {showDoneForm && (
-          <Box sx={{ flex: 1, pl: 4 }}>
-            <IconButton sx={{ display: 'flex', justifyContent: '' }} color="primary" onClick={() => { setShowDoneForm(false) }}>
+        {(showDoneForm || showPostponeForm) && (
+          <Box sx={{ flex: 1, pl: isMobile ? 0 : 4, pt: isMobile ? 2 : 0 }}>
+            <IconButton color="primary" onClick={() => { setShowDoneForm(false); setShowPostponeForm(false); }}>
               <ClearIcon />
             </IconButton>
-            <Typography variant="h6" align="center" sx={{ mb: 2 }}>
-              Confirmar Mantenimiento
-            </Typography>
-            <TextField
-              label="Comentario"
-              value={comentarios}
-              onChange={(e) => setComentarios(e.target.value)} // Correcto
-              multiline
-              rows={4}
-              fullWidth
-              sx={{ mb: 2 }}
-            />
-
-            <Button variant="contained" color="primary" fullWidth onClick={() => handleDoneMantenimiento(selectedMantenimiento.id_mantenimiento, 'REALIZADO')}>
-              Guardar Cambios
-            </Button>
-
-          </Box>
-        )}
-        {showPostponeForm && (
-          <Box sx={{ flex: 1, pl: 4 }}>
-            <IconButton sx={{ display: 'flex', justifyContent: '' }} color="primary" onClick={() => { setShowPostponeForm(false) }}>
-              <ClearIcon />
-            </IconButton>
-            <Typography variant="h6" align="center" sx={{ mb: 2 }}>
-              Reprogramar Mantenimiento
-            </Typography>
-
-            <TextField
-              label="Nueva Fecha"
-              type="date"
-              fullWidth
-              value={newFecha}
-              onChange={(e) => setNewFecha(e.target.value)}
-              sx={{ mb: 2 }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <TextField
-              label="Hora Desde"
-              type="time"
-              fullWidth
-              value={newHoraDesde}
-              onChange={(e) => setNewHoraDesde(e.target.value)}
-              sx={{ mb: 2 }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <TextField
-              label="Hora Hasta"
-              type="time"
-              fullWidth
-              value={newHoraHasta}
-              onChange={(e) => setNewHoraHasta(e.target.value)}
-              sx={{ mb: 2 }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <Button variant="contained" color="primary" fullWidth onClick={handlePostpone}>
-              Guardar Cambios
-            </Button>
-
+            {showDoneForm && (
+              <>
+                <Typography variant="h6" align="center" sx={{ mb: 2 }}>Confirmar Mantenimiento</Typography>
+                <TextField
+                  label="Comentario"
+                  value={comentarios}
+                  onChange={(e) => setComentarios(e.target.value)}
+                  multiline
+                  rows={4}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                />
+                <Button variant="contained" color="primary" fullWidth onClick={() => handleDoneMantenimiento(selectedMantenimiento.id_mantenimiento, 'REALIZADO')}>
+                  Guardar Cambios
+                </Button>
+              </>
+            )}
+            {showPostponeForm && (
+              <>
+                <Typography variant="h6" align="center" sx={{ mb: 2 }}>Reprogramar Mantenimiento</Typography>
+                <TextField label="Nueva Fecha" type="date" fullWidth value={newFecha} onChange={(e) => setNewFecha(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+                <TextField label="Hora Desde" type="time" fullWidth value={newHoraDesde} onChange={(e) => setNewHoraDesde(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+                <TextField label="Hora Hasta" type="time" fullWidth value={newHoraHasta} onChange={(e) => setNewHoraHasta(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+                <Button variant="contained" color="primary" fullWidth onClick={handlePostpone}>Guardar Cambios</Button>
+              </>
+            )}
           </Box>
         )}
       </Box>
-    </Modal >
+    </Modal>
   );
 };
 
