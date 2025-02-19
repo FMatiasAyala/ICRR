@@ -1,10 +1,10 @@
 // src/components/Dashboard/Dashboard.jsx
 import React from 'react';
 import { Box, Grid } from '@mui/material';
-import EquipamentsList from './EquipamentsList';
-import CardsMantenimiento from '../CardsMantenimiento';
-import Graphic from '../Graphic';
-import Cards from '../Cards';
+import EquipamentsList from '../EquipamentsList';
+import CardsMantenimiento from '../../CardsMantenimiento';
+import Graphic from '../../Graphic';
+import Cards from '../../Cards';
 
 
 const Dashboard = ({user, reloadEquipos, equipos, tecnicos, uniqueEquipos, salas, mantenimiento, cantidadEventos, ultimoEstado, estadoEquipos}) => {

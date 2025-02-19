@@ -4,12 +4,12 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { apiMantenimiento } from '../../utils/Fetch';
+import { apiMantenimiento } from '../utils/Fetch';
 import { format } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
 import enGB from 'date-fns/locale/en-GB';
 
-const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tec, tecnihandleClose }, ref) => {
+const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose }, ref) => {
   const [taskDescription, setTaskDescription] = useState('');
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [selectedEquipo, setSelectedEquipo] = useState(null);
@@ -105,11 +105,12 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tec, tecnihandle
     ref={ref}
     sx={{
       position: 'absolute',
-      overflow: 'hidden',
+      overflowY:'auto',
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: { xs: '90%', sm: 600 }, // Ancho del modal: 90% en pantallas pequeñas
+      width: { xs: '80%', md: 600 },
+      height:{xs:'90%', md: 600}, 
       bgcolor: 'background.paper',
       boxShadow: 24,
       borderRadius: 4,
@@ -117,6 +118,10 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tec, tecnihandle
       display: 'flex',
       flexDirection: 'column',
       gap: 2,
+      scrollbarWidth: 'none', // Oculta la barra en Firefox
+    '&::-webkit-scrollbar': {
+      display: 'none' // Oculta la barra en Chrome, Safari y Edge
+    } 
     }}
   >
     <Typography variant="h6" align="center">Cargar Nuevo Mantenimiento</Typography>

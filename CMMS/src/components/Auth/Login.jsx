@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { apiUser } from '../../utils/Fetch';
+import { apiUser } from '../../components/utils/Fetch';
 
 const Login = () => {
   const [username, setUsername] = useState('');

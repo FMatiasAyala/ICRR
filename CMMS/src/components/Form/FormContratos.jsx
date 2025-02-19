@@ -1,8 +1,8 @@
-import React, { useState, forwardRef, useEffect } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { Box, Typography, TextField, Button, Snackbar, Alert, MenuItem, FormControl, InputLabel, Select, IconButton } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import { format, set } from 'date-fns';
-import { apiCargaContrato } from '../../utils/Fetch';
+import { format } from 'date-fns';
+import { apiCargaContrato } from '../utils/Fetch';
 
 
 const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {

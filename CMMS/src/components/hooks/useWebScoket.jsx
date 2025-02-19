@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client'; // Importa socket.io-client
-import { apiWebSocket } from '../../utils/Fetch';
+import { apiWebSocket } from '../../components/utils/Fetch';
 
 export const useWebSocket = (initialState = []) => {
   const [estadoEquipos, setEstadoEquipos] = useState(initialState);

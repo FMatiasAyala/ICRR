@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import { Button, Snackbar, Alert } from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
-import { apiContrato } from "../../utils/Fetch";
+import { apiContrato } from "../utils/Fetch";
 
 const FileDownloadButton = ({ equipo }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);

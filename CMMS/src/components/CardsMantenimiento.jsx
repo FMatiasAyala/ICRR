@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography } from '@mui/material';
-import MaintenanceModal from './Modal/MaintenanceModal';
+import MaintenanceModal from './Maintenance/MaintenanceModal';
 
 const CardsMantenimiento = ({ equipos, mantenimiento, salas }) => {
   const [open, setOpen] = useState(false);

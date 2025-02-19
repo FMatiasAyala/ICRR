@@ -29,7 +29,7 @@ exports.eventosFiltrados = async (req, res) => {
 
 exports.cantidadEventos = async (req, res) => {
   const query =
-    " SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM dev.tbl_estados where estado in ('NO OPERATIVO','REVISION') and id_equipo not in (select id from dev.tbl_equipomedico where baja is not null)GROUP BY id_equipo ORDER BY cantidad_eventos DESC";
+    " SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM dev.tbl_estados where estado in ('NO OPERATIVO','REVISION') and id_equipo not in (select id from dev.tbl_equipomedico where baja is not null) and YEAR(desde) = YEAR(CURDATE()) GROUP BY id_equipo ORDER BY cantidad_eventos DESC";
   try {
     const eventos = await dbMysqlDev.executeQuery(query);
     res.json(eventos);

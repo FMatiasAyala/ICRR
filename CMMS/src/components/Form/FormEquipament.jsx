@@ -1,7 +1,7 @@
 import React, { useState, forwardRef } from 'react';
 import { Box, Typography, TextField, Button, MenuItem, FormControl, InputLabel, Select, useMediaQuery, IconButton } from '@mui/material';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
-import { apiBajaEquipo, apiEventos } from '../../utils/Fetch';
+import { apiBajaEquipo, apiEventos } from '../utils/Fetch';
 import { jwtDecode } from 'jwt-decode';
 import TaskIcon from '@mui/icons-material/Task';
 import { Cancel } from '@mui/icons-material';

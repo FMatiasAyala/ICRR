@@ -11,13 +11,14 @@ import {
   IconButton,
   TextField,
   Button,
-  useMediaQuery
+  useMediaQuery,
+  Snackbar, Alert
 } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Close } from '@mui/icons-material';
-import { apiMantenimiento, apiMantenimientoPostpone } from '../../utils/Fetch';
+import {apiMantenimiento, apiMantenimientoPostpone} from '../utils/Fetch';
 
 const MaintenanceModal = ({ open, handleClose, equipos }) => {
   const [mantenimientos, setMantenimientos] = useState([]);
@@ -29,6 +30,12 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
   const [newFecha, setNewFecha] = useState('');
   const [newHoraDesde, setNewHoraDesde] = useState('');
   const [newHoraHasta, setNewHoraHasta] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [resaltado, setResaltado] = useState(null); // success, error, warning, info
+
+
 
   const isMobile = useMediaQuery('(max-width:600px)');
   const isTablet = useMediaQuery('(max-width:900px)');
@@ -50,7 +57,7 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
 
   useEffect(() => {
 
-    if (open) {
+    if (open && !loading) {
       obtenerMantenimientos();
     }
   }, [open]);
@@ -81,7 +88,12 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
               ? { ...mantenimiento, estado: nuevoEstado }
               : mantenimiento
           )
+
         );
+        setSnackbarMessage("Mantenimiento confirmado correctamente");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+
         setComentarios(null)
         setShowDoneForm(false);
         console.log('Mantenimiento actualizado');
@@ -98,11 +110,15 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
     setSelectedMantenimiento(mantenimiento);
     setShowPostponeForm(true);
     setShowDoneForm(false);
+    setResaltado(mantenimiento.id_mantenimiento); // Resaltar en la tabla
+
+
   };
   const handleOpenDoneForm = (mantenimiento) => {
     setSelectedMantenimiento(mantenimiento);
     setShowDoneForm(true);
     setShowPostponeForm(false);
+    setResaltado(mantenimiento.id_mantenimiento); // Resaltar en la tabla
   };
 
 
@@ -131,6 +147,10 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
               : mantenimiento
           )
         );
+        // Aquí iría la lógica para reprogramar el mantenimiento
+        setSnackbarMessage("Mantenimiento reprogramado correctamente");
+        setSnackbarSeverity("info");
+        setOpenSnackbar(true);
         setShowPostponeForm(false);
         setSelectedMantenimiento(null);
         console.log('Mantenimiento postergado');
@@ -179,7 +199,8 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
           ) : (
             <Table size={isMobile ? 'small' : 'medium'}>
               <TableHead>
-                <TableRow>
+                <TableRow key={mantenimientosProgramados.id_mantenimiento}
+                >
                   <TableCell align="center" sx={{ fontWeight: 'bold' }}>Equipo</TableCell>
                   <TableCell align="center" sx={{ fontWeight: 'bold' }}>Tipo</TableCell>
                   <TableCell align="center" sx={{ fontWeight: 'bold' }}>Detalle</TableCell>
@@ -191,7 +212,9 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
               <TableBody>
                 {mantenimientosProgramados.length > 0 ? (
                   mantenimientosProgramados.map((mantenimiento) => (
-                    <TableRow key={mantenimiento.id_mantenimiento}>
+                    <TableRow key={mantenimiento.id_mantenimiento} sx={{
+                      backgroundColor: resaltado ===mantenimiento.id_mantenimiento ? "rgba(0, 123, 255, 0.2)" : "inherit",
+                    }}>
                       <TableCell align="center">{obtenerNombreEquipo(mantenimiento.id_equipo)}</TableCell>
                       <TableCell align="center">{mantenimiento.tipo}</TableCell>
                       <TableCell align="center">{mantenimiento.detalle}</TableCell>
@@ -220,7 +243,7 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
         </Box>
         {(showDoneForm || showPostponeForm) && (
           <Box sx={{ flex: 1, pl: isMobile ? 0 : 4, pt: isMobile ? 2 : 0 }}>
-            <IconButton color="primary" onClick={() => { setShowDoneForm(false); setShowPostponeForm(false); }}>
+            <IconButton color="primary" onClick={() => { setShowDoneForm(false); setShowPostponeForm(false); setResaltado(null) }}>
               <ClearIcon />
             </IconButton>
             {showDoneForm && (
@@ -247,10 +270,17 @@ const MaintenanceModal = ({ open, handleClose, equipos }) => {
                 <TextField label="Hora Desde" type="time" fullWidth value={newHoraDesde} onChange={(e) => setNewHoraDesde(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
                 <TextField label="Hora Hasta" type="time" fullWidth value={newHoraHasta} onChange={(e) => setNewHoraHasta(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
                 <Button variant="contained" color="primary" fullWidth onClick={handlePostpone}>Guardar Cambios</Button>
+
               </>
+
             )}
           </Box>
         )}
+        <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={() => setOpenSnackbar(false)}>
+          <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </Modal>
   );

@@ -1,7 +1,7 @@
 import React, { useState, forwardRef, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Snackbar, Alert, Autocomplete } from '@mui/material';
 import { AccountCircle, Build, Cloud, CalendarToday } from '@mui/icons-material';
-import { apiAltaEquipos } from '../../utils/Fetch';
+import { apiAltaEquipos } from '../../components//utils/Fetch';
 
 
 const NewEquipamentForm = forwardRef(({ handleClose, sala }, ref) => {

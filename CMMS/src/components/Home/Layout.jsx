@@ -3,11 +3,11 @@ import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
 import SideMenu from '../Menu/SideMenu';
 import NavBar from '../NavBar';
 import { Box } from '@mui/material';
-import Dashboard from './Dashboard';
+import Dashboard from './Dashboard/Dashboard';
 import UpsDashboard from './UpsDashboard';
 import { jwtDecode } from 'jwt-decode';
 import { useWebSocket } from '../hooks/useWebScoket';
-import { apiEquipos, apiSalas, apiTecnicos, apiCantidadesEventos, apiMantenimiento, apiEventos, apiUps } from '../../utils/Fetch';
+import { apiEquipos, apiSalas, apiTecnicos, apiCantidadesEventos, apiMantenimiento, apiEventos, apiUps } from '../utils/Fetch'
 
 
 const Layout = () => {

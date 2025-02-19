@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Modal, ListItemIcon, Card, CardContent, IconButton, Grid } from '@mui/material';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { apiTecnicos } from '../../utils/Fetch';
+import { apiTecnicos } from '../../components/utils/Fetch';
 import { Close } from '@mui/icons-material';
 const TechniciansList = () => {
     const [technicians, setTechnicians] = useState([]);

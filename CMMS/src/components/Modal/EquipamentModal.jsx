@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery } from '@mui/material';
-import { apiDatosContrato, apiEventosFiltrados, apiTecnicosEquipo } from '../../utils/Fetch';
+import { apiDatosContrato, apiEventosFiltrados, apiTecnicosEquipo } from '../utils/Fetch';
 import FormEquipamentModal from './FormEquipamentModal';
-import FormMaintenanceModal from './FormMaintenanceModal';
+import FormMaintenanceModal from '../Maintenance/FormMaintenanceModal';
 import FileDownloadButton from '../hooks/FileDownloadButton';
 
 const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onEventCreate, tecnicos, user, mantenimiento }) => {

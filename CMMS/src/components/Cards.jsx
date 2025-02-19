@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography } from '@mui/material';
-import TaskModal from './Modal/TaskModal';
-import { CheckCircle } from '@mui/icons-material';
+import TaskModal from './Task/TaskModal';
 
 const Cards = ({ equipo, sala, estadoEquipo }) => {
   const [open, setOpen] = useState(false);

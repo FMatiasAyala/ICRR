@@ -1,6 +1,6 @@
 import React, { useState, forwardRef } from 'react';
 import { Box, Typography, TextField, Button, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
-import { apiEventos } from '../../utils/Fetch';
+import { apiEventos } from '../utils/Fetch';
 import { jwtDecode } from 'jwt-decode';
 
 
