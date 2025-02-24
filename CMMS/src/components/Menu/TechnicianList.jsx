@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Modal, ListItemIcon, Card, CardContent, IconButton, Grid } from '@mui/material';
+import {
+    Box,
+    Typography,
+    Modal,
+    ListItemIcon,
+    Card,
+    CardContent,
+    IconButton,
+    Grid,
+    Tabs,
+    Tab,
+    TextField
+} from '@mui/material';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Close, Search } from '@mui/icons-material';
 import { apiTecnicos } from '../../components/utils/Fetch';
-import { Close } from '@mui/icons-material';
+
 const TechniciansList = () => {
     const [technicians, setTechnicians] = useState([]);
     const [selectedTechnician, setSelectedTechnician] = useState(null);
     const [open, setOpen] = useState(false);
-
-    const handleOpenGeneral = () => {
-        setSelectedTechnician(null); // Asegurarse de que no haya ningún técnico seleccionado
-        setOpen(true);
-    };
-
-    const handleOpenDetails = (technician) => {
-        setSelectedTechnician(technician);
-        setOpen(true);
-    };
-
-    const handleClose = () => {
-        setOpen(false);
-        setSelectedTechnician(null);
-    };
+    const [selectedTab, setSelectedTab] = useState(0);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         const fetchTechnicians = async () => {
@@ -34,183 +34,139 @@ const TechniciansList = () => {
                 console.error('Error fetching technicians:', error);
             }
         };
-
         fetchTechnicians();
     }, []);
 
+    // Filtrar técnicos según la búsqueda
+    const filteredTechnicians = technicians.filter((tech) =>
+        tech.nombre.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const handleChange = (_, newValue) => {
+        if (newValue < filteredTechnicians.length) {
+            setSelectedTab(newValue);
+        }
+    };
+
+    useEffect(() => {
+        if (filteredTechnicians.length === 0) {
+            setSelectedTab(0);
+        } else if (selectedTab >= filteredTechnicians.length) {
+            setSelectedTab(0);
+        }
+    }, [filteredTechnicians]);
+
     return (
         <>
-            {/* Botón para abrir el modal general */}
-            <Card onClick={handleOpenGeneral} sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#0277bd', color: 'white' }, transition: 'background-color 0.3s ease' }}>
-                <CardContent
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 1,
-                        flexDirection: { xs: 'column', sm: 'row' }, // Cambia la orientación en móvil
-                        textAlign: 'center',
-                    }}>
+            {/* Botón para abrir el modal */}
+            <Card
+                onClick={() => setOpen(true)}
+                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#0277bd', color: 'white' }, transition: 'background-color 0.3s ease' }}
+            >
+                <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, flexDirection: { xs: 'column', sm: 'row' }, textAlign: 'center' }}>
                     <ListItemIcon>
-                        <HandymanIcon /> {/* Icono de grupo (puedes cambiarlo por otro según lo necesites) */}
+                        <HandymanIcon />
                     </ListItemIcon>
-                    <Typography sx={{ fontWeight: 'bold' }}>
-                        Ficha de tecnicos</Typography>
+                    <Typography sx={{ fontWeight: 'bold' }}>Ficha de técnicos</Typography>
                 </CardContent>
             </Card>
 
-            {/* Modal que muestra la lista general o los detalles del técnico */}
-            <Modal open={open} onClose={handleClose}>
+            {/* Modal */}
+            <Modal open={open} onClose={() => setOpen(false)}>
                 <Box
                     sx={{
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        width: 700,
+                        width: { xs: '90%', sm: 900 },
                         bgcolor: 'background.paper',
                         boxShadow: 24,
                         borderRadius: 4,
                         p: 4,
                         display: 'flex',
                         flexDirection: 'column',
-
                     }}
                 >
-                    <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                    <IconButton onClick={() => setOpen(false)} sx={{ position: 'absolute', top: 8, right: 8 }}>
                         <Close />
                     </IconButton>
-                    <Box display="flex" alignItems="center" mb={2}>
-                        <Typography variant="h4" gutterBottom align="center" sx={{ color: '#004d99' }}>Ficha de tecnicos</Typography>
+
+                    <Typography variant="h4" align="center" sx={{ color: '#004d99', mb: 2 }}>
+                        Ficha de técnicos
+                    </Typography>
+
+                    {/* Campo de búsqueda */}
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                        <Search sx={{ color: "gray", mr: 1 }} />
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            placeholder="Buscar técnico..."
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </Box>
-                    {selectedTechnician ? (
-                        // Si hay un técnico seleccionado, mostrar sus detalles
-                        <>
-                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }} >
-                                <IconButton onClick={() => setSelectedTechnician(null)}>
-                                    <ArrowBackIcon />
-                                </IconButton>
-                            </Box >
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <Box sx={{
-                                        p: 2,
-                                        bgcolor: '#bbdefb',
-                                        boxShadow: 1,
-                                        borderRadius: '8px',
-                                        borderLeft: '5px solid #1e88e5',
-                                    }}>
-                                        <Typography variant="body1" sx={{ color: '#1e88e5' }}>
-                                            Nombre: <strong>{selectedTechnician.nombre}</strong>
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{
-                                        mt: 2,
-                                        p: 2,
-                                        bgcolor: '#bbdefb',
-                                        boxShadow: 1,
-                                        borderRadius: '8px',
-                                        borderLeft: '5px solid #1e88e5',
-                                    }}>
-                                        <Typography variant="body1" sx={{ color: '#1e88e5' }}>
-                                            Empresa: <strong>{selectedTechnician.empresa}</strong>
-                                        </Typography>
-                                    </Box>
-                                </Grid>
 
-                                <Grid item xs={6}>
-                                    <Box sx={{
-                                        p: 2,
-                                        bgcolor: '#bbdefb',
-                                        boxShadow: 1,
-                                        borderRadius: '8px',
-                                        borderLeft: '5px solid #1e88e5',
-                                    }}>
-
-                                        <Typography variant="body1" sx={{ color: '#1e88e5' }}>
-                                            Número: <strong>{selectedTechnician.numero}</strong>
-                                        </Typography>
-                                    </Box>
-                                    {selectedTechnician.serial_number && (
-                                        <Box sx={{
-                                            mt: 2,
-                                            p: 2,
-                                            bgcolor: '#bbdefb',
-                                            boxShadow: 1,
-                                            borderRadius: '8px',
-                                            borderLeft: '5px solid #1e88e5',
-                                        }}>
-                                            <Typography variant="body1" sx={{ color: '#1e88e5' }}>
-                                                Serial Number: <strong>{selectedTechnician.serial_number}</strong>
-                                            </Typography>
-                                        </Box>
-                                    )}
-
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Box sx={{
-                                    mt: 2,
-                                    p: 2,
-                                    bgcolor: '#bbdefb',
-                                    boxShadow: 1,
-                                    borderRadius: '8px',
-                                    borderLeft: '5px solid #1e88e5',
-                                    textAlign: 'center',
-                                }}>
-
-
-                                    <Typography variant="body1" sx={{ color: '#1e88e5' }}>
-                                        Cobertura: <strong>{selectedTechnician.cobertura}</strong>
-                                    </Typography>
-
-                                </Box>
-
-
-                            </Grid>
-
-                        </>
-                    ) : (
-                        // Si no hay técnico seleccionado, mostrar la lista general de técnicos
-                        <Box
+                    {/* Tabs */}
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: '50vh' }}>
+                        <Tabs
+                            orientation="vertical"
+                            value={selectedTab}
+                            onChange={handleChange}
+                            variant="scrollable"
                             sx={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                gap: 2,
-                                p: 2,
-                                backgroundColor: '#f5f5f5',
-                                borderRadius: '8px',
+                                flexShrink: 0,
+                                overflowY: 'auto',
+                                minWidth: { xs: '100%', sm: 200 }, // Ajuste responsivo
+                                borderRight: { sm: 1, xs: 0 }, // Borde solo en pantallas grandes
+                                mb: { xs: 2, sm: 0 } // Margen en móviles
                             }}
                         >
-                            {technicians.map((technician) => (
-                                <Card
-                                    key={technician.id}
-                                    onClick={() => handleOpenDetails(technician)}
-                                    sx={{
-                                        cursor: 'pointer',
-                                        backgroundColor: 'white',
-                                        '&:hover': {
-                                            backgroundColor: '#e3f2fd',
-                                            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-                                            transform: 'translateY(-5px)',
-                                        },
-                                        transition: 'all 0.3s ease',
-                                        boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.05)',
-                                        borderRadius: '8px',
-                                    }}
-                                >
-                                    <CardContent>
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#0288d1' }}>{technician.nombre}</Typography>
-                                        <Typography variant="body2" sx={{ color: '#757575' }}>{technician.empresa}</Typography>
-                                    </CardContent>
-                                </Card>
+                            {filteredTechnicians.length > 0 ? (
+                                filteredTechnicians.map((tech, index) => (
+                                    <Tab key={index} label={tech.nombre} />
+                                ))
+                            ) : (
+                                <Typography align="center" sx={{ color: "gray", mt: 2 }}>
+                                    No se encontraron técnicos
+                                </Typography>
+                            )}
+                        </Tabs>
+
+                        {/* Contenido de cada Tab */}
+                        <Box sx={{ flexGrow: 1, overflowY: "auto", p: 2 }}>
+                            {filteredTechnicians.map((tech, index) => (
+                                <TabPanel key={index} value={selectedTab} index={index}>
+                                    <Card sx={{ p: 2, bgcolor: "grey.100", borderRadius: 2 }}>
+                                        <CardContent sx={{ textAlign: "center" }}>
+                                            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                                                {tech.nombre} {tech.apellido}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                Empresa: {tech.empresa}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                Contacto: {tech.numero}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                Especialidad: {tech.cobertura}
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
+                                </TabPanel>
                             ))}
                         </Box>
-                    )}
+                    </Box>
                 </Box>
             </Modal>
         </>
     );
+};
+
+// Componente de TabPanel para mostrar contenido según la pestaña activa
+const TabPanel = ({ children, value, index }) => {
+    return value === index ? <Box sx={{ p: 2 }}>{children}</Box> : null;
 };
 
 export default TechniciansList;
