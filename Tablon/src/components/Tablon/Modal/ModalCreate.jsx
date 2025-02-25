@@ -6,15 +6,23 @@ import {
     ModalHeader,
     ModalBody,
     ModalFooter,
-    useDisclosure} from '@nextui-org/react'
+    useDisclosure
+} from '@nextui-org/react'
 
 
 export function ModalCreate({ onEventCreate, authors, sector, obraSocial }) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
     return (
-        <>
-            <Button onPress={onOpen}>Nuevo anuncio</Button>
+        <><Button
+            onPress={onOpen}
+            className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg 
+                   shadow-md transition-transform transform hover:scale-105 
+                   active:scale-95 hover:bg-blue-700"
+        >
+            ➕ Nuevo Anuncio
+        </Button>
+
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
                     {(onClose) => (

@@ -30,37 +30,47 @@ export function ModalDowloadFile({ anuncio, onClose }) {
             onClose={onClose}
         >
             <ModalContent>
-                <ModalHeader>
-                    Descargar archivos
+                <ModalHeader className="text-lg font-semibold text-gray-800">
+                    📂 Descargar archivos
                 </ModalHeader>
+
                 <ModalBody>
-                    <ul>
                     {anuncio.attachments && anuncio.attachments.length > 0 ? (
-                                anuncio.attachments.map((attachment) => {
-                                    const fileName = attachment.url.split('/').pop();
-                                    return (
+                        <ul className="space-y-2">
+                            {anuncio.attachments.map((attachment) => {
+                                const fileName = attachment.url.split('/').pop();
+                                return (
+                                    <li key={attachment.id} className="flex items-center gap-2">
                                         <a
-                                            key={attachment.id}
                                             href={`${apiAttachments}${attachment.url}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="file-icon">
-                                            {renderFileIcon(attachment.url)} {fileName}
+                                            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+                                        >
+                                            {renderFileIcon(attachment.url)}
+                                            <span className="truncate max-w-[200px]">{fileName}</span>
                                         </a>
-                                    );
-                                })
-                            ) : (
-                                <p>No hay archivos cargados</p>
-                            )}
-                    </ul>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    ) : (
+                        <p className="text-gray-500">⚠️ No hay archivos cargados</p>
+                    )}
                 </ModalBody>
+
                 <ModalFooter>
-                    <Button auto onClick={onClose}>
-                        Cerrar
+                    <Button
+                        auto
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg shadow-md transition-all"
+                        onClick={onClose}
+                    >
+                        ❌ Cerrar
                     </Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
+
     );
 };
 

@@ -1,67 +1,107 @@
 
 .filtro-card { 
-    padding: 1rem;
-    font-weight: bold;
+  padding: 1.2rem;
+  font-weight: bold;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  background-color: #f8f9fa; /* Fondo gris claro */
+  border-radius: 8px; /* Bordes redondeados */
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  border: 1px solid #ddd; /* Borde suave */
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.filtro-card:hover {
+  transform: translateY(-3px); /* Efecto de elevación al pasar el mouse */
+}
+  .anuncio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    background-color: #fff; /* Fondo blanco */
+    border-radius: 12px; /* Bordes redondeados */
+    box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+    border-left: 6px solid #007bff; /* Línea decorativa */
+    width: 100%;
+    max-width: 420px; /* Ajuste de ancho */
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   
-.anuncio{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem;
-  margin-top: 1rem;
-}
-
-.anuncio-alta {
-  background: #5CB85C;
-  color: #fff;
-  border-radius: 5px;
-  padding: 10px;
-  border: 5px solid #4a7c3c; /* Borde verde más oscuro */
-}
-
-.anuncio-baja {
-  background-color: #D9534F;
-  color: #fff;
-  border-radius: 5px;
-  padding: 10px;
-  border: 5px solid #7d3f3f; /* Borde rojo más oscuro */
-}
-
-.anuncio-notificacion {
-  background-color: #4c6ea8;
-  color: #fff;
-  border-radius: 5px;
-  padding: 10px;
-  border: 5px solid #365c8e; /* Borde azul más oscuro */
-}
-
-.text-anuncio{
-  color: #fff;
-}
-
-.font-bold {
-  font-weight: bold;
-}
-
-.descripcion-anuncio{
-  font-size: 1.70rem;
-  margin-bottom: 0.5rem;
-  text-align: center;
-}
-
-.cardContent{ 
-  text-align: center;
-  max-width: 500px;
-  max-height: 200px;
-  overflow: auto;
-}
-
-
- .content-text {
-  white-space: pre-wrap; /* Preserva los espacios y los saltos de línea */
-  word-wrap: break-word; /* Permite que las líneas largas se ajusten */
-  font-size: medium; 
-}
+  .anuncio:hover {
+    transform: translateY(-5px); /* Elevación al pasar el mouse */
+    box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Estilos diferenciados por tipo de anuncio */
+  .anuncio-alta {
+    background: #5cb85c;
+    color: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 8px solid #4a7c3c; /* Borde verde más oscuro */
+  }
+  
+  .anuncio-baja {
+    background-color: #d9534f;
+    color: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 8px solid #7d3f3f; /* Borde rojo más oscuro */
+  }
+  
+  .anuncio-notificacion {
+    background-color: #4c6ea8;
+    color: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    border-left: 8px solid #365c8e; /* Borde azul más oscuro */
+  }
+  
+  /* Texto general */
+  .text-anuncio {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  /* Fuente en negrita */
+  .font-bold {
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  
+  /* Descripción del anuncio */
+  .descripcion-anuncio {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+    text-align: center;
+    color: #333;
+  }
+  
+  /* Contenido de la card */
+  .cardContent {
+    text-align: center;
+    max-width: 500px;
+    max-height: 220px;
+    overflow: auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+  }
+  
+  /* Contenido de texto */
+  .content-text {
+    white-space: pre-wrap; /* Mantiene los saltos de línea */
+    word-wrap: break-word; /* Ajusta las palabras largas */
+    font-size: 1rem;
+    color: #444;
+    line-height: 1.5;
+  }
+  
 
 

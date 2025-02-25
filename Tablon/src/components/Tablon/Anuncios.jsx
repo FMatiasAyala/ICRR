@@ -204,10 +204,13 @@ export default function Anuncios() {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <Header>
-                <Logo src={logo} alt='logo' />
-                Tablon de anuncios
+            <Header className="flex items-center justify-between bg-blue-600 text-white p-4 shadow-md rounded-lg">
+                <div className="flex items-center gap-2">
+                    <Logo src={logo} alt="Logo" className="w-10 h-10" />
+                    <h1 className="text-lg font-bold">Tablón de Anuncios</h1>
+                </div>
             </Header>
+
             <div className="flex flex-1">
                 <aside className="w-1/8 p-4">
                     <Card className="filtro-card">
@@ -262,41 +265,42 @@ export default function Anuncios() {
                                     <CardFooter className="text-center">
                                         <p className="text-small text-default-500">{formateDate(anuncio.updatedAt)}</p>
                                     </CardFooter>
-                                    <div className="flex gap-3">
-                                        <div className="attachments">
+                                    <div className="flex gap-3 items-center">
+                                        {/* Botón para ver archivos */}
+                                        <Button
+                                            variant="ghost"
+                                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-md"
+                                            onClick={() => handleFileModalOpen(anuncio)}
+                                            aria-label="Ver archivos"
+                                        >
+                                            📂 Ver archivos
+                                        </Button>
+
+                                        {/* Botón de editar (solo para GESTION o FACTU) */}
+                                        {(buttonCreated === 'GESTION' || buttonCreated === 'FACTU') && (
                                             <Button
-                                                auto
-                                                onClick={() => handleFileModalOpen(anuncio)}
-                                                aria-label="Ver archivos"
+                                                className="bg-green-600 text-white font-medium py-2 px-4 rounded-lg shadow-md 
+                 hover:bg-green-700 transition-transform transform hover:scale-105 active:scale-95"
+                                                onClick={() => handleEdit(anuncio.id)}
+                                                aria-label={`Editar anuncio ${anuncio.title}`}
                                             >
-                                                Ver archivos
+                                                ✏️ Editar
                                             </Button>
-                                        </div>
-                                        {(buttonCreated === 'GESTION'|| buttonCreated === 'FACTU') && (
-                                            <div className="flex gap-3">
-                                                <Button
-                                                    className="text-small"
-                                                    color="success"
-                                                    onClick={() => handleEdit(anuncio.id)}
-                                                    aria-label={`Editar anuncio ${anuncio.title}`}
-                                                >
-                                                    Editar
-                                                </Button>
-                                            </div>
                                         )}
+
+                                        {/* Botón de eliminar (solo para GESTION) */}
                                         {buttonCreated === 'GESTION' && (
-                                            <div className="flex gap-3">
-                                                <Button
-                                                    className="text-small"
-                                                    color="danger"
-                                                    onClick={() => handleDelete(anuncio.id)}
-                                                    aria-label={`Eliminar anuncio ${anuncio.title}`}
-                                                >
-                                                    Eliminar anuncio
-                                                </Button>
-                                            </div>
+                                            <Button
+                                                className="bg-red-600 text-white font-medium py-2 px-4 rounded-lg shadow-md 
+                 hover:bg-red-700 transition-transform transform hover:scale-105 active:scale-95"
+                                                onClick={() => handleDelete(anuncio.id)}
+                                                aria-label={`Eliminar anuncio ${anuncio.title}`}
+                                            >
+                                                🗑️ Eliminar
+                                            </Button>
                                         )}
                                     </div>
+
                                 </Card>
                             ))}
                         </div>

@@ -117,7 +117,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
 
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 flex-col">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 bg-white shadow-md rounded-lg max-w-md">
       <Input
         isRequired
         type="text"
@@ -126,21 +126,23 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
         onChange={handleChange}
         variant="flat"
         labelPlacement="outside"
-        placeholder="Titulo..."
-        label="Titulo"
-        className="max-w-s"
+        placeholder="Título del anuncio..."
+        label="Título"
+        className="w-full"
       />
+
       <Textarea
         isRequired
-        type="text"
         name="content"
         value={formData.content}
         onChange={handleChange}
         variant="flat"
         labelPlacement="outside"
-        label="Anuncio"
-        className="max-w-xs resize-y min-h-[40px]"
+        label="Descripción"
+        placeholder="Escribe el contenido del anuncio..."
+        className="w-full resize-y min-h-[80px]"
       />
+
       <Select
         isRequired
         aria-label="author"
@@ -163,7 +165,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
         placeholder="Tipo de anuncio"
         value={formData.tipo}
         labelPlacement="outside-left"
-        onChange={(e) => handleChange(e)}
+        onChange={handleChange}
       >
         {Object.entries(tiposAnuncio).map(([key, value]) => (
           <SelectItem key={key} value={value}>
@@ -171,7 +173,6 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
           </SelectItem>
         ))}
       </Select>
-
 
       {sector === "Gestion" && (
         <Select
@@ -181,7 +182,7 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
           placeholder="Selecciona un servicio"
           value={formData.servicio}
           labelPlacement="outside-left"
-          onChange={(e) => handleChange(e)}
+          onChange={handleChange}
         >
           {Object.entries(listaServicio).map(([key, value]) => (
             <SelectItem key={key} value={value}>
@@ -191,17 +192,22 @@ export function CargaAnuncio({ onClose, onEventCreated, authors, sector, obraSoc
         </Select>
       )}
 
-      {sector === "Facturacion" && (
-        <ObraSocialSelect handleObraSocial={handleObraSelect} />
-      )}
-      <input
-        type="file"
-        name="attachments"
-        multiple
-        onChange={handleFileChange}
-      />
-      <Button type="submit" color="primary">Agregar anuncio</Button>
+      {sector === "Facturacion" && <ObraSocialSelect handleObraSocial={handleObraSelect} />}
+
+      <div className="flex flex-col items-center gap-2">
+        <label className="text-sm font-semibold text-gray-700">Adjuntar archivos</label>
+        <input
+          type="file"
+          name="attachments"
+          multiple
+          onChange={handleFileChange}
+          className="file:bg-blue-500 file:border-0 file:rounded-md file:px-4 file:py-2 file:text-white file:cursor-pointer"
+        />
+      </div>
+
+      <Button type="submit" color="primary" className="w-full">Agregar anuncio</Button>
     </form>
+
   );
 }
 
