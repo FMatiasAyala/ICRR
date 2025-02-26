@@ -1,6 +1,6 @@
 import React from 'react';
 import { Drawer, Box, List, ListItem, ListItemButton,ListItemText, Divider } from '@mui/material';
-import TechniciansList from './TechnicianList';
+import TechniciansList from './TechnicianList/TechnicianList';
 import ContratoFormModal from '../Modal/ContratosFormModal';
 import NewEquipamentModal from '../NewEquipo/NewEquipamentModal';
 import { useNavigate } from 'react-router-dom';
