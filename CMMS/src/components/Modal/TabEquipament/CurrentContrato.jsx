@@ -1,11 +1,6 @@
 import { Box, Typography, Grid, Button  } from "@mui/material";
 import FileDownloadButton from "../../hooks/FileDownloadButton";
 
-
-
-
-
-
 const CurrentContrato = ({contratos, equipo, handleTabChange}) => {
 
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Drawer, Box, List, ListItem, ListItemButton,ListItemText, Divider } from '@mui/material';
-import TechniciansList from './TechnicianList/TechnicianList';
+import TechniciansList from './TechnicianList';
 import ContratoFormModal from '../Modal/ContratosFormModal';
 import NewEquipamentModal from '../NewEquipo/NewEquipamentModal';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ const SideMenu = ({ open, onClose, equipos, salas }) => {
       <Box sx={{ width: 250 }} role="presentation">
         <List>
           <div onClick={(e) => e.stopPropagation()}>
-            <TechniciansList />
+            <TechniciansList equipos = {equipos} salas={salas}/>
           </div>
         </List>
         <List>

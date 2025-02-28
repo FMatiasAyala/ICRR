@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, Typography, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useMediaQuery } from '@mui/material';
+import { Modal, Box, Typography, Button, Grid, useMediaQuery } from '@mui/material';
 import { apiDatosContrato, apiEventosFiltrados, apiTecnicosEquipo } from '../utils/Fetch';
 import FormEquipamentModal from './FormEquipamentModal';
 import FormMaintenanceModal from '../Maintenance/FormMaintenanceModal';
-import FileDownloadButton from '../hooks/FileDownloadButton';
 import CurrentMaintenance from './TabEquipament/CurrentMaintenance';
 import CurrentEvents from './TabEquipament/CurrentEvents';
 import CurrentContrato from './TabEquipament/CurrentContrato';

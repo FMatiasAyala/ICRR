@@ -43,7 +43,7 @@ const NewEquipamentForm = forwardRef(({ handleClose, sala }, ref) => {
             aetitle: aetitle,
             puerto: puerto, 
             compra_año: compra,
-            sala: selectedSala.ubicacion,
+            sala: selectedSala.id_sala,
         }
         try {
             const response = await fetch(apiAltaEquipos, {
@@ -257,7 +257,7 @@ const NewEquipamentForm = forwardRef(({ handleClose, sala }, ref) => {
                     options={sala}
                     value={selectedSala}
                     onChange={(event, newValue) => setSelectedSala(newValue)}
-                    isOptionEqualToValue={(option, value) => option.ubicacion === value.ubicacion} // Comparar por ID único
+                    isOptionEqualToValue={(option, value) => option.id_sala === value.id_sala} // Comparar por ID único
                     getOptionLabel={(option) => `${option.sala} - ${option.sector}`}
                     renderInput={(params) => (
                         <TextField {...params} label="Seleccionar Sala" margin="normal" required />

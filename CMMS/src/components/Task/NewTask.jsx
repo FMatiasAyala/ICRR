@@ -3,7 +3,7 @@ import FormTask from "../Form/FormTask"
 import { Card, Box, CardContent, Typography, Modal } from "@mui/material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
-const NewTask = ({ onEventCreate, equipo, salas }) => {
+const NewTask = ({ onEventCreate, equipo, salas, estadoEquipos }) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -53,7 +53,7 @@ const NewTask = ({ onEventCreate, equipo, salas }) => {
         </Card>
       
         <Modal open={open} onClose={handleClose} closeAfterTransition>
-          <FormTask handleClose={handleClose} onEventCreate={onEventCreate} equipo={equipo} salas={salas} />
+          <FormTask handleClose={handleClose} onEventCreate={onEventCreate} equipo={equipo} salas={salas} estadoEquipos={estadoEquipos} />
         </Modal>
       </Box>
       

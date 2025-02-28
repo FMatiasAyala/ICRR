@@ -144,7 +144,7 @@ const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {
                         >
                             {filteredEquipos.map((equipo) => (
                                 <MenuItem key={equipo.id} value={equipo.id}>
-                                    {equipo.modelo} ({salas.find(sala => sala.ubicacion === equipo.sala)?.sala || 'Desconocida'})
+                                    {equipo.modelo} ({salas.find(sala => sala.id_sala === equipo.sala)?.sala || 'Desconocida'})
                                 </MenuItem>
                             ))}
                         </Select>

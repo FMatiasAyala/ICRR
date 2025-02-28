@@ -4,7 +4,7 @@ import { apiEventos } from '../utils/Fetch';
 import { jwtDecode } from 'jwt-decode';
 
 
-const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas }, ref) => {
+const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas, estadoEquipos }, ref) => {
 
   const [taskDescription, setTaskDescription] = useState('');
   const [falla, setFalla] = useState('');
@@ -15,8 +15,7 @@ const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas }, ref)
   const [estadoActual, setEstadoActual] = useState([]); // Para almacenar el estado anterior del equipo
 
 
-
-  const fetchEventos = async () => {
+ /*  const fetchEventos = async () => {
     try {
       const response = await fetch(apiEventos);
       const data = await response.json();
@@ -24,7 +23,7 @@ const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas }, ref)
     } catch (error) {
       console.error('Error obteniendo equipos:', error);
     }
-  };
+  }; */
 
 
   const handleSubmit = async (event) => {
@@ -85,10 +84,16 @@ const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas }, ref)
   const handleEquipoSeleccionado = (equipoId) => {
     if (equipoId) {
       const equipoEncontrado = equipo.find(e => e.id === equipoId);
+      
       setIdEquipo(equipoId);
       setEquipoSeleccionado(equipoEncontrado);
+      setCondicion(estadoActual.find(e => e.id_equipo === equipoId)?.estado); // Obtener el estado anterior del equipo
+      console.log(condicion);
     }
   };
+
+
+  
 
   return (
     <Box
@@ -135,7 +140,7 @@ const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas }, ref)
             >
               {filteredEquipos.map((equipo) => (
                 <MenuItem key={equipo.id} value={equipo.id}>
-                  {equipo.modelo} ({salas.find(sala => sala.ubicacion === equipo.sala)?.sala || 'Desconocida'})
+                  {equipo.modelo} ({salas.find(sala => sala.id_sala === equipo.sala)?.sala || 'Desconocida'})
                 </MenuItem>
               ))}
             </Select>
@@ -158,8 +163,8 @@ const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas }, ref)
             }}
           >
             <Typography variant="body1"><strong>Nombre del equipo:</strong> {equipoSeleccionado.modelo}</Typography>
-            <Typography variant="body1"><strong>Sala:</strong> {salas.find(sala => sala.ubicacion === equipoSeleccionado.sala)?.sala || 'Sin sala'}</Typography>
-            <Typography variant="body1"><strong>Estado:</strong> </Typography>
+            <Typography variant="body1"><strong>Sala:</strong> {salas.find(sala => sala.id_sala === equipoSeleccionado.sala)?.sala || 'Sin sala'}</Typography>
+            <Typography variant="body1"><strong>Estado:</strong> {condicion}</Typography>
           </Box>
         )}
 

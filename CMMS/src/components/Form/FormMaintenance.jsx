@@ -14,7 +14,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [selectedEquipo, setSelectedEquipo] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [tipoMantenimiento, setTipoMantenimiento] = useState(null);
+  const [tipoMantenimiento, setTipoMantenimiento] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -133,6 +133,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
           onChange={(e) => setTipoMantenimiento(e.target.value)}
           required
         >
+        
           <MenuItem value="PREVENTIVO">Preventivo</MenuItem>
           <MenuItem value="CORRECTIVO">Correctivo</MenuItem>
           <MenuItem value="ACTUALIZACION">Actualización</MenuItem>
@@ -165,7 +166,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
         value={selectedEquipo}
         onChange={(event, newValue) => setSelectedEquipo(newValue)}
         isOptionEqualToValue={(option, value) => option.id === value.id} // Comparar por ID único
-        getOptionLabel={(option) => `${option.modelo} - ${option.servicio} (${salas.find(sala => sala.ubicacion === option.sala)?.sala || 'Desconocida'})`}
+        getOptionLabel={(option) => `${option.modelo} - ${option.servicio} (${salas.find(sala => sala.id_sala === option.sala)?.sala || 'Desconocida'})`}
         renderInput={(params) => (
           <TextField {...params} label="Seleccionar Equipo" margin="normal" required />
         )}

@@ -30,15 +30,6 @@ class MySqlDatabaseCrr {
     }
   }
 
-  async fichaTecnicos(query) {
-    try {
-      const [rows] = await this.pool.execute(query);
-      return rows;
-    } catch (error) {
-      console.error("Error ejecutando la consulta:", error);
-      throw error; // Propagamos el error para manejarlo en otro lugar
-    }
-  }
 
   // Método para cerrar el pool de conexiones cuando no lo necesites más
   async closePool() {
@@ -76,16 +67,6 @@ class MySqlDatabaseDev {
       return rows;
     } catch (error) {
       console.error("Error ejecutando la consulta sin parámetros:", error);
-      throw error; // Propagamos el error para manejarlo en otro lugar
-    }
-  }
-
-  async fichaTecnicos(query) {
-    try {
-      const [rows] = await this.pool.execute(query);
-      return rows;
-    } catch (error) {
-      console.error("Error ejecutando la consulta:", error);
       throw error; // Propagamos el error para manejarlo en otro lugar
     }
   }

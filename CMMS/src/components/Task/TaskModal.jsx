@@ -20,7 +20,7 @@ const TaskModal = ({ open, handleClose, currentTasks, equipos, salas }) => {
 
   const obtenerSala = (id_equipo) => {
     const equipo = equipos.find((e) => e.id === id_equipo);
-    const sala = salas.find((s) => s.ubicacion === equipo?.sala);
+    const sala = salas.find((s) => s.id_sala === equipo?.sala);
     return sala ? sala.sala : "Sala no encontrada";
   };
 

@@ -60,7 +60,7 @@ const DashboardDesktop = ({ groupedEquipos, handleOpenModal, getHoverColorByEsta
                                         </Typography>
                                         {salas &&
                                             salas
-                                                .filter((sala) => sala.ubicacion === equipo.sala)
+                                                .filter((sala) => sala.id_sala === equipo.sala)
                                                 .map((sala) => (
                                                     <Typography
                                                         key={sala.id}
