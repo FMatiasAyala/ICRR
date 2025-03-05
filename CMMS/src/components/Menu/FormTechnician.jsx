@@ -13,7 +13,7 @@ const NewTechnicianForm = ({ equipos, salas }) => {
         cobertura: "",
         numero: "",
         email: "",
-        id_equipo: "",
+        id_equipo: [],
     });
 
     const [error, setError] = useState("");
@@ -99,15 +99,16 @@ const NewTechnicianForm = ({ equipos, salas }) => {
                     </Grid>
                     <Grid item xs={12}>
                         <Autocomplete
+                            multiple
                             options={equipos}
-                            getOptionLabel={(option) => 
+                            getOptionLabel={(option) =>
                                 `${option.modelo} - ${option.servicio} (${salas.find(sala => sala.id_sala === option.sala)?.sala || 'Desconocida'})`
                             }
-                            onChange={(event, newValue) => 
-                                setFormData({ ...formData, id_equipo: newValue ? newValue.id : "" })
+                            onChange={(event, newValue) =>
+                                setFormData({ ...formData, id_equipo: newValue.map(equipos => equipos.id)})
                             }
                             renderInput={(params) => (
-                                <TextField {...params} label="Seleccionar Equipo" margin="normal" required />
+                                <TextField {...params} label="Seleccionar Equipo" margin="normal"  />
                             )}
                         />
                     </Grid>
@@ -119,7 +120,7 @@ const NewTechnicianForm = ({ equipos, salas }) => {
                     Agregar Técnico
                 </Button>
             </form>
-            
+
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
                 <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}

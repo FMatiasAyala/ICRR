@@ -17,7 +17,6 @@ import HandymanIcon from "@mui/icons-material/Handyman";
 import { Close, Search, Edit, Delete } from "@mui/icons-material";
 import { apiBajaTecnico, apiTecnicos } from "../utils/Fetch";
 import NewTechnician from "./NewTechnician";
-import NewTechnicianForm from "./FormTechnician"; // Corregido el nombre del componente
 import EditTechnician from "./EditTechnician";
 
 const TechniciansList = ({ equipos, salas }) => {
@@ -41,6 +40,10 @@ const TechniciansList = ({ equipos, salas }) => {
     useEffect(() => {
         fetchTechnicians(); // Carga inicial de los técnicos
     }, []);
+
+    const reloadTechnicians = () => {
+        fetchTechnicians();
+    }
 
     const groupedByCompany = technicians.reduce((acc, tech) => {
         if (!acc[tech.empresa]) {
@@ -157,6 +160,7 @@ const TechniciansList = ({ equipos, salas }) => {
                 <EditTechnician
                     openEditModal={openEditModal}
                     setOpenEditModal={setOpenEditModal}
+                    reloadTechnicians={reloadTechnicians}
                     technicianData={selectedTechnician}
                     equipos={equipos}
                     salas={salas}

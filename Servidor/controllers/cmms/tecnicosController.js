@@ -25,7 +25,7 @@ exports.altaTecnicos = async (req, res) => {
     // Insertar técnico en tbl_tecnicos
     const altaTecnico = await dbMysqlDev.executeQueryParams(
       "INSERT INTO tbl_tecnicos (nombre, apellido, empresa,email, cobertura, numero) VALUES (?, ?,?, ?, ?, ?)",
-      [nombre, apellido, empresa,email, cobertura, numero]
+      [nombre, apellido, empresa, email, cobertura, numero]
     );
 
     // Obtener el ID del técnico recién insertado
@@ -42,14 +42,14 @@ exports.altaTecnicos = async (req, res) => {
 
     const tecnicoId = tecnicoNuevo[0].id_tecnico;
 
-    // Insertar en tbl_equipo_tecnico solo si hay un equipo asociado
-    if (id_equipo) {
-      const equipoTecnico = await dbMysqlDev.executeQueryParams(
-        "INSERT INTO tbl_equipo_tecnico (tecnico_id, equipo_id) VALUES (?, ?)",
-        [tecnicoId, id_equipo]
-      );
-    } else {
-      console.log("Error.");
+    // Insertar en tbl_equipo_tecnico para cada equipo asociado
+    if (Array.isArray(id_equipo) && id_equipo.length > 0) {
+      for (const equipoId of id_equipo) {
+        await dbMysqlDev.executeQueryParams(
+          "INSERT INTO tbl_equipo_tecnico (tecnico_id, equipo_id) VALUES (?, ?)",
+          [tecnicoId, equipoId]
+        );
+      }
     }
 
     res.status(201).json({ message: "Técnico dado de alta correctamente" });
@@ -61,15 +61,23 @@ exports.altaTecnicos = async (req, res) => {
   }
 };
 
-
-exports.modificacionTecnicos = async(req, res) =>{
+exports.modificacionTecnicos = async (req, res) => {
   const id = req.params.id;
-  const { nombre, apellido, cobertura, numero, email, id_equipo, empresa } = req.body;
-  
+  const { nombre, apellido, cobertura, numero, email, id_equipo, empresa } =
+    req.body;
+
   const query = `UPDATE tbl_tecnicos SET nombre=?, apellido=?, empresa=?, email=?, cobertura=?, numero=? WHERE id_tecnico=?`;
 
   try {
-    const result = await dbMysqlDev.executeQueryParams(query, [nombre, apellido, empresa, email, cobertura, numero, id]);
+    const result = await dbMysqlDev.executeQueryParams(query, [
+      nombre,
+      apellido,
+      empresa,
+      email,
+      cobertura,
+      numero,
+      id,
+    ]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Técnico no encontrado" });
     }
@@ -77,15 +85,14 @@ exports.modificacionTecnicos = async(req, res) =>{
   } catch (error) {
     console.error("Error en modificacionTecnicos:", error);
     res
-     .status(500)
-     .json({ error: "Error al modificar al técnico", details: error.message });
+      .status(500)
+      .json({ error: "Error al modificar al técnico", details: error.message });
   }
+};
 
-}
-
-exports.bajaTecnicos = async(req, res)=>{
+exports.bajaTecnicos = async (req, res) => {
   const id = req.params.id;
-  
+
   const query = `DELETE FROM tbl_tecnicos WHERE id_tecnico=?`;
 
   try {
@@ -97,8 +104,7 @@ exports.bajaTecnicos = async(req, res)=>{
   } catch (error) {
     console.error("Error en bajaTecnicos:", error);
     res
-     .status(500)
-     .json({ error: "Error al eliminar al técnico", details: error.message });
+      .status(500)
+      .json({ error: "Error al eliminar al técnico", details: error.message });
   }
-
-}
+};
