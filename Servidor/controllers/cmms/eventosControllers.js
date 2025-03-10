@@ -3,7 +3,7 @@ const { broadcastUpdate } = require("../../websocket/webSocketCmms");
 
 exports.obtenerEventos = async (req, res) => {
   const query =
-    "select * from dev.tbl_estados  where id_equipo  not in (select id from dev.tbl_equipomedico where baja is not null)";
+    "select * from tbl_estados  where id_equipo  not in (select id from tbl_equipomedico where baja is not null)";
   try {
     const eventos = await dbMysqlDev.executeQuery(query);
     res.json(eventos);
@@ -15,7 +15,7 @@ exports.obtenerEventos = async (req, res) => {
 exports.eventosFiltrados = async (req, res) => {
   const { id_equipo } = req.query;
   const query =
-    "select * from dev.tbl_estados where id_equipo = ? order by desde desc";
+    "select * from tbl_estados where id_equipo = ? order by desde desc";
   try {
     if (!id_equipo) {
       return res.status(400).json({ error: "searchTerm is required" });
@@ -29,7 +29,7 @@ exports.eventosFiltrados = async (req, res) => {
 
 exports.cantidadEventos = async (req, res) => {
   const query =
-    " SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM dev.tbl_estados where estado in ('NO OPERATIVO','REVISION') and id_equipo not in (select id from dev.tbl_equipomedico where baja is not null) and YEAR(desde) = YEAR(CURDATE()) GROUP BY id_equipo ORDER BY cantidad_eventos DESC";
+    " SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM tbl_estados where estado in ('NO OPERATIVO','REVISION') and id_equipo not in (select id from tbl_equipomedico where baja is not null) and YEAR(desde) = YEAR(CURDATE()) GROUP BY id_equipo ORDER BY cantidad_eventos DESC";
   try {
     const eventos = await dbMysqlDev.executeQuery(query);
     res.json(eventos);

@@ -58,7 +58,7 @@ exports.cargaContratos = async (req, res) => {
       return res.status(400).json({ error: "ID de equipo es requerido" });
     }
   
-    const query = "SELECT url FROM dev.tbl_contratos WHERE id_equipo = ?";
+    const query = "SELECT url FROM tbl_contratos WHERE id_equipo = ?";
   
     try {
       // Consulta en la base de datos

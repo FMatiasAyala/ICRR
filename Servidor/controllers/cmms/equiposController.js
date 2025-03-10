@@ -2,7 +2,7 @@ const dbMysqlDev = require("../../DataBase/MySqlDatabaseDev");
 
 exports.obtenerEquipos = async (req, res) => {
   const query =
-    "select * from dev.tbl_equipomedico where id not in (select id from dev.tbl_equipomedico where baja is not null)";
+    "select * from tbl_equipomedico where id not in (select id from tbl_equipomedico where baja is not null)";
   try {
     const equipos = await dbMysqlDev.executeQuery(query);
     res.json(equipos);
