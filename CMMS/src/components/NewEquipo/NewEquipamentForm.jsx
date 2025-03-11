@@ -148,6 +148,7 @@ const NewEquipamentForm = forwardRef(({ handleClose, sala }, ref) => {
                         sx={{ marginBottom: '10px' }}
                         onChange={(e) => setSerialNumber(e.target.value)}
                         fullWidth
+                        required
                         InputProps={{
                             startAdornment: (
                                 <AccountCircle sx={{ marginRight: '8px' }} />
@@ -246,6 +247,7 @@ const NewEquipamentForm = forwardRef(({ handleClose, sala }, ref) => {
                         sx={{ marginBottom: '10px' }}
                         onChange={(e) => setCompra(e.target.value)}
                         fullWidth
+                        required
                         InputProps={{
                             startAdornment: (
                                 <CalendarToday sx={{ marginRight: '8px' }} />
