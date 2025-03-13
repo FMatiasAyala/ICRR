@@ -1,95 +1,288 @@
-import React, { useState } from 'react';
-import { Box, Card, CardContent, Typography } from '@mui/material';
-import MaintenanceModal from './Maintenance/MaintenanceModal';
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Modal,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  IconButton,
+  TextField,
+  Button,
+  useMediaQuery,
+  Snackbar, Alert
+} from '@mui/material';
+import DoneIcon from '@mui/icons-material/Done';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import ClearIcon from '@mui/icons-material/Clear';
+import { apiMantenimiento, apiMantenimientoPostpone } from '../components/utils/Fetch';
 
 const CardsMantenimiento = ({ equipos, mantenimiento, salas }) => {
-  const [open, setOpen] = useState(false);
+  const [mantenimientos, setMantenimientos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showPostponeForm, setShowPostponeForm] = useState(false);
+  const [showDoneForm, setShowDoneForm] = useState(false);
+  const [comentarios, setComentarios] = useState(null);
+  const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
+  const [newFecha, setNewFecha] = useState('');
+  const [newHoraDesde, setNewHoraDesde] = useState('');
+  const [newHoraHasta, setNewHoraHasta] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [resaltado, setResaltado] = useState(null); // success, error, warning, info
 
 
 
-  const handleOpen = () => {
-    if (mantenimiento.length > 0) {
-      setOpen(true);
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:900px)');
+
+
+
+  const obtenerMantenimientos = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(apiMantenimiento);
+      const data = await response.json();
+      setMantenimientos(data);
+    } catch (error) {
+      console.error('Error al obtener los mantenimientos:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    obtenerMantenimientos()
+  }, []);
 
-  const handleClose = () => setOpen(false);
-
-  // Función para obtener el color en base al estado (programado o realizado)
-  const getColorByEstado = (estado) => {
-    return estado === 'PROGRAMADO' ? '#ff9800' : '#4caf50'; // Naranja para programado, Verde para realizado
-  };
-
-  // Filtrar solo los mantenimientos programados
-  const mantenimientosProgramados = mantenimiento.filter(
-    (mantenimiento) => mantenimiento.estado === 'PROGRAMADO'
-  ).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
-  // Función para obtener el nombre del equipo a partir del id_equipo
   const obtenerNombreEquipo = (id_equipo) => {
-    const equipo = equipos.find((e) => e.id === id_equipo);  // Buscar el equipo por id
-    return equipo ? equipo.modelo : 'Equipo no encontrado';  // Devolver el nombre o un mensaje por defecto
+    const equipo = equipos.find((e) => e.id === id_equipo);
+    return equipo ? equipo.modelo : 'Equipo no encontrado';
   };
+
+
+  const handleDoneMantenimiento = async (id_mantenimiento, nuevoEstado) => {
+
+    const doneMantenimiento = { ...mantenimientos, comentario: comentarios, estado: nuevoEstado };
+
+    try {
+      const responseDone = await fetch(`${apiMantenimiento}${id_mantenimiento}`, {
+
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(doneMantenimiento),
+      });
+      if (responseDone.ok) {
+        setMantenimientos((prevMantenimientos) =>
+          prevMantenimientos.map((mantenimiento) =>
+            mantenimiento.id_mantenimiento === id_mantenimiento
+              ? { ...mantenimiento, estado: nuevoEstado }
+              : mantenimiento
+          )
+
+        );
+        setSnackbarMessage("Mantenimiento confirmado correctamente");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
+
+        setComentarios(null)
+        setShowDoneForm(false);
+        console.log('Mantenimiento actualizado');
+      } else {
+        console.error('Error al actualizar el mantenimiento:', responseDone.statusText);
+      }
+    } catch (error) {
+      console.error('Error al realizar la solicitud:', error);
+    }
+
+  };
+
+  const handleOpenPostponeForm = (mantenimiento) => {
+    setSelectedMantenimiento(mantenimiento);
+    setShowPostponeForm(true);
+    setShowDoneForm(false);
+    setResaltado(mantenimiento.id_mantenimiento); // Resaltar en la tabla
+
+
+  };
+  const handleOpenDoneForm = (mantenimiento) => {
+    setSelectedMantenimiento(mantenimiento);
+    setShowDoneForm(true);
+    setShowPostponeForm(false);
+    setResaltado(mantenimiento.id_mantenimiento); // Resaltar en la tabla
+  };
+
+
+  const handlePostpone = async () => {
+    if (!selectedMantenimiento) return;
+
+    try {
+      const response = await fetch(`${apiMantenimientoPostpone}${selectedMantenimiento.id_mantenimiento}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          estado: 'POSTERGADO',
+          fecha: newFecha,
+          desde: newHoraDesde,
+          hasta: newHoraHasta,
+        }),
+      });
+
+      if (response.ok) {
+        setMantenimientos((prevMantenimientos) =>
+          prevMantenimientos.map((mantenimiento) =>
+            mantenimiento.id_mantenimiento === selectedMantenimiento.id_mantenimiento
+              ? { ...mantenimiento, estado: 'POSTERGADO', nueva_fecha: newFecha }
+              : mantenimiento
+          )
+        );
+        // Aquí iría la lógica para reprogramar el mantenimiento
+        setSnackbarMessage("Mantenimiento reprogramado correctamente");
+        setSnackbarSeverity("info");
+        setOpenSnackbar(true);
+        setShowPostponeForm(false);
+        setSelectedMantenimiento(null);
+        console.log('Mantenimiento postergado');
+      } else {
+        console.error('Error al postergar el mantenimiento:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error al realizar la solicitud:', error);
+    }
+  };
+
+  const mantenimientosProgramados = mantenimientos.filter(
+    (mantenimiento) => mantenimiento.estado === 'PROGRAMADO' || mantenimiento.estado === 'POSTERGADO'
+  );
 
 
 
   return (
-    <Box display="flex" justifyContent="center" mt={{ xs: 2, md: 4 }} px={{ xs: 2, md: 0 }}>
-    <Card
-      onClick={handleOpen}
+    <Box display="flex" justifyContent="center" mt={{ xs: 2, md: 4 }} px={{ xs: 2, md: 0 }}>  
+    {mantenimientosProgramados.length > 0 && (
+      <Box
       sx={{
-        width: { xs: '100%', sm: 300, md: 350 },
-        cursor: 'pointer',
-        borderRadius: '16px',
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-        transition: 'box-shadow 0.3s ease-in-out',
-        '&:hover': {
-          boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.2)',
-        },
-        bgcolor: '#f5f5f5',
-        color: '#424242',
-        p: { xs: 2, md: 3 }, // Padding más pequeño en pantallas pequeñas
+        top: '50%',
+        left: '50%',
+        width: isMobile ? '90%' : isTablet ? '80%' : (showPostponeForm || showDoneForm) ? 1000 : 800,
+        bgcolor: 'background.paper',
+        boxShadow: 24,
+        p: 4,
+        borderRadius: '12px',
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+
       }}
     >
-      <CardContent>
-        <Typography variant="h5" align="center" sx={{ fontWeight: 600, color: '#00796b', fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
-          Próximos Mantenimientos
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+          Listado de Mantenimientos Programados
         </Typography>
-        <Typography variant="subtitle1" align="center" sx={{ mt: 1, color: '#616161' }}>
-          {mantenimientosProgramados.filter((mantenimiento) => mantenimiento.estado === 'PROGRAMADO').length > 0 ? (
-            `${mantenimientosProgramados.filter((mantenimiento) => mantenimiento.estado === 'PROGRAMADO').length} equipo(s)`
-          ) : (
-            'No hay equipos en mantenimiento'
-          )}
-        </Typography>
-  
-        {/* Mostrar el detalle del primer equipo en la tarjeta */}
-        {mantenimientosProgramados.length > 0 && (
-          <Box mt={2}>
-            <Typography variant="body1" align="center" sx={{ color: getColorByEstado(mantenimientosProgramados[0].estado), fontSize: { xs: '0.875rem', md: '1rem' } }}>
-              Estado: {mantenimientosProgramados[0].estado}
-            </Typography>
-            <Typography variant="body2" align="center" sx={{ color: '#757575', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-              Empresa: {mantenimientosProgramados[0].empresa}
-            </Typography>
-            <Typography variant="body2" align="center" sx={{ color: '#757575', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-              Equipo: {obtenerNombreEquipo(mantenimientosProgramados[0].id_equipo)}
-            </Typography>
-            <Typography variant="body2" align="center" sx={{ color: '#757575', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-              Fecha: {new Date(mantenimientosProgramados[0].fecha).toLocaleDateString()}
-            </Typography>
-            <Typography variant="body2" align="center" sx={{ color: '#757575', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-              Horario: {new Date(`2024-11-01T${mantenimientosProgramados[0].desde}`).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: false})} - {new Date(`2024-11-01T${mantenimientosProgramados[0].hasta}`).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12: false})}
-            </Typography>
-          </Box>
+        {loading ? (
+          <Typography variant="body1" align="center">
+            Cargando mantenimientos...
+          </Typography>
+        ) : (
+          <Table size={isMobile ? 'small' : 'medium'}>
+            <TableHead>
+              <TableRow key={mantenimientosProgramados.id_mantenimiento}
+              >
+                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '12px' }}>Equipo</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '12px' }}>Tipo</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '12px' }}>Detalle</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '12px' }}>Fecha</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '12px' }}>Horario</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '12px' }}>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {mantenimientosProgramados.length > 0 ? (
+                mantenimientosProgramados.map((mantenimiento) => (
+                  <TableRow key={mantenimiento.id_mantenimiento} sx={{
+                    backgroundColor: resaltado === mantenimiento.id_mantenimiento ? "rgba(0, 123, 255, 0.2)" : "inherit",
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    fontSize: '12px',
+                    padding: '4px'
+                  }}>
+                    <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{obtenerNombreEquipo(mantenimiento.id_equipo)}</TableCell>
+                    <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{mantenimiento.tipo}</TableCell>
+                    <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{mantenimiento.detalle}</TableCell>
+                    <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{new Date(mantenimiento.fecha).toLocaleDateString()}</TableCell>
+                    <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>
+                      {new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                    </TableCell>
+                    <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>
+                      <IconButton onClick={() => handleOpenDoneForm(mantenimiento)} color="primary">
+                        <DoneIcon />
+                      </IconButton>
+                      <IconButton onClick={() => handleOpenPostponeForm(mantenimiento)} color="secondary">
+                        <ScheduleIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell align="center" colSpan={6}>No hay mantenimientos programados disponibles</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         )}
-      </CardContent>
-    </Card>
-  
-    {/* Modal separado */}
-    {mantenimientosProgramados.length > 0 && (
-      <MaintenanceModal open={open} handleClose={handleClose} mantenimientos={mantenimiento} equipos={equipos} salas={salas} />
+      </Box>
+      {(showDoneForm || showPostponeForm) && (
+        <Box sx={{ flex: 1, pl: isMobile ? 0 : 4, pt: isMobile ? 2 : 0 }}>
+          <IconButton color="primary" onClick={() => { setShowDoneForm(false); setShowPostponeForm(false); setResaltado(null) }}>
+            <ClearIcon />
+          </IconButton>
+          {showDoneForm && (
+            <>
+              <Typography variant="h6" align="center" sx={{ mb: 2 }}>Confirmar Mantenimiento</Typography>
+              <TextField
+                label="Comentario"
+                value={comentarios}
+                onChange={(e) => setComentarios(e.target.value)}
+                multiline
+                rows={4}
+                fullWidth
+                sx={{ mb: 2 }}
+              />
+              <Button variant="contained" color="primary" fullWidth onClick={() => handleDoneMantenimiento(selectedMantenimiento.id_mantenimiento, 'REALIZADO')}>
+                Guardar Cambios
+              </Button>
+            </>
+          )}
+          {showPostponeForm && (
+            <>
+              <Typography variant="h6" align="center" sx={{ mb: 2 }}>Reprogramar Mantenimiento</Typography>
+              <TextField label="Nueva Fecha" type="date" fullWidth value={newFecha} onChange={(e) => setNewFecha(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+              <TextField label="Hora Desde" type="time" fullWidth value={newHoraDesde} onChange={(e) => setNewHoraDesde(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+              <TextField label="Hora Hasta" type="time" fullWidth value={newHoraHasta} onChange={(e) => setNewHoraHasta(e.target.value)} sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+              <Button variant="contained" color="primary" fullWidth onClick={handlePostpone}>Guardar Cambios</Button>
+
+            </>
+
+          )}
+        </Box>
+      )}
+      <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={() => setOpenSnackbar(false)}>
+        <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
     )}
   </Box>  
   );
