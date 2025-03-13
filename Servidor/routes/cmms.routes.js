@@ -80,7 +80,7 @@ router.get("/datosContrato", async (req, res) => {
   }
 
   const query =
-    "select descripcion, cobertura_partes , cobertura_manoDeObra, desde , hasta , actualizacion  from dev.tbl_contratos where id_equipo = ?";
+    "select descripcion, cobertura_partes , cobertura_manoDeObra, desde , hasta , actualizacion  from tbl_contratos where id_equipo = ?";
 
   const datosContrato = async () => {
     try {

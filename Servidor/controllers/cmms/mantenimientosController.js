@@ -2,7 +2,7 @@ const dbMysqlDev = require("../../DataBase/MySqlDatabaseDev");
 const { broadcastUpdate } = require("../../websocket/webSocketCmms");
 
 exports.obtenerMantenimientos = async (req, res) => {
-  const query = "select * from dev.tbl_mantenimientos order by fecha";
+  const query = "select * from tbl_mantenimientos order by fecha";
   try {
     const mantenimiento = await dbMysqlDev.executeQuery(query);
     res.json(mantenimiento);
