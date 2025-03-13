@@ -3,11 +3,11 @@ import React from 'react';
 import { Box, Grid } from '@mui/material';
 import EquipamentsList from '../EquipamentsList';
 import CardsMantenimiento from '../../CardsMantenimiento';
-import TableEvents from '../../TableEvents';
+import Graphic from '../../Graphic';
 import Cards from '../../Cards';
 
 
-const Dashboard = ({user, reloadEquipos, equipos, tecnicos, uniqueEquipos, salas, mantenimiento, ultimoEstado, estadoEquipos}) => {
+const Dashboard = ({user, reloadEquipos, equipos, tecnicos, uniqueEquipos, salas, mantenimiento, cantidadEventos, ultimoEstado, estadoEquipos}) => {
 
   return (
     <>
@@ -20,7 +20,7 @@ const Dashboard = ({user, reloadEquipos, equipos, tecnicos, uniqueEquipos, salas
               </Grid>
           </Grid>
           <Grid item xs={12} md={8} sx={{display:{xs:'none', md:'block'}}}>
-            <TableEvents equipo={equipos || []} sala={salas || []} estadoEquipo={ultimoEstado || []} />
+            <Graphic equipos={equipos || []} cantidadEventos={cantidadEventos || []} />
           </Grid>
         </Grid>
         <Grid item xs={12}>

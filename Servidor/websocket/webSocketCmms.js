@@ -5,7 +5,7 @@ let io; // Variable para almacenar la instancia de socket.io
 const initWebSocketCmms = (server) => {
   io = new Server(server, {
     cors: {
-      origin: "http://192.168.8.3:3705/cmms", // Cambia esto según tu frontend
+      origin: "http://192.168.1.6:3701/cmms", // Cambia esto según tu frontend
       methods: ["GET", "POST", "PUT", "DELETE"],
     },
   });

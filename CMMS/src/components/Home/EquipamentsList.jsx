@@ -74,7 +74,16 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
 
   return (
     <>
-
+      {user.role === 'sistemas' && (
+        <Grid item xs={12} md={4.5} container spacing={1}>
+          <Grid item xs={12} sm={5}>
+            <NewTask onEventCreate={reload} equipo={equipo} salas={salas} estadoEquipos={estadoEquipos} />
+          </Grid>
+          <Grid item xs={12} sm={7}>
+            <NewMaintenance onMaintenanceCreate={reload} equipos={equipos} tecnicos={tecnicos} salas={salas} tecnicosEquipo={tecnicosEquipo} />
+          </Grid>
+        </Grid>
+      )}
       <Paper
         sx={{
           p: 2,

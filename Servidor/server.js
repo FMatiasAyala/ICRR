@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors({
-  origin: '192.168.8.3:3704',
+  origin: 'http://192.168.1.6:3700',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // enable set cookies
 }));
@@ -32,7 +32,7 @@ const routerCmms = require('./routes/cmms.routes');
 const http = require('http');
 const appCmms = express();
 const serverCmms = http.createServer (appCmms)
-const PORT_CMMS = 3003;
+const PORT_CMMS = 3002;
 const contratosPath = path.join(__dirname, 'contratos');
 
 
@@ -40,7 +40,7 @@ const contratosPath = path.join(__dirname, 'contratos');
 appCmms.use(express.json());
 appCmms.use('/contratos', express.static(contratosPath));
 appCmms.use(cors({
-  origin: 'http://192.168.8.3:3705',
+  origin: 'http://192.168.1.6:3701',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // enable set cookies
 }));

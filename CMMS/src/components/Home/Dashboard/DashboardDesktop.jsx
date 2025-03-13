@@ -1,55 +1,60 @@
-import React from "react";
-import { Box, Typography, Card, CardContent } from "@mui/material";
+import React from "react"
+import { Box, Typography, Card, CardContent } from "@mui/material"
+
+
 
 const DashboardDesktop = ({ groupedEquipos, handleOpenModal, getHoverColorByEstado, getColorByEstado, salas, estadoEquipos }) => {
+
     return (
         <>
-            {Object.keys(groupedEquipos).map((servicio) => (
-                <Box
-                    key={servicio}
-                    sx={{
-                        gridColumn: 'span 1',
-                        backgroundColor: '#fafafa',
-                        p: 1.5,
-                        borderRadius: '6px',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
-                    }}
-                >
-                    <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ color: "#444", pb: 1 }}>
-                        {servicio}
-                    </Typography>
+            {Object.keys(groupedEquipos).map((servicio) => {
+
+
+                return (
                     <Box
+                        key={servicio}
                         sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-                            gap: '12px',
+                            gridColumn: 'span 1',
+                            backgroundColor: '#f5f5f5',
+                            p: 2,
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                         }}
                     >
-                        {groupedEquipos[servicio]
-                            .filter((equipo) => equipo.tipo === 'MODALITY')
-                            .map((equipo) => (
+                        <Typography variant="h6" fontWeight="bold" gutterBottom>
+                            {servicio}
+                        </Typography>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                                gap: '16px',
+                            }}
+                        >
+                            {groupedEquipos[servicio].filter((equipo) => equipo.tipo === 'MODALITY').map((equipo) => (
                                 <Card
                                     key={equipo.id}
                                     onClick={() => handleOpenModal(equipo)}
                                     sx={{
+                                        p: 2,
                                         cursor: "pointer",
                                         backgroundColor: getColorByEstado(estadoEquipos[equipo.id]),
-                                        borderRadius: "8px",
-                                        boxShadow: "0px 3px 10px rgba(0, 0, 0, 0.15)",
-                                        transition: "transform 0.2s ease-in-out",
+                                        borderRadius: "12px",
+                                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                                        transition: "all 0.3s ease-in-out",
                                         "&:hover": {
-                                            transform: "scale(1.02)",
-                                            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                                            transform: "scale(1.03)",
+                                            boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.3)",
                                             backgroundColor: getHoverColorByEstado(estadoEquipos[equipo.id]),
                                         },
-                                        "&:active": { transform: "scale(0.98)" },
+                                        "&:active": { transform: "scale(0.97)" },
                                     }}
                                 >
-                                    <CardContent sx={{ textAlign: "center", p: 1.5 }}>
+                                    <CardContent sx={{ textAlign: "center", p: 2 }}>
                                         <Typography
                                             variant="body1"
                                             fontWeight="bold"
-                                            sx={{ fontSize: "13px", color: "#222" }}
+                                            sx={{ fontSize: "14px", color: "#333" }}
                                         >
                                             {equipo.modelo}
                                         </Typography>
@@ -61,19 +66,23 @@ const DashboardDesktop = ({ groupedEquipos, handleOpenModal, getHoverColorByEsta
                                                         key={sala.id}
                                                         variant="body2"
                                                         color="text.secondary"
-                                                        sx={{ fontSize: "11px", fontWeight: "500", mt: 0.5 }}
+                                                        sx={{ fontSize: "12px", fontWeight: "bold" }}
                                                     >
                                                         {`${sala.sala} - ${sala.filial}`}
                                                     </Typography>
                                                 ))}
                                     </CardContent>
                                 </Card>
+
                             ))}
+                        </Box>
                     </Box>
-                </Box>
-            ))}
-        </>
-    );
-};
+
+                )
+            })}
+        </>)
+
+}
+
 
 export default DashboardDesktop;
