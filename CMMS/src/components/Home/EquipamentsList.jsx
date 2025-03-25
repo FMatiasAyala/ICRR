@@ -74,6 +74,7 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
 
   return (
     <>
+<<<<<<< HEAD
       {user.role === 'sistemas' && (
         <Grid item xs={12} md={4.5} container spacing={1}>
           <Grid item xs={12} sm={5}>
@@ -82,6 +83,13 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
           <Grid item xs={12} sm={7}>
             <NewMaintenance onMaintenanceCreate={reload} equipos={equipos} tecnicos={tecnicos} salas={salas} tecnicosEquipo={tecnicosEquipo} />
           </Grid>
+=======
+      {(user.role === 'sistemas' && isMobile) &&(
+        <Grid item xs={12} md={4.5} mt={3} container spacing={1}>
+          <Grid item xs={12} sm={5}>
+            <NewTask onEventCreate={reload} equipo={equipo} salas={salas} estadoEquipos={estadoEquipos} />
+          </Grid>
+>>>>>>> 477e4b6d9cffadb82766f0f954af8a7833114bc9
         </Grid>
       )}
       <Paper

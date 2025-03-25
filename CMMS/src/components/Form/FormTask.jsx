@@ -15,17 +15,6 @@ const FormTask = forwardRef(({ handleClose, onEventCreate, equipo, salas, estado
   const [estadoActual, setEstadoActual] = useState([]); // Para almacenar el estado anterior del equipo
 
 
- /*  const fetchEventos = async () => {
-    try {
-      const response = await fetch(apiEventos);
-      const data = await response.json();
-      setEstadoActual(data)
-    } catch (error) {
-      console.error('Error obteniendo equipos:', error);
-    }
-  }; */
-
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem('token');
