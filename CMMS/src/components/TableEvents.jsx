@@ -8,10 +8,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography
+  Typography,
 } from '@mui/material';
 
-const TableEvents = ({ estadoEquipo, equipo, sala }) => {
+const TableEvents = ({ ultimoEquipo, equipo, sala }) => {
   const obtenerEquipo = (id) => {
     const equipos = equipo.find((e) => e.id === id);
     return equipos ? equipos.modelo : 'Equipo no encontrado';
@@ -23,23 +23,44 @@ const TableEvents = ({ estadoEquipo, equipo, sala }) => {
     return salas ? salas.sala : "Sala no encontrada";
   };
 
-  const filtrarPorEstado = (estado) => {
-    return estadoEquipo
-      .filter((item) => item.estado.toLowerCase() === estado.toLowerCase())
-      .sort((a, b) => new Date(b.desde) - new Date(a.desde))
-      .slice(0, 3);
+  const filtrarPorEstado = () => {
+    const eventosPorEstado = {
+      'OPERATIVO': [],
+      'NO OPERATIVO': [],
+      'REVISION': []
+    };
+  
+    // Agrupar eventos por estado
+    ultimoEquipo.forEach(evento => {
+      if (eventosPorEstado[evento.estado]) {
+        eventosPorEstado[evento.estado].push(evento);
+      }
+    });
+  
+    // Ordenar y tomar solo los últimos 4 de cada tipo
+    const eventosFiltrados = Object.values(eventosPorEstado).flatMap(eventos =>
+      eventos
+        .sort((a, b) => new Date(b.desde) - new Date(a.desde)) // Ordenar por fecha
+        .slice(0, 4) // Tomar los últimos 4
+    );
+  
+    return eventosFiltrados;
   };
+  
 
-  const estados = [
-    { nombre: 'Operativo', color: '#4CAF50' },
-    { nombre: 'No Operativo', color: '#F44336' },
-    { nombre: 'Revision', color: '#FFC107' }
-  ];
+  const obtenerColorEstado = (estado) => {
+    const colores = {
+      'OPERATIVO': '#4CAF50',
+      'NO OPERATIVO': '#F44336',
+      'REVISION': '#FFC107',
+    };
+    return colores[estado] || '#BDBDBD'; // Color gris si el estado no coincide
+  };
 
   return (
     <Box
       sx={{
-        maxHeight: '400px',
+        maxHeight: '600px',
         overflowY: 'auto',
         background: '#fafafa',
         borderRadius: '8px',
@@ -58,10 +79,9 @@ const TableEvents = ({ estadoEquipo, equipo, sala }) => {
           fontSize: '14px'
         }}
       >
-        Ultimos Eventos
+        Últimos Eventos
       </Typography>
-
-      <TableContainer component={Paper} sx={{ borderRadius: '8px', maxHeight: '350px', overflowY: 'auto' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: '8px', maxHeight: '500px', overflowY: 'auto' }}>
         <Table size="small">
           <TableHead>
             <TableRow sx={{ backgroundColor: '#1E1E1E' }}>
@@ -72,39 +92,30 @@ const TableEvents = ({ estadoEquipo, equipo, sala }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {estados.map(({ nombre, color }, estadoIndex) => {
-              const registros = filtrarPorEstado(nombre);
-
-              return (
-                <React.Fragment key={estadoIndex}>
-                  {registros.length > 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} sx={{
-                        backgroundColor: color,
-                        color: '#fff',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        fontSize: '12px',
-                        padding: '4px'
-                      }}>
-                        {nombre}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {registros.map((estado, index) => (
-                    <TableRow
-                      key={index}
-                      sx={{ '&:hover': { backgroundColor: '#e3f2fd' } }}
-                    >
-                      <TableCell sx={{ fontSize: '12px', padding: '4px' }}>{estado.descripcion}</TableCell>
-                      <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{estado.estado}</TableCell>
-                      <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{`${obtenerEquipo(estado.id_equipo)}(${obtenerSala(estado.id_equipo)})`}</TableCell>
-                      <TableCell sx={{ fontSize: '12px', padding: '4px' }}>{new Date(estado.desde).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </React.Fragment>
-              );
-            })}
+            {filtrarPorEstado().map((estado, index) => (
+              <TableRow key={index} sx={{ '&:hover': { backgroundColor: '#e3f2fd' } }}>
+                <TableCell sx={{ fontSize: '12px', padding: '4px' }}>{estado.descripcion}</TableCell>
+                <TableCell 
+                  align="center" 
+                  sx={{
+                    fontSize: '12px',
+                    padding: '4px',
+                    backgroundColor: obtenerColorEstado(estado.estado),
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    borderRadius: '4px'
+                  }}
+                >
+                  {estado.estado}
+                </TableCell>
+                <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>
+                  {`${obtenerEquipo(estado.id_equipo)} (${obtenerSala(estado.id_equipo)})`}
+                </TableCell>
+                <TableCell sx={{ fontSize: '12px', padding: '4px' }}>
+                  {new Date(estado.desde).toLocaleDateString()}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
