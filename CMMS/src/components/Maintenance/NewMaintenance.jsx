@@ -5,7 +5,7 @@ import FormMaintenance from '../Form/FormMaintenance';
 
 
 
-const NewMaintenance = ({ equipos, tecnicos, salas, tecnicosEquipo }) => {
+const NewMaintenance = ({ equipos, tecnicos, salas }) => {
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -26,39 +26,63 @@ const NewMaintenance = ({ equipos, tecnicos, salas, tecnicosEquipo }) => {
         <Card
           onClick={handleOpen}
           sx={{
-            cursor: 'pointer',
-            p: { xs: 2, sm: 1 }, // Más espacio en pantallas pequeñas
-            width: { xs: '100%', sm: '400px' }, // Ocupa todo el ancho en móvil y tiene un ancho fijo en pantallas grandes
-            borderRadius: '16px', // Bordes redondeados
-            boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)', // Sombra suave
-            backgroundColor: '#ffffff', // Fondo blanco
-            transition: 'all 0.3s ease-in-out',
-            '&:hover': {
-              color: '#fff',
-              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+            cursor: "pointer",
+            p: { xs: 2, sm: 1 },
+            width: { xs: "100%", sm: "200px" },
+            borderRadius: "16px",
+            backgroundColor: "#ffffff",
+            transition: "all 0.3s ease-in-out",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            "&:hover": {
+              backgroundColor: "#00796b",
+              boxShadow: "0px 6px 15px rgba(0, 121, 107, 0.3)",
+              "& .icono": {
+                color: "#fff", // Cambia color del icono al pasar el mouse
+              },
+              "& .texto": {
+                color: "#fff", // Cambia color del texto al pasar el mouse
+              },
             },
           }}
         >
           <CardContent
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               gap: 1,
-              flexDirection: { xs: 'column', sm: 'row' }, // Apila el icono y el texto verticalmente en móvil
-              textAlign: 'center',
+              flexDirection: { xs: "column", sm: "row" },
+              textAlign: "center",
             }}
           >
-            <BuildCircleIcon sx={{ fontSize: '2rem', color: '#00796b' }} /> {/* Icono de mantenimiento */}
-            <Typography sx={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#333' }}>
+            <BuildCircleIcon
+              className="icono"
+              sx={{
+                fontSize: "1.5rem",
+                color: "#00796b",
+                transition: "all 0.3s ease-in-out",
+              }}
+            />
+            <Typography
+              className="texto"
+              sx={{
+                fontWeight: "bold",
+                fontSize: "0.8rem",
+                color: "#333",
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
               Programar Mantenimiento
             </Typography>
           </CardContent>
         </Card>
 
+
         {/* Modal */}
         <Modal open={open} onClose={handleClose}>
-          <FormMaintenance equipos={equipos} tecnicos={tecnicos} tecnicosEquipo={tecnicosEquipo}salas={salas} tecnihandleClose={handleClose} />
+          <FormMaintenance equipos={equipos} tecnicos={tecnicos} salas={salas} tecnihandleClose={handleClose} />
         </Modal>
       </Box>
 

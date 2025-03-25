@@ -164,7 +164,7 @@ const FormEquipamentM = forwardRef(({ equipos, tecnicos, handleClose, onEventCre
                         sx={{ marginBottom: '5px' }}
                         value={selectedTechnician}
                         onChange={(event, newValue) => setSelectedTechnician(newValue)}
-                        getOptionLabel={(option) => option?.nombre || ""}
+                        getOptionLabel={(option) => `${option?.nombre} ${option.apellido} | ${option.empresa}` || ""}
                         renderInput={(params) => (
                             <TextField {...params} label="Seleccionar Técnico" required />
                         )}
