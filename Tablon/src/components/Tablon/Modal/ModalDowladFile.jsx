@@ -35,7 +35,7 @@ export function ModalDowloadFile({ anuncio, onClose }) {
                 </ModalHeader>
 
                 <ModalBody>
-                    {anuncio.attachments && anuncio.attachments.length > 0 ? (
+                    {anuncio.attachments && anuncio.attachments.length > 0 && (
                         <ul className="space-y-2">
                             {anuncio.attachments.map((attachment) => {
                                 const fileName = attachment.url.split('/').pop();
@@ -54,8 +54,6 @@ export function ModalDowloadFile({ anuncio, onClose }) {
                                 );
                             })}
                         </ul>
-                    ) : (
-                        <p className="text-gray-500">⚠️ No hay archivos cargados</p>
                     )}
                 </ModalBody>
 

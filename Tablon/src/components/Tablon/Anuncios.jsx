@@ -267,14 +267,15 @@ export default function Anuncios() {
                                     </CardFooter>
                                     <div className="flex gap-3 items-center">
                                         {/* Botón para ver archivos */}
-                                        <Button
+
+                                        {anuncio.attachments && anuncio.attachments.length > 0 && (<Button
                                             variant="ghost"
                                             className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-md"
                                             onClick={() => handleFileModalOpen(anuncio)}
                                             aria-label="Ver archivos"
                                         >
                                             📂 Ver archivos
-                                        </Button>
+                                        </Button>)}
 
                                         {/* Botón de editar (solo para GESTION o FACTU) */}
                                         {(buttonCreated === 'GESTION' || buttonCreated === 'FACTU') && (
