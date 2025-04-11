@@ -8,6 +8,7 @@ import UpsDashboard from './UpsDashboard';
 import { jwtDecode } from 'jwt-decode';
 import { useWebSocket } from '../hooks/useWebScoket';
 import { apiEquipos, apiSalas, apiTecnicos, apiCantidadesEventos, apiMantenimiento, apiEventos, apiUps } from '../utils/Fetch'
+import ReportEquipament from './ReportEquipament';
 
 
 const Layout = () => {
@@ -178,6 +179,7 @@ const Layout = () => {
                             estadoEquipos={estadoEquipos}
                         />} />
                     <Route path="/ups" element={<UpsDashboard salas={salas} ups={ups} />} />
+                    <Route path="/reportEquipament" element={<ReportEquipament equipos={equipos} estadoEquipos={estadoEquipos} salas={salas}/>} />
                 </Routes>
                 <Outlet />
             </div>

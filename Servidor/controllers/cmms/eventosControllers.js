@@ -27,6 +27,44 @@ exports.eventosFiltrados = async (req, res) => {
   }
 };
 
+exports.reportesEventos = async (req, res) => {
+  const { id_equipo, estado, desde, hasta } = req.body;
+
+  let query =
+    "select id_equipo, descripcion, estado, desde, hasta, tipo_falla as falla from tbl_estados where 1=1";
+  let params = [];
+
+   // Filtrar por ID de equipo si se envía un valor
+   if (id_equipo && id_equipo !== "todos") {
+    query += " AND id_equipo = ?";
+    params.push(id_equipo);
+  }
+
+  // Filtrar por estado si se envía un valor
+  if (estado && estado !== "todos") {
+    query += " AND estado = ?";
+    params.push(estado);
+  }
+
+  // Filtrar por rango de fechas si se envían ambos valores
+  if (desde && hasta) {
+    query += " AND desde BETWEEN ? AND ?";
+    params.push(desde, hasta);
+  }
+
+  query += " ORDER BY desde DESC";
+  
+  try {
+    if (!id_equipo) {
+      return res.status(400).json({ error: "searchTerm is required" });
+    }
+    const eventos = await dbMysqlDev.executeQueryParams(query, params);
+    res.json(eventos);
+  } catch (err) {
+    console.error("Error al obtener los eventos: ", err);
+  }
+};
+
 exports.cantidadEventos = async (req, res) => {
   const query =
     " SELECT id_equipo, COUNT(*) AS cantidad_eventos FROM tbl_estados where estado in ('NO OPERATIVO','REVISION') and id_equipo not in (select id from tbl_equipomedico where baja is not null) and YEAR(desde) = YEAR(CURDATE()) GROUP BY id_equipo ORDER BY cantidad_eventos DESC";

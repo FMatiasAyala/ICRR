@@ -18,3 +18,4 @@ export const apiTecnicosEquipo = "http://192.168.1.6:3002/cmms/tecnicosEquipo/";
 export const apiAltaTecnico = "http://192.168.1.6:3002/cmms/altaTecnicos";
 export const apiModificacionTecnico = "http://192.168.1.6:3002/cmms/modificacionTecnicos/";
 export const apiBajaTecnico = "http://192.168.1.6:3002/cmms/bajaTecnicos/";
+export const apiReportEventos = "http://192.168.1.6:3002/cmms/reporteEventos/";

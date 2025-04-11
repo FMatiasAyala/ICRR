@@ -27,6 +27,7 @@ router.get("/eventos", eventosControllers.obtenerEventos);
 router.get("/eventosFiltrados", eventosControllers.eventosFiltrados);
 router.get("/cantidadEventos", eventosControllers.cantidadEventos); 
 router.post("/eventos", eventosControllers.nuevoEvento);
+router.post("/reporteEventos", eventosControllers.reportesEventos);
 
 //Mantenimientos
 router.get("/mantenimiento", mantenimientoControllers.obtenerMantenimientos);

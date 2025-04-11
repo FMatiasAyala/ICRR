@@ -5,6 +5,7 @@ import ContratoFormModal from '../Modal/ContratosFormModal';
 import NewEquipamentModal from '../NewEquipo/NewEquipamentModal';
 import { useNavigate } from 'react-router-dom';
 import { BatteryChargingFull } from '@mui/icons-material';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 const SideMenu = ({ open, onClose, equipos, salas }) => {
   const navigate = useNavigate(); // Inicializar el hook
@@ -49,6 +50,30 @@ const SideMenu = ({ open, onClose, equipos, salas }) => {
             </ListItemButton>
           </ListItem>
         </List>
+        <Divider />
+        <List>
+          {/* Botón para redirigir a UPS */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => navigate('/reportEquipament')}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '10px',
+                borderRadius: '8px',
+                transition: 'all 0.3s',
+                '&:hover': {
+                  backgroundColor: '#e0f7fa', // Color al hacer hover
+                },
+              }}
+            >
+              {/* Icono de UPS */}
+              <AssessmentIcon sx={{ marginRight: '10px', color: '#00838f'}} />
+              <ListItemText primary="Reporte de equipos" sx={{ fontWeight: 'bold' }} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+        <Divider />
       </Box>
     </Drawer>
   );
