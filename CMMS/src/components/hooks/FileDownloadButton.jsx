@@ -1,77 +1,84 @@
-import React, {useState} from "react";
-import { Button, Snackbar, Alert } from "@mui/material";
+import React, { useState } from "react";
+import { Button, Snackbar, Alert, Box, IconButton, Typography } from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
-import { apiContrato } from "../utils/Fetch";
 
-const FileDownloadButton = ({ equipo }) => {
+const FileDownloadButton = ({
+  endpoint,
+  params = {}, // Ejemplo: { id_evento: 5 }
+  label = "Descargar archivo",
+  icono = <DescriptionIcon />,
+  mensajeExito = "Descarga exitosa",
+  mensajeError = "No hay archivos cargados",
+}) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  const downloadFile = async (idEquipo) => {
+  const buildQueryString = (paramsObj) =>
+    new URLSearchParams(paramsObj).toString();
+  const downloadFile = async () => {
     try {
-      const response = await fetch(`${apiContrato}?id_equipo=${idEquipo}`);
+      const queryString = buildQueryString(params);
+      console.log(params.id_evento)
+      const urlCompleta = `${endpoint}?${queryString}`;
+      console.log(urlCompleta)
+      const response = await fetch(urlCompleta);
+      console.log(response)
+      if (!response.ok) throw new Error("No hay archivos cargados");
 
-        if (!response.ok) {
-        throw new Error("Error al descargar el archivo");
+      // Intenta obtener el nombre de archivo desde Content-Disposition
+      let filename = `Adjuntos`;
+      const disposition = response.headers.get("Content-Disposition");
+      if (disposition) {
+        const utf8Match = disposition.match(/filename\*=UTF-8''(.+)/);
+        if (utf8Match && utf8Match[1]) {
+          filename = decodeURIComponent(utf8Match[1]);
+        } else {
+          const asciiMatch = disposition.match(/filename="?([^"]+)"?/);
+          if (asciiMatch && asciiMatch[1]) {
+            filename = asciiMatch[1];
+          }
+        }
       }
 
-      // Convertir la respuesta en un Blob
       const blob = await response.blob();
-
-      // Crear una URL para el Blob
       const url = window.URL.createObjectURL(blob);
-
-      // Crear un enlace temporal para forzar la descarga
       const link = document.createElement("a");
       link.href = url;
-      link.download = `contrato-${idEquipo}.pdf`; // Nombre del archivo
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
-
-      // Limpiar el enlace después de descargar
-      link.remove();
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      setSnackbarMessage("Descarga con exito");
+
+      setSnackbarMessage(mensajeExito);
+      setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Error al descargar el archivo:", error);
-      setSnackbarMessage("No hay contrato cargado");
-      setSnackbarSeverity('error');
+      setSnackbarMessage(mensajeError);
+      setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
 
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-        return;
-    }
+  const handleSnackbarClose = (_, reason) => {
+    if (reason === "clickaway") return;
     setSnackbarOpen(false);
-};
+  };
 
   return (
-    <>
-        <Button
-      variant="contained"
-      startIcon={<DescriptionIcon />}
-      sx={{
-        backgroundColor: "#00796b",
-        color: "#fff",
-        "&:hover": {
-          backgroundColor: "#004d40",
-        },
-      }}
-      onClick={() => downloadFile(equipo.id)} // Aquí envolvemos la función en un callback
-    >
-      Descargar Contrato
-    </Button>
-        <Snackbar open={snackbarOpen}  onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
-            {snackbarMessage}
+    <Box>
+      <IconButton onClick={downloadFile}>
+        {icono}
+        <Typography> {label} </Typography>
+      </IconButton>
+      <Snackbar open={snackbarOpen} onClose={handleSnackbarClose} autoHideDuration={4000}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+          {snackbarMessage}
         </Alert>
-    </Snackbar>
-    </>
-
+      </Snackbar>
+    </Box>
   );
 };
 

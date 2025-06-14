@@ -9,8 +9,8 @@ const DashboardMobile = ({groupedEquipos, salas, handleOpenModal, getColorByEsta
 
     return (
         <>
-            {Object.keys(groupedEquipos).map((servicio) => {
-                const equiposEnServicio = groupedEquipos[servicio] || [];
+            {Object.keys(groupedEquipos).map((siglas_servicio) => {
+                const equiposEnServicio = groupedEquipos[siglas_servicio] || [];
                 const countOperativo = equiposEnServicio.filter((equipo) => estadoEquipos[equipo.id] === 'OPERATIVO').length;
                 const countNoOperativo = equiposEnServicio.filter((equipo) => estadoEquipos[equipo.id] === 'NO OPERATIVO').length;
                 const countRevision = equiposEnServicio.filter((equipo) => estadoEquipos[equipo.id] === 'REVISION').length;
@@ -18,7 +18,7 @@ const DashboardMobile = ({groupedEquipos, salas, handleOpenModal, getColorByEsta
                return (<Accordion>
                     <AccordionSummary>
                         <Typography variant="h6" fontWeight="bold" gutterBottom>
-                            {servicio} -
+                            {siglas_servicio} -
                         </Typography>
                         <CheckCircle sx={{ color: '#4CAF50' }} />
                         <Typography>{countOperativo}</Typography>
@@ -29,7 +29,7 @@ const DashboardMobile = ({groupedEquipos, salas, handleOpenModal, getColorByEsta
                     </AccordionSummary>
                     <AccordionDetails>
                         <Box
-                            key={servicio}
+                            key={siglas_servicio}
                             sx={{
                                 gridColumn: 'span 1',
                                 backgroundColor: '#f5f5f5',
@@ -45,7 +45,7 @@ const DashboardMobile = ({groupedEquipos, salas, handleOpenModal, getColorByEsta
                                     gap: '16px',
                                 }}
                             >
-                                {groupedEquipos[servicio].filter((equipo) => equipo.tipo === 'MODALITY').map((equipo) => (
+                                {groupedEquipos[siglas_servicio].filter((equipo) => equipo.tipo === 'MODALITY').map((equipo) => (
                                     <Card
                                         key={equipo.id}
                                         onClick={() => handleOpenModal(equipo)}
@@ -69,10 +69,10 @@ const DashboardMobile = ({groupedEquipos, salas, handleOpenModal, getColorByEsta
                                             </Typography>
                                             {salas &&
                                                 salas
-                                                    .filter((sala) => sala.id_sala === equipo.sala)
+                                                    .filter((sala) => sala.id_ubicacion === equipo.id_ubicacion)
                                                     .map((sala) => (
                                                         <Typography
-                                                            key={sala.id}
+                                                            key={sala.id_ubicacion}
                                                             variant="body2"
                                                             color="text.secondary"
                                                             fontSize={{ xs: '12px', sm: '10px' }}

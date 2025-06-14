@@ -1,39 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Grid, useMediaQuery } from '@mui/material';
-import EquipamentModal from '../Modal/EquipamentModal';
-import NewTask from '../Task/NewTask';
-import NewMaintenance from '../Maintenance/NewMaintenance';
+import { Box, Paper, useMediaQuery } from '@mui/material';
 import DashboardDesktop from './Dashboard/DashboardDesktop';
 import DashboardMobile from './Dashboard/DashboardMobile';
+import { useWebSocketContext } from '../hooks/useWebSocketContext';
 
-const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos, user, mantenimiento, tecnicosEquipo }) => {
+
+const EquipamentsList = ({ estadoEquipos, salas, onEquipoSeleccionado }) => {
+  const { state: { equipos } } = useWebSocketContext()
   const [filteredEquipos, setFilteredEquipos] = useState([]);
-  const [selectedEquipo, setSelectedEquipo] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-
   const isMobile = useMediaQuery('(max-width:600px)');
-
-
-  const reload = () => {
-    reloadEquipos();
-  };
-
-  const handleOpenModal = (equipo) => {
-    setSelectedEquipo(equipo);
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedEquipo(null);
-  };
 
   useEffect(() => {
     setFilteredEquipos(equipos);
   }, [equipos]);
 
   const groupedEquipos = filteredEquipos.reduce((acc, equipo) => {
-    const servicio = equipo.servicio;
+    const servicio = equipo.siglas_servicio;
     if (!acc[servicio]) {
       acc[servicio] = [];
     }
@@ -66,21 +48,13 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
         return '#E0E0E0';
     }
   };
-  if (!estadoEquipos || estadoEquipos.length === 0) {
+  if (!estadoEquipos || Object.keys(estadoEquipos).length === 0) {
     return <p>No hay datos disponibles o están cargando...</p>;
   }
 
 
-
   return (
     <>
-      {(user.role === 'sistemas' && isMobile) &&(
-        <Grid item xs={12} md={4.5} mt={3} container spacing={1}>
-          <Grid item xs={12} sm={5}>
-            <NewTask onEventCreate={reload} equipo={equipo} salas={salas} estadoEquipos={estadoEquipos} />
-          </Grid>
-        </Grid>
-      )}
       <Paper
         sx={{
           p: 2,
@@ -100,39 +74,26 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
             alignItems: 'start',
           }}
         >
-         {(isMobile?(
-          <DashboardMobile
-          groupedEquipos={groupedEquipos}
-          handleOpenModal={handleOpenModal}
-          getHoverColorByEstado={getHoverColorByEstado}
-          getColorByEstado={getColorByEstado}
-          salas={salas}
-          estadoEquipos={estadoEquipos}
-          />
-          
-         ):( <DashboardDesktop
-          groupedEquipos={groupedEquipos}
-          handleOpenModal={handleOpenModal}
-          getHoverColorByEstado={getHoverColorByEstado}
-          getColorByEstado={getColorByEstado}
-          salas={salas}
-          estadoEquipos={estadoEquipos}
+          {(isMobile ? (
+            <DashboardMobile
+              groupedEquipos={groupedEquipos}
+              handleOpenModal={onEquipoSeleccionado}
+              getHoverColorByEstado={getHoverColorByEstado}
+              getColorByEstado={getColorByEstado}
+              salas={salas}
+              estadoEquipos={estadoEquipos}
+            />
+
+          ) : (<DashboardDesktop
+            groupedEquipos={groupedEquipos}
+            handleOpenModal={onEquipoSeleccionado}
+            getHoverColorByEstado={getHoverColorByEstado}
+            getColorByEstado={getColorByEstado}
+            salas={salas}
+            estadoEquipos={estadoEquipos}
           />))}
         </Box>
       </Paper>
-
-      {selectedEquipo && (
-        <EquipamentModal
-          open={modalOpen}
-          handleClose={handleCloseModal}
-          equipo={selectedEquipo}
-          estadoActual={estadoEquipos[selectedEquipo.id]}
-          tecnicos={tecnicos?.filter((tecnico) => tecnico.id_tecnico === selectedEquipo.id_tecnico)}
-          onEventCreate={reload}
-          mantenimiento={mantenimiento.filter((mantenimiento) => mantenimiento.id_equipo === selectedEquipo.id)}
-          user={user}
-        />
-      )}
     </>
   );
 };

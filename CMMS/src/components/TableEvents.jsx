@@ -10,16 +10,30 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
+import { useWebSocketContext } from './hooks/useWebSocketContext';
 
-const TableEvents = ({ ultimoEquipo, equipo, sala }) => {
+const TableEvents = ({ sala }) => {
+  const { state: { equipos, eventos } } = useWebSocketContext();
+
+
   const obtenerEquipo = (id) => {
-    const equipos = equipo.find((e) => e.id === id);
-    return equipos ? equipos.modelo : 'Equipo no encontrado';
+    const equipo = equipos.find((e) => e.id === id);
+    return equipo ? equipo.modelo : 'Equipo no encontrado';
   };
 
+  
+  const ultimoEvento = eventos.reduce((acc, item) => {
+    const { id_equipo, desde } = item;
+    if (!acc[id_equipo] || new Date(acc[id_equipo].desde) < new Date(desde)) {
+      acc[id_equipo] = item;
+    }
+    return acc;
+  }, {});
+
+
   const obtenerSala = (id_equipo) => {
-    const equipos = equipo.find((e) => e.id === id_equipo);
-    const salas = sala.find((s) => s.id_sala === equipos?.sala);
+    const equipo = equipos.find((e) => e.id === id_equipo);
+    const salas = sala.find((s) => s.id_sala === equipo?.sala);
     return salas ? salas.sala : "Sala no encontrada";
   };
 
@@ -29,24 +43,23 @@ const TableEvents = ({ ultimoEquipo, equipo, sala }) => {
       'NO OPERATIVO': [],
       'REVISION': []
     };
-  
-    // Agrupar eventos por estado
-    ultimoEquipo.forEach(evento => {
+
+    Object.values(ultimoEvento).forEach(evento => {
       if (eventosPorEstado[evento.estado]) {
         eventosPorEstado[evento.estado].push(evento);
       }
     });
-  
-    // Ordenar y tomar solo los últimos 4 de cada tipo
+
     const eventosFiltrados = Object.values(eventosPorEstado).flatMap(eventos =>
       eventos
-        .sort((a, b) => new Date(b.desde) - new Date(a.desde)) // Ordenar por fecha
-        .slice(0, 4) // Tomar los últimos 4
+        .sort((a, b) => new Date(b.desde) - new Date(a.desde))
+        .slice(0, 4)
     );
-  
+
     return eventosFiltrados;
   };
-  
+
+
 
   const obtenerColorEstado = (estado) => {
     const colores = {
@@ -95,8 +108,8 @@ const TableEvents = ({ ultimoEquipo, equipo, sala }) => {
             {filtrarPorEstado().map((estado, index) => (
               <TableRow key={index} sx={{ '&:hover': { backgroundColor: '#e3f2fd' } }}>
                 <TableCell sx={{ fontSize: '12px', padding: '4px' }}>{estado.descripcion}</TableCell>
-                <TableCell 
-                  align="center" 
+                <TableCell
+                  align="center"
                   sx={{
                     fontSize: '12px',
                     padding: '4px',

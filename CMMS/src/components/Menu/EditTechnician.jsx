@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Button, Modal, Typography, IconButton, Snackbar, Alert } from "@mui/material";
+import { Box, TextField, Button, Modal, Typography, IconButton, Snackbar, Alert, Grid, Autocomplete } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { apiModificacionTecnico } from "../utils/Fetch";
 
-const EditTechnician = ({ technicianData, openEditModal, setOpenEditModal, reloadTechnicians }) => {
+const EditTechnician = ({ technicianData, openEditModal, setOpenEditModal, reloadTechnicians, equipos, salas }) => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -14,6 +14,7 @@ const EditTechnician = ({ technicianData, openEditModal, setOpenEditModal, reloa
         email: "",
         cobertura: "",
         empresa: "",
+        id_equipo: [],
     });
 
     // Se ejecuta cada vez que cambia technicianData o se abre el modal
@@ -98,7 +99,23 @@ const EditTechnician = ({ technicianData, openEditModal, setOpenEditModal, reloa
                     <TextField label="Email" name="email" value={formData.email} onChange={handleChange} fullWidth />
                     <TextField label="Cobertura" name="cobertura" value={formData.cobertura} onChange={handleChange} fullWidth />
                     <TextField label="Empresa" name="empresa" value={formData.empresa} onChange={handleChange} fullWidth />
+                    <Grid item xs={12}>
+                        <Autocomplete
+                            multiple
+                            options={equipos || []}
+                            getOptionLabel={(option) =>
+                                `${option.modelo} - ${option.servicio} (${salas.find(sala => sala.id_sala === option.sala)?.sala || 'Desconocida'})`
+                            }
+                            value={Array.isArray(formData.id_equipo) ? formData.id_equipo.map(id => equipos.find(e => e.id === id)).filter(Boolean) : []}
+                            onChange={(event, newValue) =>
+                                setFormData({ ...formData, id_equipo: newValue.map(equipo => equipo.id) })
+                            }
+                            renderInput={(params) => (
+                                <TextField {...params} label="Seleccionar Equipo" margin="normal" />
+                            )}
+                        />
 
+                    </Grid>
                     <Button type="submit" variant="contained" color="primary" fullWidth>
                         Guardar Cambios
                     </Button>

@@ -2,24 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
 import SideMenu from '../Menu/SideMenu';
 import NavBar from '../NavBar';
-import { Box } from '@mui/material';
 import Dashboard from './Dashboard/Dashboard';
 import UpsDashboard from './UpsDashboard';
 import { jwtDecode } from 'jwt-decode';
-import { useWebSocket } from '../hooks/useWebScoket';
+import { useWebSocketContext } from "../hooks/useWebSocketContext"
 import { apiEquipos, apiSalas, apiTecnicos, apiCantidadesEventos, apiMantenimiento, apiEventos, apiUps } from '../utils/Fetch'
+import ReportEquipament from './ReportEquipament';
+import NewEquipamentModal from '../Equipos/NewEquipamentModal';
+
 
 
 const Layout = () => {
-    const { estadoEquipos, setEstadoEquipos, sendSocketMessage } = useWebSocket();
-    const [equipos, setEquipos] = useState([]);
+    const { state: { estadoEquipos, equipos, tecnicos}, dispatch } = useWebSocketContext();
     const [salas, setSalas] = useState([]);
-    const [filteredEquipos, setFilteredEquipos] = useState([]);
-    const [tecnicos, setTecnicos] = useState([]);
-    const [uniqueEquipos, setUniqueEquipos] = useState([]);
-    const [mantenimiento, setMantenimiento] = useState([]);
-    const [cantidadEventos, setCantidadEventos] = useState([]);
-    const [ultimoEstado, setUltimoEstado] = useState([]);
     const [ups, setUps] = useState([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const navigate = useNavigate();
@@ -27,6 +22,7 @@ const Layout = () => {
     const token = localStorage.getItem('token');
     const user = token ? jwtDecode(token) : null;
 
+    const [openEquipModal, setOpenEquipModal] = useState(false);
 
 
     const handleLogout = () => {
@@ -48,17 +44,8 @@ const Layout = () => {
                 acc[evento.id_equipo] = evento.estado;
                 return acc;
             }, {});
-
-            const ultimoEstadoPorEquipo = data.reduce((acc, item) => {
-                const { id_equipo, desde } = item;
-                if (!acc[id_equipo] || new Date(acc[id_equipo].desde) < new Date(desde)) {
-                    acc[id_equipo] = item;
-                }
-                return acc;
-            }, {});
-
-            setUltimoEstado(Object.values(ultimoEstadoPorEquipo));
-            setEstadoEquipos(estadoMap);
+            dispatch({type: 'SET_EVENTOS', payload:data})
+            dispatch({type: 'SET_ESTADOS_INICIALES', payload: estadoMap });
             if (!response.ok) {
                 throw new Error(`Error en la respuesta del servidor: ${response.status}`);
             }
@@ -70,11 +57,7 @@ const Layout = () => {
         try {
             const response = await fetch(apiEquipos);
             const data = await response.json();
-            const uniqueEquipos = Array.from(new Set(data.map(equipo => equipo.id)))
-                .map(id => data.find(equipo => equipo.id === id));
-            setUniqueEquipos(uniqueEquipos);
-            setEquipos(data);
-            setFilteredEquipos(data);
+            dispatch({type:'SET_EQUIPOS_INICIALES', payload:data});
             if (!response.ok) {
                 throw new Error(`Error en la respuesta del servidor: ${response.status}`);
             }
@@ -94,7 +77,7 @@ const Layout = () => {
             console.error('Error al cargar las salas:', error);
         }
     };
-    const fetchUps= async () => {
+    const fetchUps = async () => {
         try {
             const response = await fetch(apiUps);
             const data = await response.json();
@@ -111,7 +94,7 @@ const Layout = () => {
         try {
             const response = await fetch(apiTecnicos);
             const data = await response.json();
-            setTecnicos(data);
+            dispatch({type:'SET_TECNICOS_INICIALES', payload:data});
             if (!response.ok) {
                 throw new Error(`Error en la respuesta del servidor: ${response.status}`);
             }
@@ -119,65 +102,50 @@ const Layout = () => {
             console.error('Error al cargar los técnicos:', error);
         }
     };
-    const obtenerMantenimiento = async () => {
+    const fetchMantenimiento = async () => {
         try {
             const response = await fetch(apiMantenimiento);
             const data = await response.json();
-            setMantenimiento(data);
+            dispatch({ type: 'MANTENIMIENTO_NUEVO', payload: data });
         } catch (error) {
             console.error('Error al obtener los datos:', error);
             setError('Error al obtener los datos');
         }
     };
-
-    const fetchCantidadEventos = async () => {
-        try {
-            const response = await fetch(apiCantidadesEventos);
-            const data = await response.json();
-            setCantidadEventos(data);
-        } catch (error) {
-            console.error('Error al obtener los eventos:', error);
-        }
-    };
     useEffect(() => {
+        fetchEquipos();
         fetchEventos();
         fetchSalas();
-        fetchEquipos();
         fetchTecnicos();
         fetchUps();
-        obtenerMantenimiento();
-        fetchCantidadEventos();
+        fetchMantenimiento();
     }, []);
 
-    const reloadEquipos = () => {
-        fetchEquipos();
-        fetchEventos();
-        sendSocketMessage({ type: 'update' });
-    };
     return (<>
-    
-
         <NavBar onMenuClick={toggleDrawer(true)} handleLogout={handleLogout} user={user} />
 
-        {user.role === 'sistemas' &&(<SideMenu open={drawerOpen} onClose={toggleDrawer(false)} equipos={equipos} salas={salas} />)}
+        {user.role === 'sistemas' && (<><SideMenu open={drawerOpen} onClose={toggleDrawer(false)} equipos={equipos} salas={salas} onNewEquipClick={() => setOpenEquipModal(true)} />
+            <NewEquipamentModal
+                open={openEquipModal}
+                onClose={() => setOpenEquipModal(false)}
+                sala={salas}
+            />
+        </>
+        )}
 
         <div style={{ display: 'flex' }}>
             <div style={{ flex: 1 }}>
                 <Routes>
                     {/* Ruta principal al ingresar */}
-                    <Route path="/cmms"
+                    <Route path="/cmms/*"
                         element={<Dashboard user={user}
                             equipos={equipos}
                             salas={salas}
                             tecnicos={tecnicos}
-                            uniqueEquipos={uniqueEquipos}
-                            mantenimiento={mantenimiento}
-                            cantidadEventos={cantidadEventos}
-                            ultimoEstado={ultimoEstado}
-                            reloadEquipos={reloadEquipos}
                             estadoEquipos={estadoEquipos}
                         />} />
                     <Route path="/ups" element={<UpsDashboard salas={salas} ups={ups} />} />
+                    <Route path="/reportEquipament" element={<ReportEquipament equipos={equipos} salas={salas} />} />
                 </Routes>
                 <Outlet />
             </div>

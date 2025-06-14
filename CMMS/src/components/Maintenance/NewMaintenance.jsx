@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography, Modal } from '@mui/material';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import FormMaintenance from '../Form/FormMaintenance';
+import { useWebSocketContext } from '../hooks/useWebSocketContext';
 
 
 
-const NewMaintenance = ({ equipos, tecnicos, salas }) => {
+const NewMaintenance = ({ equipos, salas}) => {
+  const {state:{tecnicos}} = useWebSocketContext();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -82,7 +83,7 @@ const NewMaintenance = ({ equipos, tecnicos, salas }) => {
 
         {/* Modal */}
         <Modal open={open} onClose={handleClose}>
-          <FormMaintenance equipos={equipos} tecnicos={tecnicos} salas={salas} tecnihandleClose={handleClose} />
+          <FormMaintenance equipos={equipos} salas={salas} tecnihandleClose={handleClose}/>
         </Modal>
       </Box>
 

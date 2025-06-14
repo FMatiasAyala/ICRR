@@ -5,7 +5,7 @@ let io; // Variable para almacenar la instancia de socket.io
 const initWebSocketCmms = (server) => {
   io = new Server(server, {
     cors: {
-      origin: "http://192.168.1.6:3701/cmms", // Cambia esto según tu frontend
+      origin: "http://192.168.8.3:3705/cmms", // Cambia esto según tu frontend
       methods: ["GET", "POST", "PUT", "DELETE"],
     },
   });
@@ -31,8 +31,9 @@ const initWebSocketCmms = (server) => {
 };
 
 const broadcastUpdate = (evento, data) => {
-  io.emit(evento, data); // Emite el evento a todos los clientes conectados
+  io.emit(evento, data); // ✅ Esto emite correctamente
 };
+
 const getIo = () => io; // Para obtener la instancia de socket.io en otros módulos
 
-module.exports = { initWebSocketCmms, getIo , broadcastUpdate};
+module.exports = { initWebSocketCmms, getIo, broadcastUpdate };

@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography } from '@mui/material';
 import TaskModal from './Task/TaskModal';
+import { useWebSocketContext } from './hooks/useWebSocketContext';
 
-const Cards = ({ equipo, sala, estadoEquipo }) => {
-  const [open, setOpen] = useState(false);
-  const [currentTasks, setCurrentTasks] = useState([]);
+const Cards = () => {
+  const { state: { estadoEquipos } } = useWebSocketContext();
+  const equiposArray = Object.values(estadoEquipos || {});
 
-  const handleOpen = (tasks) => {
-    const taskOrdenados = tasks.sort((a, b) => new Date(b.desde) - new Date(a.desde));
-    setCurrentTasks(taskOrdenados);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const countEstado = (estado) => estadoEquipo.filter(item => item.estado === estado).length;
+  const countEstado = (estado) => equiposArray.filter(item => item === estado).length;
 
   return (
     <Box
@@ -31,11 +22,9 @@ const Cards = ({ equipo, sala, estadoEquipo }) => {
       {['OPERATIVO', 'NO OPERATIVO', 'REVISION'].map((estado, index) => (
         <Card
           key={index}
-          onClick={() => handleOpen(estadoEquipo.filter(item => item.estado === estado))}
           sx={{
             width: { xs: '90%', sm: '30%' }, // En móviles ocupa el 90%, en pantallas grandes un tercio
             maxWidth: 400,
-            cursor: 'pointer',
             borderRadius: '16px',
             boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
             transition: 'box-shadow 0.3s ease-in-out',
@@ -51,13 +40,11 @@ const Cards = ({ equipo, sala, estadoEquipo }) => {
               {estado === 'OPERATIVO' ? 'Operativos' : estado === 'NO OPERATIVO' ? 'No Operativos' : 'En Revisión'}
             </Typography>
             <Typography variant="subtitle1" align="center" sx={{ color: '#616161' }}>
-              {countEstado(estado)} equipos
+              {countEstado(estado)} Equipos
             </Typography>
           </CardContent>
         </Card>
       ))}
-
-      <TaskModal open={open} handleClose={handleClose} currentTasks={currentTasks} equipos={equipo} salas={sala} />
     </Box>
   );
 };

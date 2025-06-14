@@ -1,27 +1,32 @@
 import React, { useState, forwardRef } from 'react';
-import { Box, Typography, TextField, Button, Snackbar, Alert, MenuItem, FormControl, InputLabel, Select, IconButton } from '@mui/material';
+import { Box, Typography, TextField, Button, Snackbar, Alert, IconButton, Stepper, Step, StepLabel, Grid, Paper, StepContent, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { apiCargaContrato } from '../utils/Fetch';
+import { parseISO } from 'date-fns';
 
 
-const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {
+const FormContratos = forwardRef(({ contratoClose, equipo, onClose}, ref) => {
     const [description, setDescription] = useState('');
     const [update, setUpdate] = useState('');
     const [desde, setDesde] = useState(null);
     const [hasta, setHasta] = useState(null);
     const [idEquipo, setIdEquipo] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
-    const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
-    const [coberturaPartes, setCoberturaPartes] = useState(''); // Nuevo estado
-    const [coberturaManoDeObra, setCoberturaManoDeObra] = useState(''); // Nuevo estado
+    const [coberturaPartes, setCoberturaPartes] = useState('');
+    const [coberturaManoDeObra, setCoberturaManoDeObra] = useState('');
+    const [fechaError, setFechaError] = useState(false);
+
+
+    const [activeStep, setActiveStep] = useState(0);
+    const steps = ['Datos del contrato', 'Coberturas', 'Adjuntos', 'Confirmar'];
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
 
-
+    const handleNext = () => setActiveStep((prev) => prev + 1);
+    const handleBack = () => setActiveStep((prev) => prev - 1);
 
     const handleFileChange = (event) => {
         setSelectedFile(event.target.files[0]);
@@ -48,11 +53,11 @@ const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {
         formData.append('file', selectedFile);
         formData.append('descripcion', description);
         formData.append('actualizacion', update);
-        formData.append('desde', desde ? format(desde, 'yyyy-MM-dd') : null);
-        formData.append('hasta', hasta ? format(hasta, 'yyyy-MM-dd') : null);
+        formData.append('desde', desde ? format(parseISO(desde), 'yyyy-MM-dd') : null);
+        formData.append('hasta', hasta ? format(parseISO(hasta), 'yyyy-MM-dd') : null);
         formData.append('cobertura_partes', coberturaPartes); // Nuevo campo
         formData.append('cobertura_manoDeObra', coberturaManoDeObra);
-        formData.append('id_equipo', idEquipo); // Nuevo campo
+        formData.append('id_equipo', equipo.id); // Nuevo campo
 
 
         try {
@@ -65,7 +70,7 @@ const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {
                 setSnackbarMessage('Contrato cargado exitosamente.');
                 setSnackbarSeverity('success');
                 setSnackbarOpen(true);
-                handleClose();
+                onClose()
             } else {
                 throw new Error('Error al cargar el contrato.');
 
@@ -79,129 +84,196 @@ const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {
     };
 
 
-    // Filtrar equipos según el término de búsqueda por nombre, servicio 
-    const filteredEquipos = Array.isArray(equipo) ? equipo.filter(equipo =>
-        equipo?.modelo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        equipo?.servicio?.toLowerCase().includes(searchQuery.toLowerCase())
-    ) : [];
+    const renderStepContent = (step) => {
+        switch (step) {
+            case 0:
+                return (
+                    <Box>
+                        <Typography variant="subtitle1" gutterBottom>Datos del equipo</Typography>
+                        <TextField
+                            label="Equipo"
+                            value={equipo?.marca || ''}
+                            fullWidth
+                            sx={{ mb: 2 }}
+                            disabled
+                        />
+                        <TextField
+                            label="Observación"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            multiline
+                            rows={3}
+                            fullWidth
+                            sx={{ mb: 2 }}
+                            required
+                        />
+                        <TextField
+                            label="Actualización"
+                            value={update}
+                            onChange={(e) => setUpdate(e.target.value)}
+                            multiline
+                            rows={3}
+                            fullWidth
+                            required
+                        />
+                        <Grid container spacing={2} sx={{ mt: 1 }}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Desde"
+                                    type="date"
+                                    value={desde || ''}
+                                    onChange={(e) => {
+                                        setDesde(e.target.value);
+                                        // Si hasta ya tiene valor, volvemos a validar
+                                        if (hasta && new Date(hasta) < new Date(e.target.value)) {
+                                            setFechaError(true);
+                                        } else {
+                                            setFechaError(false);
+                                        }
+                                    }}
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Hasta"
+                                    type="date"
+                                    value={hasta || ''}
+                                    onChange={(e) => {
+                                        const nuevaHasta = e.target.value;
+                                        setHasta(nuevaHasta);
+                                        if (desde && new Date(nuevaHasta) < new Date(desde)) {
+                                            setFechaError(true);
+                                        } else {
+                                            setFechaError(false);
+                                        }
+                                    }}
 
+                                    fullWidth
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                            </Grid>
+                        </Grid>
+                    </Box>
+                );
 
-    // Mostrar info del equipo seleccionado
-    const handleEquipoSeleccionado = (equipoId) => {
-        setIdEquipo(equipoId);
-        if (equipoId) {
-            const equipoEncontrado = equipo.find(e => e.id === equipoId);
-            setIdEquipo(equipoId);
+            case 1:
+                return (
+                    <Box>
+                        <Typography variant="subtitle1" gutterBottom>Cobertura</Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Cobertura Partes"
+                                    value={coberturaPartes}
+                                    onChange={(e) => setCoberturaPartes(e.target.value)}
+                                    fullWidth
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Cobertura Mano de Obra"
+                                    value={coberturaManoDeObra}
+                                    onChange={(e) => setCoberturaManoDeObra(e.target.value)}
+                                    fullWidth
+                                    required
+                                />
+                            </Grid>
+                        </Grid>
+                    </Box>
+                );
 
-            setEquipoSeleccionado(equipoEncontrado);
+            case 2:
+                return (
+                    <Box>
+                        <Typography variant="subtitle1" gutterBottom>Archivo del contrato</Typography>
+
+                        <Button
+                            variant="outlined"
+                            component="label"
+                            fullWidth
+                            sx={{ justifyContent: 'flex-start', textTransform: 'none', mb: 1 }}
+                        >
+                            {selectedFile ? selectedFile.name : 'Seleccionar archivo (.pdf, .docx, .doc)'}
+                            <input
+                                type="file"
+                                hidden
+                                onChange={handleFileChange}
+                                accept=".pdf,.doc,.docx"
+                            />
+                        </Button>
+
+                        {selectedFile && (
+                            <Typography variant="caption" color="text.secondary">
+                                Archivo seleccionado: {selectedFile.name}
+                            </Typography>
+                        )}
+                    </Box>
+
+                );
+
+            case 3:
+                return (
+                    <Box>
+                        <Typography variant="subtitle1" gutterBottom>Revisá que esté todo bien 👇</Typography>
+                        <Box sx={{ mt: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: 2 }}>
+                            <Typography variant="body1"><strong>Equipo:</strong> {equipo?.marca || '-'}</Typography>
+                            <Typography variant="body1"><strong>Observación:</strong> {description}</Typography>
+                            <Typography variant="body1"><strong>Actualización:</strong> {update}</Typography>
+                            <Typography variant="body1"><strong>Desde:</strong> {desde ? new Date(desde).toLocaleDateString('es-AR') : '-'}</Typography>
+                            <Typography variant="body1"><strong>Hasta:</strong> {hasta ? new Date(hasta).toLocaleDateString('es-AR') : '-'}</Typography>
+                            <Typography variant="body1"><strong>Cobertura Partes:</strong> {coberturaPartes}</Typography>
+                            <Typography variant="body1"><strong>Cobertura Mano de Obra:</strong> {coberturaManoDeObra}</Typography>
+                            <Typography variant="body1"><strong>Archivo:</strong> {selectedFile?.name || 'No adjuntado'}</Typography>
+                        </Box>
+                    </Box>
+                );
+
+            default:
+                return null;
         }
     };
 
     return (
-        <Box
-            ref={ref}
-            sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: { xs: '90%', sm: 600 },
-                bgcolor: 'background.paper',
-                boxShadow: 24,
-                borderRadius: 4,
-                p: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 3,
-            }}
-        >
+        <Paper ref={ref} sx={{ p: 4, width: '100%', maxWidth: 700, mx: 'auto', mt: 5, borderRadius: 3 }}>
             <IconButton onClick={contratoClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
                 <Close />
             </IconButton>
-            <Typography variant="h6" mb={2}>Cargar Contrato</Typography>
-            <form onSubmit={handleSubmit}>
-                <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems="center" gap={2} mb={2}>
-                    <TextField
-                        label="Buscar por nombre, sala o servicio"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        fullWidth
-                    />
-                    <FormControl fullWidth>
-                        <InputLabel>Seleccionar Equipo</InputLabel>
-                        <Select
-                            value={idEquipo}
-                            onChange={(e) => handleEquipoSeleccionado(e.target.value)}
-                            required
-                            MenuProps={{
-                                PaperProps: {
-                                    style: {
-                                        maxHeight: 200,
-                                        overflowY: 'auto',
-                                    },
-                                },
-                            }}
-                        >
-                            {filteredEquipos.map((equipo) => (
-                                <MenuItem key={equipo.id} value={equipo.id}>
-                                    {equipo.modelo} ({salas.find(sala => sala.id_sala === equipo.sala)?.sala || 'Desconocida'})
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </Box>
-                <Box>
-                    <TextField
-                        label="Observacion"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        fullWidth
-                        multiline
-                        sx={{ marginBottom: '5px' }}
-                        rows={3}
-                        required
-                    />
-                </Box>
-                <Box>
-                    <TextField
-                        label="Actualizacion"
-                        value={update}
-                        onChange={(e) => setUpdate(e.target.value)}
-                        fullWidth
-                        multiline
-                        sx={{ marginBottom: '5px' }}
-                        rows={3}
-                        required
-                    />
-                </Box>
 
-                {/* Campos adicionales */}
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <TextField
-                        label="Cobertura Partes"
-                        value={coberturaPartes}
-                        onChange={(e) => setCoberturaPartes(e.target.value)}
-                        sx={{ marginBottom: '5px' }}
-                        fullWidth
-                        required
-                    />
-                    <TextField
-                        label="Cobertura Mano de Obra"
-                        value={coberturaManoDeObra}
-                        onChange={(e) => setCoberturaManoDeObra(e.target.value)}
-                        sx={{ marginBottom: '5px' }}
-                        fullWidth
-                        required
-                    />
-                </Box>
+            <Typography variant="h5" gutterBottom>
+                Cargar contrato
+            </Typography>
 
-                {/* Botones */}
-                <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-                    <Button variant="contained" color="primary" type="submit">Guardar</Button>
-                </Box>
-            </form>
+            <Stepper activeStep={activeStep} alternativeLabel sx={{ mt: 2 }}>
+                {steps.map((label) => (
+                    <Step key={label}>
+                        <StepLabel>
+                            <Typography variant="caption">{label}</Typography>
+                        </StepLabel>
+                    </Step>
+                ))}
+            </Stepper>
 
-            {/* Snackbar */}
+
+            <Box mt={4}>{renderStepContent(activeStep)}</Box>
+
+            <Box mt={4} display="flex" justifyContent="space-between">
+                <Button disabled={activeStep === 0} onClick={handleBack}>
+                    Anterior
+                </Button>
+                {activeStep === steps.length - 1 ? (
+                    <Button variant="contained" onClick={handleSubmit}>
+                        Finalizar
+                    </Button>
+                ) : (
+                    <Button variant="contained" onClick={handleNext}>
+                        Siguiente
+                    </Button>
+                )}
+            </Box>
+
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={4000}
@@ -212,7 +284,7 @@ const FormContratos = forwardRef(({ contratoClose, equipo, salas }, ref) => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
-        </Box>
+        </Paper>
     );
 });
 

@@ -3,12 +3,12 @@ import { Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, Tabl
 
 const UpsDashboard = ({ salas, ups }) => {
   const getSala = (idSala) => {
-    const sala = salas.find((sala) => sala.ubicacion === idSala);
+    const sala = salas.find((sala) => sala.id_sala === idSala);
     return sala ? sala.sala : 'Desconocida';
   };
 
   const getSalaSector = (idSala) => {
-    const sala = salas.find((sala) => sala.ubicacion === idSala);
+    const sala = salas.find((sala) => sala.id_sala === idSala);
     return sala ? sala.sector : 'Desconocido';
   };
 

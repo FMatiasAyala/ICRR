@@ -11,6 +11,7 @@ import {
   TableRow,
   Paper,
   Autocomplete,
+  /* Soy un comebala -Señor Mmmmmmmatias */
   Typography,
   InputLabel,
   MenuItem,
@@ -22,7 +23,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { apiReportEventos } from "../utils/Fetch";
-import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
+
 
 
 const FiltrosReportes = ({ equipos, salas }) => {
@@ -81,6 +82,7 @@ const FiltrosReportes = ({ equipos, salas }) => {
       if (columna === "tiempo") {
         const hastaA = a.hasta ? new Date(a.hasta) : new Date();
         const hastaB = b.hasta ? new Date(b.hasta) : new Date();
+        /* Soy un comebala -Señor Mmmmmmmatias */
         const desdeA = new Date(a.desde);
         const desdeB = new Date(b.desde);
         valorA = differenceInMinutes(hastaA, desdeA);
@@ -142,6 +144,7 @@ const FiltrosReportes = ({ equipos, salas }) => {
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Desde"
+              /* Soy un comebala -Señor Mmmmmmmatias */
               value={filtros.fechaDesde}
               onChange={(nuevaFecha) => setFiltros({ ...filtros, fechaDesde: nuevaFecha })}
               renderInput={(params) => <TextField {...params} size="small" sx={{ minWidth: 150 }} />}

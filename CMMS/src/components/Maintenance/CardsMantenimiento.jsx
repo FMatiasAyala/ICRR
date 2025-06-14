@@ -23,10 +23,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { apiMantenimiento, apiMantenimientoPostpone } from '../utils/Fetch';
 import NewMaintenance from './NewMaintenance';
 import CardsMantenimientoMobile from './CardsMantenimientoMobile';
+import { useWebSocketContext } from '../hooks/useWebSocketContext';
 
-const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
-  const [mantenimientos, setMantenimientos] = useState([]);
-  const [loading, setLoading] = useState(false);
+const CardsMantenimiento = ({ equipos, salas }) => {
+  const { state: { mantenimiento: mantenimientos, tecnicos } } = useWebSocketContext();
   const [comentarios, setComentarios] = useState(null);
   const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
   const [newFecha, setNewFecha] = useState('');
@@ -40,32 +40,16 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
   const isMobile = useMediaQuery('(max-width:600px)');
   const isTablet = useMediaQuery('(max-width:900px)');
 
-  const obtenerMantenimientos = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(apiMantenimiento);
-      const data = await response.json();
-      setMantenimientos(data);
-    } catch (error) {
-      console.error('Error al obtener los mantenimientos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    obtenerMantenimientos()
-  }, []);
-
   const obtenerNombreEquipo = (id_equipo) => {
     const equipo = equipos.find((e) => e.id === id_equipo);
     return equipo ? equipo.modelo : 'Equipo no encontrado';
   };
 
-
   const handleDoneMantenimiento = async (id_mantenimiento, nuevoEstado) => {
-
-    const doneMantenimiento = { ...mantenimientos, comentario: comentarios, estado: nuevoEstado };
+    const doneMantenimiento = {
+      comentario: comentarios,
+      estado: nuevoEstado
+    };
 
     try {
       const responseDone = await fetch(`${apiMantenimiento}${id_mantenimiento}`, {
@@ -77,20 +61,11 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
         body: JSON.stringify(doneMantenimiento),
       });
       if (responseDone.ok) {
-        setMantenimientos((prevMantenimientos) =>
-          prevMantenimientos.map((mantenimiento) =>
-            mantenimiento.id_mantenimiento === id_mantenimiento
-              ? { ...mantenimiento, estado: nuevoEstado }
-              : mantenimiento
-          )
-
-        );
         setSnackbarMessage("Mantenimiento confirmado correctamente");
         setSnackbarSeverity("success");
         setOpenSnackbar(true);
-
         setComentarios(null);
-        console.log('Mantenimiento actualizado');
+        setCurrentTab('main');
       } else {
         console.error('Error al actualizar el mantenimiento:', responseDone.statusText);
       }
@@ -100,13 +75,10 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
 
   };
 
-  const handleOpenForm = (mantenimiento, tab) => {
+  const handleOpenForm = (man, tab) => {
     setCurrentTab(tab); // 'done' o 'postpone'
-    setSelectedMantenimiento(mantenimiento);
+    setSelectedMantenimiento(man);
   };
-
-
-
 
   const handlePostpone = async () => {
     if (!selectedMantenimiento) return;
@@ -124,21 +96,13 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
           hasta: newHoraHasta,
         }),
       });
-
+      console.log(newFecha,newHoraDesde,newHoraHasta)
       if (response.ok) {
-        setMantenimientos((prevMantenimientos) =>
-          prevMantenimientos.map((mantenimiento) =>
-            mantenimiento.id_mantenimiento === selectedMantenimiento.id_mantenimiento
-              ? { ...mantenimiento, estado: 'POSTERGADO', nueva_fecha: newFecha }
-              : mantenimiento
-          )
-        );
-        // Aquí iría la lógica para reprogramar el mantenimiento
         setSnackbarMessage("Mantenimiento reprogramado correctamente");
         setSnackbarSeverity("info");
         setOpenSnackbar(true);
         setSelectedMantenimiento(null);
-        console.log('Mantenimiento postergado');
+        setCurrentTab('main')
       } else {
         console.error('Error al postergar el mantenimiento:', response.statusText);
       }
@@ -155,12 +119,12 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
 
   return (
     <Box display="flex" justifyContent="center" mt={{ xs: 2, md: 4 }} px={{ xs: 2, md: 0 }}>
-      {mantenimientosProgramados.length > 0 && (
+      {mantenimientosProgramados.length > 0 ? (
         <Box
-          sx={{ 
+          sx={{
             top: '50%',
             left: '50%',
-            width: isMobile ? '95%' : isTablet ? '80%' : (handleOpenForm) ? 1000 : 800, 
+            width: isMobile ? '95%' : isTablet ? '80%' : (handleOpenForm) ? 1000 : 800,
             bgcolor: 'background.paper',
             boxShadow: 4,
             p: 2,
@@ -168,8 +132,8 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
             maxHeight: '50vh',
-            overflowY: 'auto', 
-            overflowX: 'hidden', 
+            overflowY: 'auto',
+            overflowX: 'hidden',
           }}
         >
           {currentTab === 'main' && (
@@ -181,7 +145,7 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <NewMaintenance onMaintenanceCreate={reload} equipos={equipos} tecnicos={tecnicos} salas={salas} />
+                  <NewMaintenance equipos={equipos} salas={salas} />
                 </Grid>
               </Grid>
               {isMobile ? (
@@ -201,26 +165,26 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
                   </TableHead>
                   <TableBody>
                     {mantenimientosProgramados.length > 0 ? (
-                      mantenimientosProgramados.map((mantenimiento) => (
-                        <TableRow key={mantenimiento.id_mantenimiento} sx={{
+                      mantenimientosProgramados.map((man) => (
+                        <TableRow key={man.id_mantenimiento} sx={{
                           color: '#fff',
                           fontWeight: 'bold',
                           textAlign: 'center',
                           fontSize: '12px',
                           padding: '4px'
                         }}>
-                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{obtenerNombreEquipo(mantenimiento.id_equipo)}</TableCell>
-                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{mantenimiento.tipo}</TableCell>
-                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{mantenimiento.detalle}</TableCell>
-                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{new Date(mantenimiento.fecha).toLocaleDateString()}</TableCell>
+                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{obtenerNombreEquipo(man.id_equipo)}</TableCell>
+                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{man.tipo}</TableCell>
+                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{man.detalle}</TableCell>
+                          <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>{new Date(man.fecha).toLocaleDateString('es-AR')}</TableCell>
                           <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>
-                            {new Date(`2024-11-01T${mantenimiento.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${mantenimiento.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                            {new Date(`2024-11-01T${man.desde}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(`2024-11-01T${man.hasta}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                           </TableCell>
                           <TableCell align="center" sx={{ fontSize: '12px', padding: '4px' }}>
-                            <IconButton onClick={() => handleOpenForm(mantenimiento, 'done')} color="primary">
+                            <IconButton onClick={() => handleOpenForm(man, 'done')} color="primary">
                               <DoneIcon />
                             </IconButton>
-                            <IconButton onClick={() => handleOpenForm(mantenimiento, 'postpone')} color="secondary">
+                            <IconButton onClick={() => handleOpenForm(man, 'postpone')} color="secondary">
                               <ScheduleIcon />
                             </IconButton>
                           </TableCell>
@@ -339,6 +303,15 @@ const CardsMantenimiento = ({ equipos, salas, tecnicos, reload }) => {
               {snackbarMessage}
             </Alert>
           </Snackbar>
+        </Box>
+      ) : (
+        <Box>
+          <Grid item xs={12} md={6}>
+            <NewMaintenance equipos={equipos} tecnicos={tecnicos} salas={salas} />
+          </Grid>
+          <Typography variant="body2" align="center" color="text.secondary">
+            No hay mantenimientos programados.
+          </Typography>
         </Box>
       )}
     </Box>

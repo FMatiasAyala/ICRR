@@ -3,7 +3,7 @@ import { Box, Button, Modal, IconButton, Typography } from "@mui/material";
 import { AddCircleOutline, Close } from "@mui/icons-material";
 import NewTechinicianForm from "./FormTechnician";
 
-const NewTechnician = ({ equipos, salas }) => {
+const NewTechnician = ({ equipos, salas, equipo }) => {
     const [open, setOpen] = useState(false);
 
     const handleOpenModal = () => {
@@ -69,7 +69,7 @@ const NewTechnician = ({ equipos, salas }) => {
                     </Box>
 
                     {/* Formulario */}
-                    <NewTechinicianForm equipos={equipos} salas={salas} />
+                    <NewTechinicianForm equipos={equipos} salas={salas} equipo={equipo}/>
                 </Box>
             </Modal>
         </>

@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors({
-  origin: 'http://192.168.1.6:3700',
+  origin: '192.168.8.3:3704',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // enable set cookies
 }));
@@ -31,16 +31,18 @@ initWebSocket(serverTablon);
 const routerCmms = require('./routes/cmms.routes');
 const http = require('http');
 const appCmms = express();
-const serverCmms = http.createServer (appCmms)
-const PORT_CMMS = 3002;
+const serverCmms = http.createServer(appCmms)
+const PORT_CMMS = 3003;
 const contratosPath = path.join(__dirname, 'contratos');
+const adjuntosPath = path.join (__dirname, 'adjuntosEventos');
 
 
 
 appCmms.use(express.json());
 appCmms.use('/contratos', express.static(contratosPath));
+appCmms.use('/adjuntosEventos', express.static(adjuntosPath));
 appCmms.use(cors({
-  origin: 'http://192.168.1.6:3701',
+  origin: 'http://192.168.8.3:3705',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, // enable set cookies
 }));
@@ -48,6 +50,6 @@ appCmms.use('/cmms', routerCmms);
 
 initWebSocketCmms(serverCmms);
 serverCmms.listen(PORT_CMMS, () => {
-  console.log(`WebSocket CMMS running on port 3002`);
+  console.log(`WebSocket CMMS running on port ${PORT_CMMS}`);
 });
 

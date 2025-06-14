@@ -1,4 +1,6 @@
+const { type } = require("os");
 const dbMysqlDev = require("../../DataBase/MySqlDatabaseDev");
+const {broadcastUpdate} = require("../../websocket/webSocketCmms");
 
 exports.obtenerTecnicos = async (req, res) => {
   const query = "select * from tbl_tecnicos";
@@ -30,7 +32,7 @@ exports.altaTecnicos = async (req, res) => {
 
     // Obtener el ID del técnico recién insertado
     const tecnicoNuevo = await dbMysqlDev.executeQuery(
-      "SELECT id_tecnico FROM tbl_tecnicos ORDER BY id_tecnico DESC LIMIT 1"
+      "SELECT id_tecnico, nombre, apellido, email, cobertura, numero, empresa FROM tbl_tecnicos ORDER BY id_tecnico DESC LIMIT 1"
     );
 
     if (!Array.isArray(tecnicoNuevo) || tecnicoNuevo.length === 0) {
@@ -40,6 +42,7 @@ exports.altaTecnicos = async (req, res) => {
         .json({ error: "No se pudo obtener el ID del técnico" });
     }
 
+    const tecnicoDatos = tecnicoNuevo;
     const tecnicoId = tecnicoNuevo[0].id_tecnico;
 
     // Insertar en tbl_equipo_tecnico para cada equipo asociado
@@ -51,6 +54,13 @@ exports.altaTecnicos = async (req, res) => {
         );
       }
     }
+
+    broadcastUpdate("mensaje",
+      {
+        type:'tecnicoNuevo',
+        data: tecnicoDatos
+      }
+    );
 
     res.status(201).json({ message: "Técnico dado de alta correctamente" });
   } catch (err) {
@@ -87,6 +97,16 @@ exports.modificacionTecnicos = async (req, res) => {
     res
       .status(500)
       .json({ error: "Error al modificar al técnico", details: error.message });
+  }
+ 
+  // Insertar en tbl_equipo_tecnico para cada equipo asociado
+  if (Array.isArray(id_equipo) && id_equipo.length > 0) {
+    for (const equipoId of id_equipo) {
+      await dbMysqlDev.executeQueryParams(
+        "INSERT INTO tbl_equipo_tecnico (tecnico_id, equipo_id) VALUES (?, ?)",
+        [id, equipoId]
+      );
+    }
   }
 };
 

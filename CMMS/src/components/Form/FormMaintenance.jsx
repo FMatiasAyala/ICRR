@@ -1,5 +1,5 @@
-import React, { useState, forwardRef } from 'react';
-import { Box, Typography, TextField, Button, Autocomplete, Snackbar, Alert,FormControl, InputLabel, MenuItem, Select} from '@mui/material';
+import React, { useState, forwardRef, useEffect } from 'react';
+import { Box, Typography, TextField, Button, Autocomplete, Snackbar, Alert, FormControl, InputLabel, MenuItem, Select, Backdrop, CircularProgress } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -8,8 +8,10 @@ import { apiMantenimiento } from '../utils/Fetch';
 import { format } from 'date-fns';
 import { jwtDecode } from 'jwt-decode';
 import enGB from 'date-fns/locale/en-GB';
+import { useWebSocketContext } from '../hooks/useWebSocketContext';
 
-const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose }, ref) => {
+const FormMaintenance = forwardRef(({ equipos, salas, tecnihandleClose }, ref) => {
+  const { state: { tecnicos } } = useWebSocketContext();
   const [taskDescription, setTaskDescription] = useState('');
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [selectedEquipo, setSelectedEquipo] = useState(null);
@@ -20,30 +22,17 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [startTime, setStartTime] = useState(null); // "Desde"
   const [endTime, setEndTime] = useState(null); // "Hasta"
-  const handleDateChange = (newValue) => {
-    const currentDate = new Date();
-    const chosenDate = new Date(newValue);
-
-    // Ajustamos ambas fechas para que la hora sea 00:00:00
-    currentDate.setHours(0, 0, 0, 0);
-    chosenDate.setHours(0, 0, 0, 0);
-
-    // Validamos si la fecha es anterior o igual a la actual
-    if (chosenDate < currentDate) {
-      setSnackbarMessage("No se puede seleccionar una fecha anterior al día actual.");
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    } else {
-      setSelectedDate(newValue); // Si es válida, actualizamos la fecha seleccionada
-    }
-  };
-
-
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem('token');
     let userId = null;
+
+    useEffect(() => {
+      console.log('Técnicos actualizados:', tecnicos);
+    }, [tecnicos]);
+
 
     if (token) {
       const decodedToken = jwtDecode(token);
@@ -61,6 +50,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
       estado: 'PROGRAMADO',
       id_usuario: userId
     };
+    setLoading(true);
     try {
       const response = await fetch(apiMantenimiento, {
         method: 'POST',
@@ -73,15 +63,20 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
       if (response.ok) {
         setSnackbarMessage('Mantenimiento guardado correctamente.');
         setSnackbarSeverity('success');
-        setSnackbarOpen(true);
       } else if (response.status === 400) {
         setSnackbarMessage('No se puede asignar una fecha anterior a la actual.');
         setSnackbarSeverity('error');
-        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage('Error inesperado al guardar mantenimiento.');
+        setSnackbarSeverity('error');
       }
     } catch (error) {
-      setSnackbarMessage('Error en la solicitud.');
+      console.error(error);
+      setSnackbarMessage('Error de conexión con el servidor.');
       setSnackbarSeverity('error');
+    } finally {
+      setLoading(false);
+      tecnihandleClose();
       setSnackbarOpen(true);
     }
 
@@ -105,12 +100,12 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
     ref={ref}
     sx={{
       position: 'absolute',
-      overflowY:'auto',
+      overflowY: 'auto',
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
       width: { xs: '80%', md: 600 },
-      height:{xs:'90%', md: 600}, 
+      height: { xs: '90%', md: 600 },
       bgcolor: 'background.paper',
       boxShadow: 24,
       borderRadius: 4,
@@ -119,11 +114,21 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
       flexDirection: 'column',
       gap: 2,
       scrollbarWidth: 'none', // Oculta la barra en Firefox
-    '&::-webkit-scrollbar': {
-      display: 'none' // Oculta la barra en Chrome, Safari y Edge
-    } 
+      '&::-webkit-scrollbar': {
+        display: 'none' // Oculta la barra en Chrome, Safari y Edge
+      }
     }}
   >
+    <Backdrop
+      open={loading}
+      sx={{
+        color: '#fff',
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        backdropFilter: 'blur(3px)',
+      }}
+    >
+      <CircularProgress color="inherit" />
+    </Backdrop>
     <Typography variant="h6" align="center">Cargar Nuevo Mantenimiento</Typography>
     <form onSubmit={handleSubmit}>
       <FormControl fullWidth>
@@ -133,7 +138,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
           onChange={(e) => setTipoMantenimiento(e.target.value)}
           required
         >
-        
+
           <MenuItem value="PREVENTIVO">Preventivo</MenuItem>
           <MenuItem value="CORRECTIVO">Correctivo</MenuItem>
           <MenuItem value="ACTUALIZACION">Actualización</MenuItem>
@@ -166,7 +171,7 @@ const FormMaintenance = forwardRef(({ equipos, tecnicos, salas, tecnihandleClose
         value={selectedEquipo}
         onChange={(event, newValue) => setSelectedEquipo(newValue)}
         isOptionEqualToValue={(option, value) => option.id === value.id} // Comparar por ID único
-        getOptionLabel={(option) => `${option.modelo} - ${option.servicio} (${salas.find(sala => sala.id_sala === option.sala)?.sala || 'Desconocida'})`}
+        getOptionLabel={(option) => `${option.modelo} - ${option.siglas_servicio} (${salas.find(sala => sala.id_ubicacion === option.id_ubicacion)?.sala || 'Desconocida'})`}
         renderInput={(params) => (
           <TextField {...params} label="Seleccionar Equipo" margin="normal" required />
         )}

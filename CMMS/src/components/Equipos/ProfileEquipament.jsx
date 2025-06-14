@@ -1,0 +1,665 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Card,
+  Typography,
+  Grid,
+  Divider,
+  Box,
+  Avatar,
+  List,
+  ListItemIcon,
+  ListItemText,
+  ListItemButton,
+  TextField,
+  Snackbar,
+  Alert,
+  Button,
+  CardContent,
+  CardHeader,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
+import { Build, AssignmentInd, History, Event, Description, SaveAs, PowerOff, DesktopAccessDisabled } from '@mui/icons-material';
+import { apiModificacionEquipo, apiTecnicosEquipo, apiEventosFiltrados, apiDatosContrato, apiModificacionTecnico, apiBajaEquipo, apiEventos } from '../utils/Fetch';
+import { jwtDecode } from 'jwt-decode';
+import CurrentMaintenance from '../Modal/TabEquipament/CurrentMaintenance';
+import CurrentEvents from '../Modal/TabEquipament/CurrentEvents';
+import NewTechnician from '../Menu/NewTechnician';
+import CurrentContrato from '../Modal/TabEquipament/CurrentContrato';
+import ContratoFormModal from '../Modal/ContratosFormModal';
+import { useWebSocketContext } from '../hooks/useWebSocketContext';
+
+const ProfileEquipament = ({ equipo, tecnicos, salas }) => {
+  const [tabIndex, setTabIndex] = useState(0);
+  const [tecnicosEquipo, setTecnicosEquipo] = useState([]);
+  const [contratos, setContratos] = useState([]);
+  const [openContratoModal, setOpenContratoModal] = useState(false);
+  const { state: { mantenimiento: mantenimientos}, dispatch } = useWebSocketContext();
+  const mantenimientoFiltrados = mantenimientos.filter((m) => m.id_equipo === equipo.id);
+
+  const fecthDatosContrato = async () => {
+
+    try {
+      const response = await fetch(`${apiDatosContrato}?id_equipo=${equipo.id}`);
+      if (!response.ok) {
+        throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+      }
+      const data = await response.json();
+      setContratos(data);
+    } catch (error) {
+      console.error("Error al cargar los datos del contrato:", error);
+    };
+  }
+  const fetchTecnicosEquipo = async () => {
+
+    try {
+      const response = await fetch(`${apiTecnicosEquipo}${equipo.id}`);
+      if (!response.ok) {
+        throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+      }
+      const data = await response.json();
+      setTecnicosEquipo(data);
+    } catch (error) {
+      console.error('Error al cargar los técnicos del equipo:', error);
+    }
+  }
+  const fetchEventosFiltrados = async () => {
+    try {
+      const response = await fetch(`${apiEventosFiltrados}?id_equipo=${equipo.id}`);
+      if (!response.ok) {
+        throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+      }
+      const data = await response.json();
+      dispatch({ type: "SET_EVENTOS_FILTRADOS", payload: data });
+    } catch (error) {
+      console.error('Error al obtener eventos:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (equipo?.id) {
+      console.log("Cargando eventos, contrato y técnicos...");
+      fetchEventosFiltrados();
+      fecthDatosContrato();
+      fetchTecnicosEquipo();
+    }
+  }, [equipo]);
+
+
+
+  if (!equipo) return null;
+
+  return (
+    <Grid container spacing={2} sx={{ mt: 2, mx: 12 }}>
+      {/* Sidebar */}
+      <Grid item xs={12} md={2}>
+        <Card elevation={3} sx={{ borderRadius: 4, p: 2, height: '30rem' }}>
+          <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
+            <Avatar
+              variant="rounded"
+              sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: 28 }}
+            >
+              {equipo?.modelo?.[0] || '?'}
+            </Avatar>
+            <Typography variant="h6" mt={1} textAlign="center">
+              {equipo.modelo}
+            </Typography>
+          </Box>
+          <Divider sx={{ my: 2 }} />
+          <List>
+            <ListItemButton selected={tabIndex === 0} onClick={() => setTabIndex(0)}>
+              <ListItemIcon><Build /></ListItemIcon>
+              <ListItemText primary="Datos del equipo" />
+            </ListItemButton>
+            <ListItemButton selected={tabIndex === 1} onClick={() => setTabIndex(1)}>
+              <ListItemIcon><History /></ListItemIcon>
+              <ListItemText primary="Mantenimientos" />
+            </ListItemButton>
+            <ListItemButton selected={tabIndex === 2} onClick={() => setTabIndex(2)}>
+              <ListItemIcon><AssignmentInd /></ListItemIcon>
+              <ListItemText primary="Técnicos" />
+            </ListItemButton>
+            <ListItemButton selected={tabIndex === 3} onClick={() => setTabIndex(3)}>
+              <ListItemIcon><Event /></ListItemIcon>
+              <ListItemText primary="Eventos" />
+            </ListItemButton>
+            <ListItemButton selected={tabIndex === 4} onClick={() => setTabIndex(4)}>
+              <ListItemIcon><Description /></ListItemIcon>
+              <ListItemText primary="Contratos" />
+            </ListItemButton>
+            <ListItemButton selected={tabIndex === 5} onClick={() => setTabIndex(5)} >
+              <ListItemIcon><DesktopAccessDisabled /></ListItemIcon>
+              <ListItemText primary="Baja equipo" />
+            </ListItemButton>
+          </List>
+        </Card>
+      </Grid>
+
+      {/* Main content */}
+      <Grid item xs={12} md={9}>
+        <Card elevation={3} sx={{ borderRadius: 4, p: 3, height: '100%' }}>
+          <Box sx={{ mt: 2 }}>
+            {tabIndex === 0 && (
+              <>
+                <DatosEquipo equipo={equipo} salas={salas} />
+              </>
+            )}
+
+            {tabIndex === 1 && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight="bold">Historial de mantenimientos</Typography>
+                <CurrentMaintenance mantenimiento={mantenimientoFiltrados} tecnicosEquipo={tecnicos} />
+              </Box>
+            )}
+
+            {tabIndex === 2 && (
+              <TecnicosEquipo tecnicosEquipo={tecnicosEquipo} equipo={equipo} />
+            )}
+
+            {tabIndex === 3 && (
+
+              <CurrentEvents equipo={equipo} salas={salas} />
+            )}
+
+            {tabIndex === 4 && (
+              <Box>
+                <ContratoFormModal open={openContratoModal} onOpen={() => setOpenContratoModal(true)} onClose={() => setOpenContratoModal(false)} equipo={equipo} salas={salas} />
+                <CurrentContrato equipo={equipo} contratos={contratos} />
+              </Box>
+            )}
+            {tabIndex === 5 && (
+              <Box>
+                <CurrentDown equipo={equipo} />
+              </Box>
+            )}
+          </Box>
+        </Card>
+      </Grid>
+    </Grid>
+  );
+};
+
+export default ProfileEquipament;
+
+
+const DatosEquipo = ({ equipo, salas }) => {
+  const [change, setChange] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  const [formData, setFormData] = useState({
+    marca: "",
+    modelo: "",
+    serial_number: "",
+    tipo: "",
+    servicio: "",
+    ip: "",
+    mascara: "",
+    gateway: "",
+    aetitle: "",
+    puerto: "",
+    compra_año: "",
+    id_ubicacion: "",
+    alta: "",
+    requerimientos: "",
+    antecedentes: "",
+    funcion: "",
+    riesgo: "",
+  });
+
+
+  const GE_EM = (fun, ries, reque, ante) => {
+    const sumaGeem = Number(fun) + Number(ries) + Number(reque) + Number(ante);
+    return sumaGeem;
+  };
+
+  useEffect(() => {
+    if (equipo) {
+      setFormData({
+        marca: equipo.marca || "",
+        modelo: equipo.modelo || "",
+        serial_number: equipo.serial_number || "",
+        tipo: equipo.tipo || "",
+        servicio: equipo.nombre_servicio || "",
+        ip: equipo.ip || "",
+        mascara: equipo.mascara || "",
+        gateway: equipo.gateway || "",
+        aetitle: equipo.aetitle || "",
+        id_ubicacion: equipo.id_ubicacion || "",
+        puerto: equipo.puerto || "",
+        compra_año: equipo.compra_año || "",
+        requerimientos: equipo.requerimientos || "",
+        antecedentes: equipo.antecedentes || "",
+        funcion: equipo.funcion || "",
+        riesgo: equipo.riesgo || "",
+        alta: equipo.alta || ""
+      });
+    }
+  }, [equipo]);
+
+
+  const handleChange = (e) => {
+    setChange(true);
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${apiModificacionEquipo}${equipo.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        setSnackbarMessage('Técnico guardado correctamente.');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } else {
+        const data = await response.json();
+        setSnackbarMessage(data.message || 'Error al guardar el técnico.');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error("Error en la actualización:", error);
+    }
+  };
+
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbarOpen(false);
+  };
+
+  return (
+    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 1000, margin: '0 auto' }}>
+      <Card sx={{ border: '1px solid #e0e0e0', borderRadius: 2, boxShadow: 2 }}>
+        <CardHeader title="Ficha del Equipo" sx={{ backgroundColor: '#1976d2', color: '#fff' }} />
+        <CardContent>
+          {/* Detalles del equipo */}
+          <Typography variant="h6" sx={{ mt: 2 }}>Detalles del equipo</Typography>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Marca" name="marca" value={formData.marca} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Modelo" name="modelo" value={formData.modelo} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Serial Number" name="serial_number" value={formData.serial_number} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Tipo" name="tipo" value={formData.tipo} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Servicio" name="servicio" value={formData.servicio} onChange={handleChange} InputLabelProps={{ shrink: true }} disabled /></Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <Select name='id_ubicacion' value={formData.id_ubicacion} onChange={handleChange}>
+                  {salas.map((s) => (
+                    <MenuItem key={s.id_ubicacion} value={s.id_ubicacion}>{s.sala}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+            </Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Alta de equipo" name="alta" value={new Date(formData.alta).toLocaleDateString('es-AR')} onChange={handleChange} InputLabelProps={{ shrink: true }} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Año de compra" name="compra_año" value={formData.compra_año} onChange={handleChange} /></Grid>
+          </Grid>
+
+          {/* GE / EM */}
+          <Typography variant="h6" sx={{ mt: 4 }}>GE / EM</Typography>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6}><TextField type='number' fullWidth label="Función" name="funcion" value={formData.funcion} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={6}><TextField type='number' fullWidth label="Riesgo" name="riesgo" value={formData.riesgo} onChange={handleChange} /></Grid>
+            <Grid item xs={6}><TextField type='number' fullWidth label="Requerimientos" name="requerimientos" value={formData.requerimientos} onChange={handleChange} /></Grid>
+            <Grid item xs={6}><TextField type='number' fullWidth label="Antecedentes" name="antecedentes" value={formData.antecedentes} onChange={handleChange} /></Grid>
+            <Grid item xs={12}>
+              <Box sx={{ mt: 2, px: 2, py: 1.5, backgroundColor: '#f57c00', borderRadius: 2, border: '1px solid #ddd', boxShadow: 1, textAlign: 'center' }}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {`GE/EM: ${GE_EM(formData.funcion, formData.riesgo, formData.requerimientos, formData.antecedentes)}`}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+
+          {/* Detalles de red */}
+          <Typography variant="h6" sx={{ mt: 4 }}>Detalles de red</Typography>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={4}><TextField fullWidth label="IP" name="ip" value={formData.ip} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={4}><TextField fullWidth label="Máscara" name="mascara" value={formData.mascara} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={4}><TextField fullWidth label="Gateway" name="gateway" value={formData.gateway} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="AETITLE" name="aetitle" value={formData.aetitle} onChange={handleChange} /></Grid>
+            <Grid item xs={12} sm={6}><TextField fullWidth label="Puerto" name="puerto" value={formData.puerto} onChange={handleChange} /></Grid>
+          </Grid>
+        </CardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+          <Button variant="contained" color="primary" type="submit" disabled={!change} startIcon={<SaveAs />}>
+            Guardar cambios
+          </Button>
+        </Box>
+      </Card>
+
+      <Snackbar open={snackbarOpen} autoHideDuration={5000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+
+const TecnicosEquipo = ({ tecnicosEquipo, equipo }) => {
+  const [formDataList, setFormDataList] = useState([]);
+  const [changeList, setChangeList] = useState([]);
+  const [originalDataList, setOriginalDataList] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  useEffect(() => {
+    if (tecnicosEquipo?.length) {
+      setFormDataList(tecnicosEquipo.map(tecnico => ({ ...tecnico })));
+      setChangeList(tecnicosEquipo.map(() => false));
+      setOriginalDataList(tecnicosEquipo.map(tecnico => ({ ...tecnico })));
+    }
+  }, [tecnicosEquipo]);
+
+  const handleChange = (index, field, value) => {
+    const updatedList = [...formDataList];
+    updatedList[index][field] = value;
+    setFormDataList(updatedList);
+
+    const updatedChangeList = [...changeList];
+    updatedChangeList[index] = true;
+    setChangeList(updatedChangeList);
+  };
+
+
+  const handleSubmit = async (index) => {
+    const tecnico = formDataList[index];
+    try {
+      const response = await fetch(`${apiModificacionTecnico}${tecnico.id_tecnico}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tecnico),
+      });
+
+      if (response.ok) {
+        setSnackbarMessage('Técnico guardado correctamente.');
+        setSnackbarSeverity('success');
+      } else {
+        const data = await response.json();
+        setSnackbarMessage(data.message || 'Error al guardar el técnico.');
+        setSnackbarSeverity('error');
+      }
+    } catch (error) {
+      console.error("Error en la actualización:", error);
+      setSnackbarMessage("Error en la conexión.");
+      setSnackbarSeverity("error");
+    } finally {
+      setSnackbarOpen(true);
+      const updatedChangeList = [...changeList];
+      updatedChangeList[index] = false;
+      setChangeList(updatedChangeList);
+    }
+  };
+
+  const handleCancel = (index) => {
+    const updatedFormDataList = [...formDataList];
+    updatedFormDataList[index] = { ...originalDataList[index] };
+    setFormDataList(updatedFormDataList);
+
+    const updatedChangeList = [...changeList];
+    updatedChangeList[index] = false;
+    setChangeList(updatedChangeList);
+  }
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbarOpen(false);
+  };
+
+  return (
+    <Box>
+      <Typography variant="subtitle1" fontWeight="bold">Técnicos asignados</Typography>
+      <Box sx={{ display: 'flex', mb: 2 }}>
+        <NewTechnician equipo={equipo} />
+      </Box>
+      <Grid container spacing={2}>
+        {formDataList.length > 0 ? (
+          formDataList.map((tecnico, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card>
+                <CardContent>
+                  <TextField
+                    fullWidth
+                    label="Nombre" name="nombre"
+                    value={tecnico.nombre}
+                    margin="normal"
+                    onChange={(e) => handleChange(index, "nombre", e.target.value)}
+                  />
+                  <TextField
+                    fullWidth label="Apellido" name="apellido"
+                    value={tecnico.apellido}
+                    margin="normal"
+                    onChange={(e) => handleChange(index, "apellido", e.target.value)}
+                  />
+                  <TextField
+                    fullWidth label="Empresa" name="empresa"
+                    value={tecnico.empresa}
+                    margin="normal"
+                    onChange={(e) => handleChange(index, "empresa", e.target.value)}
+                  />
+                  <TextField
+                    fullWidth label="Número" name="numero"
+                    value={tecnico.numero}
+                    margin="normal"
+                    onChange={(e) => handleChange(index, "numero", e.target.value)}
+                  />
+                  <TextField
+                    fullWidth label="Email" name="email"
+                    value={tecnico.email}
+                    margin="normal"
+                    onChange={(e) => handleChange(index, "email", e.target.value)}
+                  />
+                  <TextField
+                    fullWidth label="Cobertura" name="cobertura"
+                    value={tecnico.cobertura}
+                    margin="normal"
+                    onChange={(e) => handleChange(index, "cobertura", e.target.value)}
+                  />
+                  <Box sx={{ mt: 2, gap: 2, display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                    <Button
+                      disabled={!changeList[index]}
+                      onClick={() => handleSubmit(index)}
+                      variant="contained"
+                      color="primary"
+                    >
+                      <ListItemIcon><SaveAs /></ListItemIcon>
+                      <ListItemText primary="Guardar cambios" />
+                    </Button>
+                    <Button
+                      disabled={!changeList[index]}
+                      onClick={() => handleCancel(index)}
+                      variant="outlined"
+                      color="secondary"
+
+                    >
+                      Cancelar
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <Typography variant="body2" color="text.secondary">(Sin técnicos asignados)</Typography>
+        )}
+      </Grid>
+
+      <Snackbar open={snackbarOpen} autoHideDuration={5000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+
+const CurrentDown = ({ equipo }) => {
+  const [evento, setEvento] = useState('');
+  const [falla, setFalla] = useState('');
+  const [condicion, setCondicion] = useState('');
+
+
+  const handleSubmitDown = async (event) => {
+    event.preventDefault();
+
+    const token = localStorage.getItem('token');
+    let userId = null;
+
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      userId = decodedToken.id; // Asumiendo que el ID del usuario está en el token
+    }
+
+    const nuevoEvento = {
+      descripcion: evento,
+      id_equipo: equipo.id,
+      estado: "no operativo",
+      tipo_falla: "dado de baja",
+      id_usuario: userId,
+    };
+
+    try {
+      // 1. Primero registrar el evento
+      const responseTask = await fetch(apiEventos, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nuevoEvento),
+      });
+
+      if (!responseTask.ok) {
+        const errorData = await responseTask.json();
+        console.error('Error al guardar la tarea:', errorData);
+        return;
+      }
+
+      const eventoGuardado = await responseTask.json();
+      console.log('Tarea guardada correctamente:', eventoGuardado);
+
+      // 2. Después dar de baja el equipo
+      const responseDown = await fetch(apiBajaEquipo, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_equipo: equipo.id }),
+      });
+
+      if (!responseDown.ok) {
+        const errorData = await responseDown.json();
+        console.error('Error al dar de baja el equipo:', errorData);
+        return;
+      }
+
+      const bajaConfirmada = await responseDown.json();
+      console.log('Equipo dado de baja:', bajaConfirmada);
+
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+    } finally {
+      updateWeb();
+      setEvento('');
+      setFalla('');
+      setCondicion('');
+      handleClose();
+    }
+  }
+
+
+
+  return (
+    <Box
+      sx={{
+        top: '50%',
+        left: '50%',
+        bgcolor: 'background.paper',
+        width: { xs: '100%', sm: 600 },
+        borderRadius: 4,
+        p: 4,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+      }}
+    >
+      <Typography variant="h6">Baja de equipo</Typography>
+      <form onSubmit={handleSubmitDown}>
+        <TextField
+          label="Descripcion"
+          value={evento}
+          onChange={(e) => setEvento(e.target.value)}// Valor predeterminado
+          fullWidth
+          margin="normal"
+          required
+          multiline
+          rows={3}
+        />
+
+        <FormControl fullWidth>
+          <InputLabel>Condición</InputLabel>
+          <Select
+            value={"no operativo"} // Valor predeterminado
+            disabled // Campo no editable
+            sx={{ marginBottom: '5px' }}
+          >
+            <MenuItem value="operativo">Operativo</MenuItem>
+            <MenuItem value="no operativo">No Operativo</MenuItem>
+            <MenuItem value="revision">Revisión</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel>Tipo de Evento</InputLabel>
+          <Select
+            value={"dado de baja"} // Valor predeterminado
+            disabled // Campo no editable
+          >
+            <MenuItem value="dado de baja">Dado de baja</MenuItem>
+          </Select>
+        </FormControl>
+        <Box mt={2} display="flex" justifyContent="center" gap={2}>
+          <Button
+            variant="contained"
+            color="error"
+            type='submit'
+            startIcon={<PowerOff />}
+            sx={{
+              fontSize: '16px',
+              padding: '10px 10px',
+              borderRadius: '8px',
+              textTransform: 'none',
+            }}
+          >
+            Dar de baja
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => handleTab('options')}
+            sx={{
+              fontSize: '16px',
+              padding: '10px 10px',
+              borderRadius: '8px',
+              textTransform: 'none',
+            }}
+          >
+            Volver
+          </Button>
+        </Box>
+      </form>
+    </Box>
+  )
+}
