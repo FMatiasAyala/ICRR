@@ -10,7 +10,7 @@ const NavBar = ({ onMenuClick, handleLogout, user }) => {
 
   return (
     <AppBar
-      position="static"
+      position="fixed"
       sx={{
         bgcolor: '#1E1E1E',
         boxShadow: 'none',
@@ -43,7 +43,7 @@ const NavBar = ({ onMenuClick, handleLogout, user }) => {
             display: { xs: 'none', sm: 'block' }, // Ocultar en móviles pequeños
           }}
         >
-          Sistemas - ICRR
+          Panel de Gestión - ICRR
         </Typography>
 
         {/* Información y botones */}

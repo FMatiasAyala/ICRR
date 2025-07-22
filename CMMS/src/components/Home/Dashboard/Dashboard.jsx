@@ -1,42 +1,70 @@
 // src/components/Dashboard/Dashboard.jsx
-import React from 'react';
-import { Box, Grid } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Grid, IconButton } from '@mui/material';
 import EquipamentsList from '../EquipamentsList';
-import TableEvents from '../../TableEvents';
-import CardsMantenimiento from '../../Maintenance/CardsMantenimiento';
+import CardsMantenimiento from '../../Mantenimiento/CardsMantenimiento';
 import Cards from '../../Cards';
+import ProfileEquipament from '../../Equipos/PerfilEquipo';
+import { ArrowBack } from '@mui/icons-material';
+import { useWebSocketContext } from '../../WebSocket/useWebSocketContext';
 
 
-const Dashboard = ({user, reloadEquipos, equipos, tecnicos, uniqueEquipos, salas, mantenimiento, ultimoEstado, estadoEquipos}) => {
 
+const Dashboard = ({tecnicos, salas, estadoEquipos }) => {
+  const { setEquiposConEventoNuevo } = useWebSocketContext();
+  const [vista, setVista] = useState('listado');
+  const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
+
+  const handleEquipoSeleccionado = (equipo) => {
+    setEquipoSeleccionado(equipo);
+    setEquiposConEventoNuevo(prev => prev.filter(id => id !== equipo.id));
+    setVista('detalle');
+  };
+
+
+  const handleVolver = () => {
+    setVista('listado');
+  };
   return (
-    <>
-      <Box sx={{ flexGrow: 1, padding: 2 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4} container spacing={1}>
-              <Grid item xs={12} sm={12}>
-                <Cards equipo={equipos || []} sala={salas || []} estadoEquipo={ultimoEstado || []} />
-                <CardsMantenimiento salas={salas} equipos={equipos || []} tecnicos={tecnicos} reload={reloadEquipos}/>
+    <Box sx={{ flexGrow: 1, padding: 2, mt: '10px' }}>
+      {vista === 'listado' ? (
+        <>
+          <Grid container spacing={3}>
+            {/* IZQUIERDA */}
+            <Grid item xs={12} md={2} container spacing={2} direction="column">
+              <Grid item>
+                <Cards/>
               </Grid>
+              <Grid item>
+                <CardsMantenimiento salas={salas}/>
+              </Grid>
+            </Grid>
+
+            {/* DERECHA */}
+            <Grid item xs={12} md={10}>
+              <EquipamentsList
+                estadoEquipos={estadoEquipos || {}}
+                salas={salas || []}
+                onEquipoSeleccionado={handleEquipoSeleccionado}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={8} sx={{display:{xs:'none', md:'block'}}}>
-            <TableEvents equipo={equipos || []} sala={salas || []} ultimoEquipo={ultimoEstado || []} reload={reloadEquipos} estadoEquipos={estadoEquipos} />
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <EquipamentsList
-            estadoEquipos={estadoEquipos || {}}
-            equipos={uniqueEquipos || []}
-            equipo={equipos || []}
-            tecnicos={tecnicos || []}
-            salas={salas || []}
-            mantenimiento={mantenimiento || []}
-            reloadEquipos={reloadEquipos}
-            user={user}
+
+        </>
+      ) : (
+        <>
+          <IconButton onClick={() => setVista('listado')}>
+            <ArrowBack /> Volver
+          </IconButton>
+          <ProfileEquipament
+            equipo={equipoSeleccionado}
+            tecnicos={tecnicos.filter(t => t.id_tecnico === equipoSeleccionado.id_tecnico)}
+            salas={salas}
+            onVolver={handleVolver}
           />
-        </Grid>
-      </Box>
-    </>
+        </>
+      )}
+    </Box>
   );
 };
 

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TextField, Button, Grid, Box, Typography, Snackbar, Alert, Autocomplete } from "@mui/material";
 import { apiAltaTecnico } from "../utils/Fetch";
 
-const NewTechnicianForm = ({ equipos, salas }) => {
+const NewTechnicianForm = ({ equipos, salas, equipo }) => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -17,10 +17,17 @@ const NewTechnicianForm = ({ equipos, salas }) => {
     });
 
     const [error, setError] = useState("");
+    useEffect(() => {
+        if (equipo && equipo.id) {
+            setFormData(prev => ({ ...prev, id_equipo: [equipo.id] }));
+        }
+    }, [equipo]);
+
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -97,21 +104,40 @@ const NewTechnicianForm = ({ equipos, salas }) => {
                     <Grid item xs={12}>
                         <TextField fullWidth label="Email" name="email" type="mail" value={formData.email} onChange={handleChange} />
                     </Grid>
-                    <Grid item xs={12}>
-                        <Autocomplete
-                            multiple
-                            options={equipos}
-                            getOptionLabel={(option) =>
-                                `${option.modelo} - ${option.servicio} (${salas.find(sala => sala.id_sala === option.sala)?.sala || 'Desconocida'})`
-                            }
-                            onChange={(event, newValue) =>
-                                setFormData({ ...formData, id_equipo: newValue.map(equipos => equipos.id)})
-                            }
-                            renderInput={(params) => (
-                                <TextField {...params} label="Seleccionar Equipo" margin="normal"  />
-                            )}
-                        />
-                    </Grid>
+
+                    {equipo ? (
+                        // Modo solo lectura (equipo ya definido)
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                label="Equipo"
+                                name="id_equipo"
+                                value={`${equipo.modelo} - ${equipo.marca}`}
+                                InputProps={{ readOnly: true }}
+                                margin="normal"
+                            />
+                        </Grid>
+                    ) : (
+                        // Modo selección (no se pasó un equipo)
+                        <Grid item xs={12}>
+                            <Autocomplete
+                                multiple
+                                options={equipos || []}
+                                getOptionLabel={(option) =>
+                                    `${option.modelo} - ${option.siglas_servicio} (${salas.find(sala => sala.id_ubicacion === option.id_ubicacion)?.sala || 'Desconocida'})`
+                                }
+                                value={Array.isArray(formData.id_equipo) ? formData.id_equipo.map(id => equipos.find(e => e.id === id)).filter(Boolean) : []}
+                                onChange={(event, newValue) =>
+                                    setFormData({ ...formData, id_equipo: newValue.map(equipo => equipo.id) })
+                                }
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Seleccionar Equipo" margin="normal" />
+                                )}
+                            />
+
+                        </Grid>
+                    )}
+
                 </Grid>
 
                 {error && <Typography color="error" mt={2}>{error}</Typography>}

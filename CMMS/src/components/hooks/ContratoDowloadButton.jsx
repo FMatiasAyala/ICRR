@@ -1,14 +1,13 @@
 import React, { useState } from "react";
-import { Button, Snackbar, Alert, Box, IconButton, Typography } from "@mui/material";
-import DescriptionIcon from "@mui/icons-material/Description";
+import { Snackbar, Alert, Box, IconButton } from "@mui/material";
 
-const FileDownloadButton = ({
+
+const ContratoDownloadButton = ({
   endpoint,
-  params = {}, // Ejemplo: { id_evento: 5 }
-  label = "Descargar archivo",
-  icono = <DescriptionIcon />,
-  mensajeExito = "Descarga exitosa",
-  mensajeError = "No hay archivos cargados",
+  params = {},
+  label = "Descargar contrato",
+  mensajeExito = "Contrato descargado exitosamente",
+  mensajeError = "Error al descargar el contrato",
 }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -16,18 +15,17 @@ const FileDownloadButton = ({
 
   const buildQueryString = (paramsObj) =>
     new URLSearchParams(paramsObj).toString();
+
   const downloadFile = async () => {
     try {
       const queryString = buildQueryString(params);
-      console.log(params.id_evento)
       const urlCompleta = `${endpoint}?${queryString}`;
-      console.log(urlCompleta)
       const response = await fetch(urlCompleta);
-      console.log(response)
-      if (!response.ok) throw new Error("No hay archivos cargados");
 
-      // Intenta obtener el nombre de archivo desde Content-Disposition
-      let filename = `Adjuntos`;
+      if (!response.ok) throw new Error("Error al descargar el contrato");
+
+      // Intentar obtener el nombre del archivo del header Content-Disposition
+      let filename = "contrato.pdf";
       const disposition = response.headers.get("Content-Disposition");
       if (disposition) {
         const utf8Match = disposition.match(/filename\*=UTF-8''(.+)/);
@@ -43,6 +41,7 @@ const FileDownloadButton = ({
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
+
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
@@ -55,7 +54,7 @@ const FileDownloadButton = ({
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
-      console.error("Error al descargar el archivo:", error);
+      console.error("Error al descargar el contrato:", error);
       setSnackbarMessage(mensajeError);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -69,11 +68,14 @@ const FileDownloadButton = ({
 
   return (
     <Box>
-      <IconButton onClick={downloadFile}>
-        {icono}
-        <Typography> {label} </Typography>
+      <IconButton onClick={downloadFile} title={label}>
+        {label}
       </IconButton>
-      <Snackbar open={snackbarOpen} onClose={handleSnackbarClose} autoHideDuration={4000}>
+      <Snackbar
+        open={snackbarOpen}
+        onClose={handleSnackbarClose}
+        autoHideDuration={4000}
+      >
         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
           {snackbarMessage}
         </Alert>
@@ -82,4 +84,4 @@ const FileDownloadButton = ({
   );
 };
 
-export default FileDownloadButton;
+export default ContratoDownloadButton;

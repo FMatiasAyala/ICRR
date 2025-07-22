@@ -2,8 +2,8 @@
 const express = require("express");
 const router = express.Router();
 const { contrato } = require("../middlewares/contratosMiddlewares");
+const {adjuntosEventos}= require("../middlewares/adjuntosEventosMiddlewares");
 const bcrypt = require("bcrypt");
-const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const dbMysqlDev = require("../DataBase/MySqlDatabaseDev");
 const equiposControllers = require("../controllers/cmms/equiposController");
@@ -11,7 +11,7 @@ const mantenimientoControllers = require("../controllers/cmms/mantenimientosCont
 const eventosControllers = require("../controllers/cmms/eventosControllers");
 const tecnicosControllers = require("../controllers/cmms/tecnicosController");
 const contratoController = require ("../controllers/cmms/contratoController")
-const path = require("path");
+
 
 require("dotenv").config();
 
@@ -21,13 +21,17 @@ router.get("/equipos", equiposControllers.obtenerEquipos);
 router.get("/tecnicosEquipo/:equipoId", equiposControllers.tecnicoEquipo);
 router.post("/bajaEquipo", equiposControllers.bajaEquipo);
 router.post("/altaEquipos", equiposControllers.altaEquipo);
+router.put("/modificacionEquipo/:id", equiposControllers.modificacionEquipo)
 
 // Eventos de equipos
 router.get("/eventos", eventosControllers.obtenerEventos);
 router.get("/eventosFiltrados", eventosControllers.eventosFiltrados);
 router.get("/cantidadEventos", eventosControllers.cantidadEventos); 
-router.post("/eventos", eventosControllers.nuevoEvento);
+router.get("/fileEvento", eventosControllers.fileEvento);
+router.post("/eventos",adjuntosEventos.array("files"), eventosControllers.nuevoEvento);
 router.post("/reporteEventos", eventosControllers.reportesEventos);
+router.put("/modificacionEvento/:id",adjuntosEventos.array("files"), eventosControllers.modificacionEvento);
+
 
 //Mantenimientos
 router.get("/mantenimiento", mantenimientoControllers.obtenerMantenimientos);
@@ -35,6 +39,35 @@ router.post("/mantenimiento", mantenimientoControllers.nuevoMantenimiento);
 router.put("/mantenimiento/:id", mantenimientoControllers.actualizarMantenimiento);
 router.put("/mantenimientoPostpone/:id", mantenimientoControllers.reprogramarManteminiento);
 
+// Ficha Tecnicos
+router.get("/tecnicos", tecnicosControllers.obtenerTecnicos);
+router.post("/altaTecnicos", tecnicosControllers.altaTecnicos);
+router.put("/modificacionTecnicos/:id", tecnicosControllers.modificacionTecnicos);
+router.delete("/bajaTecnicos/:id", tecnicosControllers.bajaTecnicos);
+
+
+//Contratos
+router.get("/datosContrato", contratoController.datosContratos);
+router.get("/fileContrato", contratoController.fileContrato);
+router.post("/cargaContratos", contrato.single("file"), contratoController.cargaContratos);
+
+
+
+
+// Salas
+router.get("/salas", (req, res) => {
+  const query = "select * from tbl_ubicaciones inner join tbl_servicios on tbl_ubicaciones.id_servicio = tbl_servicios.id_servicio";
+
+  const obtenerEvetnos = async () => {
+    try {
+      const eventos = await dbMysqlDev.executeQuery(query);
+      res.json(eventos);
+    } catch (err) {
+      console.error("Error al obtener los eventos: ", err);
+    }
+  };
+  obtenerEvetnos();
+});
 
 //obtenes ups
 router.get("/ups", (req, res) => {
@@ -52,52 +85,7 @@ router.get("/ups", (req, res) => {
   obtenerUps();
 });
 
-// Ficha Tecnicos
-router.get("/tecnicos", tecnicosControllers.obtenerTecnicos);
-router.post("/altaTecnicos", tecnicosControllers.altaTecnicos);
-router.put("/modificacionTecnicos/:id", tecnicosControllers.modificacionTecnicos);
-router.delete("/bajaTecnicos/:id", tecnicosControllers.bajaTecnicos);
-// Salas
-router.get("/salas", (req, res) => {
-  const query = "select * from tbl_salas";
 
-  const obtenerEvetnos = async () => {
-    try {
-      const eventos = await dbMysqlDev.executeQuery(query);
-      res.json(eventos);
-    } catch (err) {
-      console.error("Error al obtener los eventos: ", err);
-    }
-  };
-  obtenerEvetnos();
-});
-
-//Descarga del contrato
-router.get("/datosContrato", async (req, res) => {
-  const { id_equipo } = req.query;
-
-  if (!id_equipo) {
-    return res.status(400).json({ error: "ID de equipo es requerido" });
-  }
-
-  const query =
-    "select descripcion, cobertura_partes , cobertura_manoDeObra, desde , hasta , actualizacion  from tbl_contratos where id_equipo = ?";
-
-  const datosContrato = async () => {
-    try {
-      const datos = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
-      res.json(datos);
-    } catch (err) {
-      console.error("Error al obtener los eventos: ", err);
-    }
-  };
-
-  datosContrato();
-});
-router.get("/fileContrato", contratoController.fileContrato);
-
-// Carga de contratos
-router.post("/cargaContratos", contrato.single("file"), contratoController.cargaContratos);
 
 //Usuarios
 router.post("/newUsers", async (req, res) => {
@@ -151,11 +139,12 @@ router.put("/changePassword", async (req, res) => {
     res.status(500).json({ error: "Error en el servidor" });
   }
 });
+
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   const query =
-    "SELECT id, username, password, role, name, lastname FROM tbl_usuarios WHERE username = ?";
+    "SELECT id_usuario, username, password, role, name, lastname FROM tbl_usuarios WHERE username = ?";
 
   const login = async () => {
     try {

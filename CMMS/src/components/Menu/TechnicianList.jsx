@@ -7,7 +7,6 @@ import {
     Card,
     CardContent,
     IconButton,
-    Grid,
     Tabs,
     Tab,
     TextField,
@@ -15,37 +14,21 @@ import {
 } from "@mui/material";
 import HandymanIcon from "@mui/icons-material/Handyman";
 import { Close, Search, Edit, Delete } from "@mui/icons-material";
-import { apiBajaTecnico, apiTecnicos } from "../utils/Fetch";
+import { apiBajaTecnico } from "../utils/Fetch";
 import NewTechnician from "./NewTechnician";
 import EditTechnician from "./EditTechnician";
+import { useWebSocketContext } from "../WebSocket/useWebSocketContext";
 
-const TechniciansList = ({ equipos, salas }) => {
-    const [technicians, setTechnicians] = useState([]);
-    const [open, setOpen] = useState(false);
+const TechniciansList = ({ equipos, salas, open, onClose }) => {
+    const { state: { tecnicos } } = useWebSocketContext();
     const [selectedTab, setSelectedTab] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const [openEditModal, setOpenEditModal] = useState(false);
     const [selectedTechnician, setSelectedTechnician] = useState([]);
+    const [openConfirmModal, setOpenConfirmModal] = useState(false);
+    const [techToDelete, setTechToDelete] = useState(null);
 
-    const fetchTechnicians = async () => {
-        try {
-            const response = await fetch(apiTecnicos);
-            const data = await response.json();
-            setTechnicians(data);
-        } catch (error) {
-            console.error("Error fetching technicians:", error);
-        }
-    };
-    
-    useEffect(() => {
-        fetchTechnicians(); // Carga inicial de los técnicos
-    }, []);
-
-    const reloadTechnicians = () => {
-        fetchTechnicians();
-    }
-
-    const groupedByCompany = technicians.reduce((acc, tech) => {
+    const groupedByCompany = tecnicos.reduce((acc, tech) => {
         if (!acc[tech.empresa]) {
             acc[tech.empresa] = [];
         }
@@ -66,32 +49,38 @@ const TechniciansList = ({ equipos, salas }) => {
         }
     }, [filteredCompanies]);
 
-    const handleEdit = (technician) => {
-        setSelectedTechnician(technician);
+    const handleEdit = (tecnicos) => {
+        setSelectedTechnician(tecnicos);
         setOpenEditModal(true);
     };
 
-    const handleDelete = async (id) => {
+
+    const handleDeleteClick = (tech) => {
+        setTechToDelete(tech);
+        setOpenConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!techToDelete) return;
+
         try {
-            const response = await fetch(`${apiBajaTecnico}${id}`, {
+            const response = await fetch(`${apiBajaTecnico}${techToDelete.id_tecnico}`, {
                 method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
             });
-            if (!response.ok) {
-                throw new Error("Error deleting technician");
-            }
-            fetchTechnicians(); 
+            if (!response.ok) throw new Error("Error deleting technician");
+            setOpenConfirmModal(false);
+            setTechToDelete(null);
         } catch (error) {
             console.error("Error deleting technician:", error);
         }
     };
 
+
     return (
         <>
             <Card
-                onClick={() => setOpen(true)}
+                onClick={() => onClose()}
                 sx={{ cursor: "pointer", "&:hover": { backgroundColor: "#0277bd", color: "white" }, transition: "background-color 0.3s ease" }}
             >
                 <CardContent sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, flexDirection: { xs: "column", sm: "row" }, textAlign: "center" }}>
@@ -102,11 +91,11 @@ const TechniciansList = ({ equipos, salas }) => {
                 </CardContent>
             </Card>
 
-            <Modal open={open} onClose={() => setOpen(false)}>
+            <Modal open={open} onClose={onClose}>
                 <Box
                     sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: { xs: "90%", sm: 900 }, bgcolor: "background.paper", boxShadow: 24, borderRadius: 4, p: 4, display: "flex", flexDirection: "column" }}
                 >
-                    <IconButton onClick={() => setOpen(false)} sx={{ position: "absolute", top: 8, right: 8 }}>
+                    <IconButton onClick={() => onClose()} sx={{ position: "absolute", top: 8, right: 8 }}>
                         <Close />
                     </IconButton>
                     <Typography variant="h4" align="center" sx={{ color: "#004d99", mb: 2 }}>
@@ -143,9 +132,10 @@ const TechniciansList = ({ equipos, salas }) => {
                                                 <IconButton color="primary" onClick={() => handleEdit(tech)}>
                                                     <Edit />
                                                 </IconButton>
-                                                <IconButton color="error" onClick={() => handleDelete(tech.id_tecnico)}>
+                                                <IconButton color="error" onClick={() => handleDeleteClick(tech)}>
                                                     <Delete />
                                                 </IconButton>
+
                                             </Box>
                                         </CardContent>
                                     </Card>
@@ -160,12 +150,29 @@ const TechniciansList = ({ equipos, salas }) => {
                 <EditTechnician
                     openEditModal={openEditModal}
                     setOpenEditModal={setOpenEditModal}
-                    reloadTechnicians={reloadTechnicians}
                     technicianData={selectedTechnician}
                     equipos={equipos}
                     salas={salas}
                 />
             )}
+            <Modal open={openConfirmModal} onClose={() => setOpenConfirmModal(false)}>
+                <Box sx={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2
+                }}>
+                    <Typography variant="h6" gutterBottom>
+                        ¿Estás seguro que querés borrar a {techToDelete?.nombre} {techToDelete?.apellido} de la empresa {techToDelete?.empresa}?
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Esta acción no se puede deshacer.
+                    </Typography>
+                    <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+                        <Button variant="outlined" onClick={() => setOpenConfirmModal(false)}>Cancelar</Button>
+                        <Button variant="contained" color="error" onClick={confirmDelete}>Eliminar</Button>
+                    </Box>
+                </Box>
+            </Modal>
+
         </>
     );
 };

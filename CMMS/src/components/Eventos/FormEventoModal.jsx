@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Card, Box, CardContent, Modal, useMediaQuery } from "@mui/material";
+import { Card, Box, CardContent, Modal, useMediaQuery, Typography } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import FormEquipament from "../Form/FormEquipament";
+import FormEvento from "./FormEvento";
 
-const FormEquipamentModal = ({ onEventCreate, equipo, salas }) => {
+const FormEventoModal = ({ equipo, salas }) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -26,23 +26,24 @@ const FormEquipamentModal = ({ onEventCreate, equipo, salas }) => {
                     justifyContent: "center",
                     alignItems: "center",
                     "&:hover": {
-                        color: "#fff",
+                        color: "#00796b",
                         boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
                     },
                 }}
             >
                 <CardContent sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
                     <AddCircleOutlineIcon sx={{ fontSize: isMobile ? "1.5rem" : "2rem", color: "#00796b" }} />
+                    <Typography>Nuevo evento</Typography>
                 </CardContent>
             </Card>
 
             <Modal open={open} onClose={handleClose} closeAfterTransition>
                 <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-                    <FormEquipament open={open} handleClose={handleClose} onEventCreate={onEventCreate} equipo={equipo} salas={salas} />
+                    <FormEvento open={open} handleClose={handleClose} equipo={equipo} salas={salas} />
                 </Box>
             </Modal>
         </Box>
     );
 };
 
-export default FormEquipamentModal;
+export default FormEventoModal;

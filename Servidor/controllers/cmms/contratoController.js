@@ -1,7 +1,43 @@
-const dbMysqlDev = ("../../DataBase/MySqlDatabaseDev");
+const dbMysqlDev = require("../../DataBase/MySqlDatabaseDev");
+const path = require("path");
+const fs = require("fs");
 
+/* Carga de contratos */
 exports.cargaContratos = async (req, res) => {
-    const {
+  const {
+    descripcion,
+    cobertura_partes,
+    cobertura_manoDeObra,
+    desde,
+    hasta,
+    id_equipo,
+    actualizacion,
+  } = req.body;
+
+  console.log("Datos recibidos:", req.body);
+  console.log("Archivo subido:", req.file);
+
+  // Verificar que se haya subido un archivo
+  if (!req.file) {
+    return res.status(400).json({ error: "No se subió ningún archivo" });
+  }
+
+  // Obtener el nombre del archivo y armar la URL relativa
+  const filename = path.basename(req.file.path); // ej: contrato_123.pdf
+  const url = `${filename}`; // así se guarda en la DB
+
+  // Query SQL
+  const query = `
+    INSERT INTO tbl_contratos (
+      url, descripcion, cobertura_partes,
+      cobertura_manoDeObra, desde, hasta,
+      id_equipo, actualizacion
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  try {
+    await dbMysqlDev.executeQueryParams(query, [
+      url,
       descripcion,
       cobertura_partes,
       cobertura_manoDeObra,
@@ -9,90 +45,75 @@ exports.cargaContratos = async (req, res) => {
       hasta,
       id_equipo,
       actualizacion,
-    } = req.body;
-  
-    console.log("Datos recibidos:", req.body);
-    console.log("Archivo subido:", req.file);
-  
-    // Verificar que el archivo haya sido subido
-    if (!req.file) {
-      return res.status(400).json({ error: "No se subió ningún archivo" });
-    }
-  
-    // Obtener la ruta relativa del archivo subido
-    const url = path
-      .relative("C:/htdocs/Matias/ICRR/Servidor/contratos", req.file.path)
-      .replace(/\\/g, "/"); // Asegurar barras normales en la ruta
-  
-    // Query SQL
-    const query =
-      "INSERT INTO tbl_contratos (url, descripcion, cobertura_partes, cobertura_manoDeObra, desde, hasta, id_equipo, actualizacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-  
-    try {
-      // Insertar el archivo en la base de datos
-      await dbMysqlDev.executeQueryParams(query, [
-        url,
-        descripcion,
-        cobertura_partes,
-        cobertura_manoDeObra,
-        desde,
-        hasta,
-        id_equipo,
-        actualizacion,
-      ]);
-  
-      res.status(201).json({
-        message: "Carga de contrato realizada exitosamente",
-      });
-    } catch (error) {
-      console.error("Error al cargar contrato:", error);
-      return res.status(500).json({ error: "Error al cargar contrato" });
-    }
+    ]);
+
+    res
+      .status(201)
+      .json({ message: "Carga de contrato realizada exitosamente" });
+  } catch (error) {
+    console.error("Error al cargar contrato:", error);
+    res.status(500).json({ error: "Error al cargar contrato" });
+  }
+};
+/* Descargar contrato */
+exports.fileContrato = async (req, res) => {
+  const { id_contrato } = req.query;
+
+  if (!id_contrato) {
+    return res.status(400).json({ error: "ID de contrato es requerido" });
   }
 
+  // Verificá el nombre correcto de la columna. Si es 'id_contrato' en la DB, dejalo así.
+  const query = "SELECT url FROM tbl_contratos WHERE id_contrato = ?";
 
-  exports.fileContrato =async (req, res) => {
-    const { id_equipo } = req.query;
-  
-    if (!id_equipo) {
-      return res.status(400).json({ error: "ID de equipo es requerido" });
+  try {
+    const result = await dbMysqlDev.executeQueryParams(query, [id_contrato]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "No se encontró el contrato" });
     }
-  
-    const query = "SELECT url FROM tbl_contratos WHERE id_equipo = ?";
-  
+
+    const relativeUrl = result[0].url;
+    const baseDir =
+      "C:/htdocs/Matias/ICRR/Servidor/contratos";
+    const filePath = path.join(baseDir, relativeUrl);
+
+    if (!fs.existsSync(filePath)) {
+      return res
+        .status(404)
+        .json({ error: "El archivo no existe en el servidor" });
+    }
+
+    res.download(filePath, path.basename(filePath), (err) => {
+      if (err) {
+        console.error("Error al enviar el archivo:", err);
+        return res.status(500).json({ error: "Error al descargar el archivo" });
+      }
+    });
+  } catch (err) {
+    console.error("Error al obtener el contrato:", err);
+    return res.status(500).json({ error: "Error al procesar la solicitud" });
+  }
+};
+
+exports.datosContratos = async (req, res) => {
+  const { id_equipo } = req.query;
+
+  if (!id_equipo) {
+    return res.status(400).json({ error: "ID de equipo es requerido" });
+  }
+
+  const query =
+    "select id_contrato, descripcion, cobertura_partes , cobertura_manoDeObra, desde , hasta , actualizacion, created_at  from tbl_contratos where id_equipo = ?";
+
+  const datosContrato = async () => {
     try {
-      // Consulta en la base de datos
-      const result = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
-  
-      if (result.length === 0) {
-        return res
-          .status(404)
-          .json({ error: "No se encontró el contrato para este equipo" });
-      }
-  
-      // Obtén la URL del archivo desde la base de datos
-      const fileUrl = result[0].url;
-      const filePath = path.join(
-        "C:/htdocs/Matias/ICRR/Servidor/contratos/",
-        fileUrl
-      );
-  
-      // Verifica si el archivo existe
-      if (!fs.existsSync(filePath)) {
-        return res
-          .status(404)
-          .json({ error: "El archivo no existe en el servidor" });
-      }
-  
-      // Envía el archivo para descarga
-      res.download(filePath, "contrato.pdf", (err) => {
-        if (err) {
-          console.error("Error al enviar el archivo:", err);
-          return res.status(500).json({ error: "Error al descargar el archivo" });
-        }
-      });
+      const datos = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
+      res.json(datos);
     } catch (err) {
-      console.error("Error al obtener el contrato:", err);
-      return res.status(500).json({ error: "Error al procesar la solicitud" });
+      console.error("Error al obtener los eventos: ", err);
     }
-  }
+  };
+
+  datosContrato();
+};

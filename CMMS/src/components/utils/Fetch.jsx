@@ -19,3 +19,22 @@ export const apiAltaTecnico = "http://192.168.1.6:3002/cmms/altaTecnicos";
 export const apiModificacionTecnico = "http://192.168.1.6:3002/cmms/modificacionTecnicos/";
 export const apiBajaTecnico = "http://192.168.1.6:3002/cmms/bajaTecnicos/";
 export const apiReportEventos = "http://192.168.1.6:3002/cmms/reporteEventos/";
+export const apiModificacionEquipo = "http://192.168.1.6:3002/cmms/modificacionEquipo/"
+export const apiAdjuntos = "http://192.168.1.6:3002/cmms/fileEvento"
+export const apiModificacionEvento = "http://192.168.1.6:3002/cmms/modificacionEvento/"
+
+
+
+export const servicios = [
+  { id_servicio: 1, nombre_servicio: "Resonancia Magnética" , siglas_servicio:"RM"},
+  { id_servicio: 2, nombre_servicio: "Terapia Radiante", siglas_servicio:"TR" },
+  { id_servicio: 3, nombre_servicio: "Camara Gamma", siglas_servicio:"CG" },
+  { id_servicio: 4, nombre_servicio: "Ecografía" , siglas_servicio:"EC"},
+  { id_servicio: 5, nombre_servicio: "Radiografía" , siglas_servicio:"RX"},
+  { id_servicio: 6, nombre_servicio: "Seriografo" , siglas_servicio:"RF"},
+  { id_servicio: 7, nombre_servicio: "Tomografía" , siglas_servicio:"CT"},
+  { id_servicio: 8, nombre_servicio: "Mamografía" , siglas_servicio:"MG"},
+  { id_servicio: 9, nombre_servicio: "Densitometría Ósea" , siglas_servicio:"DMO"},
+  { id_servicio: 10, nombre_servicio: "PET/CT" , siglas_servicio:"PET"},
+  { id_servicio: 11, nombre_servicio: "Sistemas" , siglas_servicio:"SIS"}
+];

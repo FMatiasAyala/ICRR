@@ -34,11 +34,13 @@ const appCmms = express();
 const serverCmms = http.createServer (appCmms)
 const PORT_CMMS = 3002;
 const contratosPath = path.join(__dirname, 'contratos');
+const adjuntosPath = path.join (__dirname, 'adjuntosEventos');
 
 
 
 appCmms.use(express.json());
 appCmms.use('/contratos', express.static(contratosPath));
+appCmms.use('/adjuntosEventos', express.static(adjuntosPath));
 appCmms.use(cors({
   origin: 'http://192.168.1.6:3701',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],

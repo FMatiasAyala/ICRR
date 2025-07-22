@@ -1,38 +1,59 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Paper, Grid, useMediaQuery } from '@mui/material';
-import EquipamentModal from '../Modal/EquipamentModal';
-import NewTask from '../Task/NewTask';
+import {
+  Box,
+  Paper,
+  useMediaQuery,
+  TextField,
+  InputAdornment,
+  Typography,
+} from '@mui/material';
+import { Masonry } from '@mui/lab';
+import SearchIcon from '@mui/icons-material/Search';
 import DashboardDesktop from './Dashboard/DashboardDesktop';
 import DashboardMobile from './Dashboard/DashboardMobile';
+import { useWebSocketContext } from '../WebSocket/useWebSocketContext';
 
-const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, reloadEquipos, user, mantenimiento, tecnicosEquipo }) => {
+const EquipamentsList = ({ estadoEquipos, salas, onEquipoSeleccionado }) => {
+  const { state: { equipos } } = useWebSocketContext();
   const [filteredEquipos, setFilteredEquipos] = useState([]);
-  const [selectedEquipo, setSelectedEquipo] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-
+  const [searchQuery, setSearchQuery] = useState('');
   const isMobile = useMediaQuery('(max-width:600px)');
-
-
-  const reload = () => {
-    reloadEquipos();
-  };
-
-  const handleOpenModal = (equipo) => {
-    setSelectedEquipo(equipo);
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedEquipo(null);
-  };
 
   useEffect(() => {
     setFilteredEquipos(equipos);
   }, [equipos]);
 
+  const filterEquipos = (query) => {
+    const lowerQuery = query.toLowerCase();
+
+    return equipos.filter((equipo) => {
+      const sala = salas.find((s) => s.id_ubicacion === equipo.id_ubicacion);
+
+      const matchesText =
+        !query || query.length < 3 || (
+          equipo.modelo?.toLowerCase().includes(lowerQuery) ||
+          equipo.serial_number?.toLowerCase().includes(lowerQuery) ||
+          equipo.siglas_servicio?.toLowerCase().includes(lowerQuery) ||
+          estadoEquipos[equipo.id]?.toLowerCase().includes(lowerQuery) ||
+          sala?.sala?.toLowerCase().includes(lowerQuery)
+        );
+
+      return matchesText ;
+    });
+  };
+
+
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setFilteredEquipos(filterEquipos(value));
+  };
+
+
+
   const groupedEquipos = filteredEquipos.reduce((acc, equipo) => {
-    const servicio = equipo.servicio;
+    const servicio = equipo.siglas_servicio;
     if (!acc[servicio]) {
       acc[servicio] = [];
     }
@@ -42,97 +63,94 @@ const EquipamentsList = ({ estadoEquipos, equipos, equipo, tecnicos, salas, relo
 
   const getColorByEstado = (estado) => {
     switch (estado) {
-      case 'OPERATIVO':
-        return '#81C784';
-      case 'NO OPERATIVO':
-        return '#E57373';
-      case 'REVISION':
-        return '#FFD54F';
-      default:
-        return '#F5F5F5';
+      case 'OPERATIVO': return '#81C784';
+      case 'NO OPERATIVO': return '#E57373';
+      case 'REVISION': return '#FFD54F';
+      default: return '#F5F5F5';
     }
   };
 
   const getHoverColorByEstado = (estado) => {
     switch (estado) {
-      case 'OPERATIVO':
-        return '#4CAF50';
-      case 'NO OPERATIVO':
-        return '#F44336';
-      case 'REVISION':
-        return '#FFB74D';
-      default:
-        return '#E0E0E0';
+      case 'OPERATIVO': return '#4CAF50';
+      case 'NO OPERATIVO': return '#F44336';
+      case 'REVISION': return '#FFB74D';
+      default: return '#E0E0E0';
     }
   };
-  if (!estadoEquipos || estadoEquipos.length === 0) {
-    return <p>No hay datos disponibles o están cargando...</p>;
+
+  if (!estadoEquipos || Object.keys(estadoEquipos).length === 0) {
+    return <Typography sx={{ p: 2 }}>No hay datos disponibles o están cargando...</Typography>;
   }
 
-
-
   return (
-    <>
-      {(user.role === 'sistemas' && isMobile) &&(
-        <Grid item xs={12} md={4.5} mt={3} container spacing={1}>
-          <Grid item xs={12} sm={5}>
-            <NewTask onEventCreate={reload} equipo={equipo} salas={salas} estadoEquipos={estadoEquipos} />
-          </Grid>
-        </Grid>
-      )}
-      <Paper
+    <Paper
+      sx={{
+        p: 2,
+        width: '100%',
+        overflowY: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none',
+      }}
+    >
+      <Box
         sx={{
-          p: 2,
-          width: '100%',
-          maxHeight: 'auto',
-          overflowY: 'auto',
-          '&::-webkit-scrollbar': { display: 'none' },
-          msOverflowStyle: 'none',
-          scrollbarWidth: 'none',
+          mb: 2,
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
+          alignItems: 'center',
         }}
       >
-        <Box
+        <TextField
+          fullWidth
+          placeholder="Buscar por serial, modelo, estado, sala o servicio..."
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={handleSearchChange}
           sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: '16px',
-            alignItems: 'start',
+            backgroundColor: '#f5f5f5',
+            borderRadius: 2,
+            '& input': { fontSize: '0.9rem' },
           }}
-        >
-         {(isMobile?(
-          <DashboardMobile
-          groupedEquipos={groupedEquipos}
-          handleOpenModal={handleOpenModal}
-          getHoverColorByEstado={getHoverColorByEstado}
-          getColorByEstado={getColorByEstado}
-          salas={salas}
-          estadoEquipos={estadoEquipos}
-          />
-          
-         ):( <DashboardDesktop
-          groupedEquipos={groupedEquipos}
-          handleOpenModal={handleOpenModal}
-          getHoverColorByEstado={getHoverColorByEstado}
-          getColorByEstado={getColorByEstado}
-          salas={salas}
-          estadoEquipos={estadoEquipos}
-          />))}
-        </Box>
-      </Paper>
-
-      {selectedEquipo && (
-        <EquipamentModal
-          open={modalOpen}
-          handleClose={handleCloseModal}
-          equipo={selectedEquipo}
-          estadoActual={estadoEquipos[selectedEquipo.id]}
-          tecnicos={tecnicos?.filter((tecnico) => tecnico.id_tecnico === selectedEquipo.id_tecnico)}
-          onEventCreate={reload}
-          mantenimiento={mantenimiento.filter((mantenimiento) => mantenimiento.id_equipo === selectedEquipo.id)}
-          user={user}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: 'gray' }} />
+              </InputAdornment>
+            ),
+          }}
         />
+      </Box>
+
+      {isMobile ? (
+        <DashboardMobile
+          groupedEquipos={groupedEquipos}
+          handleOpenModal={onEquipoSeleccionado}
+          getHoverColorByEstado={getHoverColorByEstado}
+          getColorByEstado={getColorByEstado}
+          salas={salas}
+          estadoEquipos={estadoEquipos}
+        />
+      ) : (
+        <Masonry columns={{ xs: 1, sm: 2, md: 2 }} spacing={2}>
+          {Object.keys(groupedEquipos).map((key) => (
+            <Box key={key}>
+              <DashboardDesktop
+                groupedEquipos={{ [key]: groupedEquipos[key] }}
+                handleOpenModal={onEquipoSeleccionado}
+                getHoverColorByEstado={getHoverColorByEstado}
+                getColorByEstado={getColorByEstado}
+                salas={salas}
+                estadoEquipos={estadoEquipos}
+              />
+            </Box>
+          ))}
+        </Masonry>
       )}
-    </>
+    </Paper>
   );
 };
 

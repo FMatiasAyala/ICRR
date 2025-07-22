@@ -22,7 +22,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { apiReportEventos } from "../utils/Fetch";
-import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
 
 
 const FiltrosReportes = ({ equipos, salas }) => {
@@ -129,7 +128,7 @@ const FiltrosReportes = ({ equipos, salas }) => {
           <Autocomplete
             options={equipos}
             getOptionLabel={(option) =>
-              `${option.modelo} - ${option.servicio} (${salas.find((sala) => sala.id_sala === option.sala)?.sala || "Desconocida"})`
+              `${option.modelo} - ${option.siglas_servicio} (${salas.find((sala) => sala.id_ubicacion === option.id_ubicacion)?.sala || "Desconocida"})`
             }
             onChange={(event, newValue) =>
               setFiltros({ ...filtros, id_equipo: newValue ? [newValue.id] : [] })
@@ -197,7 +196,7 @@ const FiltrosReportes = ({ equipos, salas }) => {
                       sx={{
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
-                        maxWidth: 300, // o el ancho que prefieras
+                        maxWidth: 300, 
                       }}
                     >
                       {item.descripcion || "Sin servicio"}
@@ -212,7 +211,7 @@ const FiltrosReportes = ({ equipos, salas }) => {
                     <TableCell>
                       {item.desde ? (() => {
                         const fechaDesde = new Date(item.desde);
-                        const fechaHasta = item.hasta ? new Date(item.hasta) : new Date(); // Usa la actual si no hay "hasta"
+                        const fechaHasta = item.hasta ? new Date(item.hasta) : new Date(); 
                         const diffMins = differenceInMinutes(fechaHasta, fechaDesde);
                         const dias = Math.floor(diffMins / 1440);
                         const horas = Math.floor((diffMins % 1440) / 60);

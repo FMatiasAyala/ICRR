@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Auth/Login';
 import Layout from './components/Home/Layout';
 import './App.css';
-
+import StackedNotifications from './components/WebSocket/FloatingNotification';
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token'); // Verificar token en localStorage
   return token ? children : <Navigate to="/" />; // Redirigir a Login si no hay token
@@ -12,6 +12,7 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <StackedNotifications />
       <Routes>
         {/* Ruta pública para Login */}
         <Route path="/" element={<Login />} />

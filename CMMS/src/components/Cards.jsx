@@ -1,63 +1,83 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Box, Card, CardContent, Typography } from '@mui/material';
-import TaskModal from './Task/TaskModal';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import BuildCircleIcon from '@mui/icons-material/BuildCircle';
+import { useWebSocketContext } from './WebSocket/useWebSocketContext';
 
-const Cards = ({ equipo, sala, estadoEquipo }) => {
-  const [open, setOpen] = useState(false);
-  const [currentTasks, setCurrentTasks] = useState([]);
+const Cards = () => {
+  const { state: { estadoEquipos } } = useWebSocketContext();
+  const equiposArray = Object.values(estadoEquipos || {});
 
-  const handleOpen = (tasks) => {
-    const taskOrdenados = tasks.sort((a, b) => new Date(b.desde) - new Date(a.desde));
-    setCurrentTasks(taskOrdenados);
-    setOpen(true);
-  };
+  const countEstado = (estado) => equiposArray.filter(item => item === estado).length;
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const countEstado = (estado) => estadoEquipo.filter(item => item.estado === estado).length;
+  const estados = [
+    {
+      key: 'OPERATIVO',
+      label: 'Operativos',
+      icon: <CheckCircleIcon sx={{ fontSize: 36, color: '#2e7d32' }} />,
+      bg: '#e8f5e9',
+      color: '#1b5e20',
+    },
+    {
+      key: 'NO OPERATIVO',
+      label: 'No Operativos',
+      icon: <ReportProblemIcon sx={{ fontSize: 36, color: '#c62828' }} />,
+      bg: '#ffebee',
+      color: '#b71c1c',
+    },
+    {
+      key: 'REVISION',
+      label: 'En Revisión',
+      icon: <BuildCircleIcon sx={{ fontSize: 36, color: '#f9a825' }} />,
+      bg: '#fffde7',
+      color: '#f57f17',
+    },
+  ];
 
   return (
     <Box
       display="flex"
-      flexDirection={{ xs: 'column', sm: 'row' }} // En móviles en columna, en pantallas grandes en fila
-      gap={{ xs: 2, sm: 3 }}
-      justifyContent="center"
-      alignItems="center"
-      width="100%"
-      p={{ xs: 1, sm: 2 }}
+      flexDirection="column"
+      alignItems="stretch"
+      sx={{ px: 1, pt: 1 }}
     >
-      {['OPERATIVO', 'NO OPERATIVO', 'REVISION'].map((estado, index) => (
+      {estados.map(({ key, label, icon, bg, color }) => (
         <Card
-          key={index}
-          onClick={() => handleOpen(estadoEquipo.filter(item => item.estado === estado))}
+          key={key}
           sx={{
-            width: { xs: '90%', sm: '30%' }, // En móviles ocupa el 90%, en pantallas grandes un tercio
-            maxWidth: 400,
-            cursor: 'pointer',
-            borderRadius: '16px',
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-            transition: 'box-shadow 0.3s ease-in-out',
+            backgroundColor: bg,
+            borderRadius: 3,
+            boxShadow: 3,
+            mb: 2,
+            transition: 'transform 0.2s ease',
             '&:hover': {
-              boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.2)',
+              transform: 'scale(1.01)',
+              boxShadow: 6,
             },
-            bgcolor: '#f5f5f5',
-            color: '#424242',
           }}
         >
-          <CardContent>
-            <Typography variant="h6" align="center" sx={{ fontWeight: 600, color: '#00796b' }}>
-              {estado === 'OPERATIVO' ? 'Operativos' : estado === 'NO OPERATIVO' ? 'No Operativos' : 'En Revisión'}
-            </Typography>
-            <Typography variant="subtitle1" align="center" sx={{ color: '#616161' }}>
-              {countEstado(estado)} equipos
-            </Typography>
+          <CardContent
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              py: 2,
+              px: 2,
+            }}
+          >
+            {icon}
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color }}>
+                {label}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#333', mt: 0.5 }}>
+                {countEstado(key)} equipos
+              </Typography>
+            </Box>
           </CardContent>
         </Card>
       ))}
-
-      <TaskModal open={open} handleClose={handleClose} currentTasks={currentTasks} equipos={equipo} salas={sala} />
     </Box>
   );
 };

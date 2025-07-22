@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, Button, Grid, useMediaQuery } from '@mui/material';
 import { apiDatosContrato, apiEventosFiltrados, apiTecnicosEquipo } from '../utils/Fetch';
 import FormEquipamentModal from './FormEquipamentModal';
-import FormMaintenanceModal from '../Maintenance/FormMaintenanceModal';
-import CurrentMaintenance from './TabEquipament/CurrentMaintenance';
-import CurrentEvents from './TabEquipament/CurrentEvents';
+import FormMaintenanceModal from '../Mantenimiento/FormMantenimientoModal';
+import CurrentMaintenance from '../Mantenimiento/CurrentMaintenance';
+import CurrentEvents from '../Eventos/CurrentEvents';
 import CurrentContrato from './TabEquipament/CurrentContrato';
 
 const EquipamentModal = ({ open, handleClose, equipo, estadoActual, tecnico, onEventCreate, tecnicos, user, mantenimiento }) => {
