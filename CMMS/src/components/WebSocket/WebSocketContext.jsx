@@ -13,7 +13,9 @@ export const WebSocketProvider = ({ children }) => {
 
   useEffect(() => {
     const socket = io(apiWebSocket, {
+      path: "/socket.io-cmms",
       transports: ['websocket'],
+      credentials: true,
     });
 
     socketRef.current = socket;
@@ -26,6 +28,13 @@ export const WebSocketProvider = ({ children }) => {
       console.log('🔌 WebSocket desconectado');
     });
 
+    // logs útiles
+    socket.on('connect', () => console.log('✅ Socket.IO conectado', socket.id));
+    socket.on('disconnect', (reason) => console.log('🔌 Socket.IO desconectado:', reason));
+    socket.on('connect_error', (err) => console.error('❌ connect_error:', err?.message || err));
+    socket.io.on('reconnect_attempt', (n) => console.warn('↻ reconnect_attempt', n));
+    socket.io.on('reconnect_error', (err) => console.error('❌ reconnect_error:', err?.message || err));
+    socket.io.on('reconnect_failed', () => console.error('❌ reconnect_failed'));
 
     const handleSocketEvent = (event, payload) => {
       console.log('🔥 Dispatching WebSocket event:', event, payload);

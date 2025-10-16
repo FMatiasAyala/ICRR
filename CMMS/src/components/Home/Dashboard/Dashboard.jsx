@@ -3,14 +3,13 @@ import React, { useState } from 'react';
 import { Box, Grid, IconButton } from '@mui/material';
 import EquipamentsList from '../EquipamentsList';
 import CardsMantenimiento from '../../Mantenimiento/CardsMantenimiento';
-import Cards from '../../Cards';
 import ProfileEquipament from '../../Equipos/PerfilEquipo';
 import { ArrowBack } from '@mui/icons-material';
 import { useWebSocketContext } from '../../WebSocket/useWebSocketContext';
 
 
 
-const Dashboard = ({tecnicos, salas, estadoEquipos }) => {
+const Dashboard = ({tecnicos, salas, estadoEquipos, allContratos }) => {
   const { setEquiposConEventoNuevo } = useWebSocketContext();
   const [vista, setVista] = useState('listado');
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
@@ -33,9 +32,6 @@ const Dashboard = ({tecnicos, salas, estadoEquipos }) => {
             {/* IZQUIERDA */}
             <Grid item xs={12} md={2} container spacing={2} direction="column">
               <Grid item>
-                <Cards/>
-              </Grid>
-              <Grid item>
                 <CardsMantenimiento salas={salas}/>
               </Grid>
             </Grid>
@@ -46,6 +42,7 @@ const Dashboard = ({tecnicos, salas, estadoEquipos }) => {
                 estadoEquipos={estadoEquipos || {}}
                 salas={salas || []}
                 onEquipoSeleccionado={handleEquipoSeleccionado}
+                allContratos={allContratos}
               />
             </Grid>
           </Grid>

@@ -4,9 +4,11 @@ const path = require("path");
 const fs = require("fs");
 const archiver = require("archiver");
 
+const baseDir = "C:/CMMS_Folder/ICRR/Servidor/adjuntosEventos";
+
 exports.obtenerEventos = async (req, res) => {
   const query =
-    "SELECT e.id_evento AS evento_id,e.estado,e.desde,e.descripcion,e.hasta,e.tipo_falla,e.id_usuario,e.id_equipo,e.criticidad, re.id_repuesto,re.repuesto,re.costo,re.observacion,re.serial_number, re.proveedor FROM tbl_eventos e LEFT JOIN tbl_repuestos_usados re ON e.id_evento = re.id_evento WHERE e.id_equipo NOT IN (SELECT id FROM tbl_equipomedico WHERE baja IS NOT NULL);";
+    "SELECT e.id_evento AS evento_id,e.estado,e.desde,e.descripcion,e.hasta,e.tipo_falla,e.id_usuario,e.id_equipo,e.criticidad, re.id_repuesto,re.repuesto,re.costo,re.observacion,re.serial_number, re.proveedor, re.cobertura FROM tbl_eventos e LEFT JOIN tbl_repuestos_usados re ON e.id_evento = re.id_evento WHERE e.id_equipo NOT IN (SELECT id FROM tbl_equipomedico WHERE baja IS NOT NULL);";
 
   try {
     const rows = await dbMysqlDev.executeQuery(query);
@@ -40,6 +42,7 @@ exports.obtenerEventos = async (req, res) => {
           observacion: row.observacion,
           serial_number: row.serial_number,
           proveedor: row.proveedor,
+          cobertura: row.cobertura,
         });
       }
     });
@@ -54,7 +57,7 @@ exports.obtenerEventos = async (req, res) => {
 exports.eventosFiltrados = async (req, res) => {
   const { id_equipo } = req.query;
   const query =
-    "SELECT e.id_evento AS evento_id,e.estado,e.desde,e.descripcion,e.hasta,e.tipo_falla,e.id_usuario,e.id_equipo,e.criticidad, re.id_repuesto,re.repuesto,re.costo,re.observacion,re.serial_number, re.proveedor FROM tbl_eventos e LEFT JOIN tbl_repuestos_usados re ON e.id_evento = re.id_evento WHERE e.id_equipo = ?;";
+    "SELECT e.id_evento AS evento_id,e.estado,e.desde,e.descripcion,e.hasta,e.tipo_falla,e.id_usuario,e.id_equipo,e.criticidad, re.id_repuesto,re.repuesto,re.costo,re.observacion,re.serial_number, re.proveedor, re.cobertura FROM tbl_eventos e LEFT JOIN tbl_repuestos_usados re ON e.id_evento = re.id_evento WHERE e.id_equipo = ?;";
 
   try {
     const rows = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
@@ -88,6 +91,7 @@ exports.eventosFiltrados = async (req, res) => {
           observacion: row.observacion,
           serial_number: row.serial_number,
           proveedor: row.proveedor,
+          cobertura: row.cobertura,
         });
       }
     });
@@ -190,7 +194,7 @@ exports.nuevoEvento = async (req, res) => {
   `;
 
   const insertRepuestoUsado = `
-  INSERT INTO tbl_repuestos_usados (id_evento,repuesto, costo, observacion, serial_number, proveedor)
+  INSERT INTO tbl_repuestos_usados (id_evento,repuesto, costo, observacion, serial_number, proveedor, cobertura)
   VALUES (?, ?, ?, ?, ?, ?)
 `;
 
@@ -218,7 +222,7 @@ exports.nuevoEvento = async (req, res) => {
       for (const file of files) {
         const url = path
           .relative(
-            "C:/htdocs/Matias/ICRR/Servidor/adjuntosEventos",
+            baseDir,
             file.path
           )
           .replace(/\\/g, "/");
@@ -239,6 +243,7 @@ exports.nuevoEvento = async (req, res) => {
           observacion,
           serial_number,
           proveedor,
+          cobertura,
         } = repuesto;
 
         if (!nombreRepuesto) continue;
@@ -250,6 +255,7 @@ exports.nuevoEvento = async (req, res) => {
           observacion || "",
           serial_number || "",
           proveedor || "",
+          cobertura || "",
         ]);
       }
     }
@@ -289,8 +295,8 @@ exports.modificacionEvento = async (req, res) => {
 
   const insertRepuestoUsado = `
     INSERT INTO tbl_repuestos_usados 
-      (id_evento, repuesto, costo, observacion, serial_number, proveedor)
-    VALUES (?, ?, ?, ?, ?, ?)
+      (id_evento, repuesto, costo, observacion, serial_number, proveedor, cobertura)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   const updateRepuestoUsado = `
@@ -299,7 +305,8 @@ exports.modificacionEvento = async (req, res) => {
       costo = ?, 
       observacion = ?, 
       serial_number = ?, 
-      proveedor = ?
+      proveedor = ?,
+      cobertura = ?
     WHERE id_repuesto = ?
   `;
 
@@ -337,7 +344,7 @@ exports.modificacionEvento = async (req, res) => {
       for (const file of archivos) {
         const url = path
           .relative(
-            "C:/htdocs/Matias/ICRR/Servidor/adjuntosEventos",
+            baseDir,
             file.path
           )
           .replace(/\\/g, "/");
@@ -365,6 +372,7 @@ exports.modificacionEvento = async (req, res) => {
           observacion,
           serial_number,
           proveedor,
+          cobertura,
         } = repuesto;
 
         if (!nombreRepuesto) continue;
@@ -377,6 +385,7 @@ exports.modificacionEvento = async (req, res) => {
             observacion || "",
             serial_number || "",
             proveedor || "",
+            cobertura || "",
             id_repuesto,
           ]);
         } else {
@@ -388,6 +397,7 @@ exports.modificacionEvento = async (req, res) => {
             observacion || "",
             serial_number || "",
             proveedor || "",
+            cobertura || "",
           ]);
         }
       }
@@ -451,8 +461,6 @@ exports.fileEvento = async (req, res) => {
         .json({ error: "No se encontraron archivos para este evento" });
     }
 
-    const baseDir =
-      "C:/htdocs/Matias/ICRR/Servidor/adjuntosEventos";
 
     const archivosValidos = result
       .map((row) => {

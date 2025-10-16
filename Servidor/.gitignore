@@ -1,4 +1,12 @@
 node_modules
 # Keep environment variables out of version control
 .env
-uploads
+uploads/*
+contratos/*
+planos/*
+adjuntosEventos/*
+
+!uploads/.gitkeep
+!contratos/.gitkeep
+!planos/.gitkeep
+!adjuntosEventos/.gitkeep

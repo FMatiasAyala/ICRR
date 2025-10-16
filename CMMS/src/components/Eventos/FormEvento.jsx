@@ -44,7 +44,8 @@ const FormEvento = forwardRef(({ handleClose, equipo }, ref) => {
       costo: '',
       serial_number: '',
       proveedor: '',
-      observacion: ''
+      observacion: '',
+      cobertura: ''
     });
   };
 
@@ -64,7 +65,6 @@ const FormEvento = forwardRef(({ handleClose, equipo }, ref) => {
     setAdjuntos(actualizado);
   }
 
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -73,6 +73,7 @@ const FormEvento = forwardRef(({ handleClose, equipo }, ref) => {
     if (token) {
       const decodedToken = jwtDecode(token);
       userId = decodedToken.id;
+      console.log (userId)
     }
 
     const formData = new FormData();
@@ -92,6 +93,7 @@ const FormEvento = forwardRef(({ handleClose, equipo }, ref) => {
       formData.append(`repuestos[${i}][observacion]`, rep.observacion);
       formData.append(`repuestos[${i}][serial_number]`, rep.serial_number);
       formData.append(`repuestos[${i}][proveedor]`, rep.proveedor);
+      formData.append(`repuestos[${i}][cobertura]`, rep.cobertura);
     });
 
     // Archivos
@@ -196,6 +198,7 @@ const FormEvento = forwardRef(({ handleClose, equipo }, ref) => {
                   <MenuItem value="bobina">Bobina</MenuItem>
                   <MenuItem value="camilla">Camilla</MenuItem>
                   <MenuItem value="fusible">Fusible</MenuItem>
+                  <MenuItem value="tubo">Tubo</MenuItem>
                   <MenuItem value="motor">Motor</MenuItem>
                 </Select>
               </FormControl>
@@ -224,6 +227,20 @@ const FormEvento = forwardRef(({ handleClose, equipo }, ref) => {
                 value={nuevoRepuesto.proveedor}
                 onChange={(e) => handleNuevoRepuestoChange('proveedor', e.target.value)}
               />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Cobertura</InputLabel>
+                <Select
+                  value={nuevoRepuesto.cobertura}
+                  onChange={(e) => handleNuevoRepuestoChange('cobertura', e.target.value)}
+                >
+                  <MenuItem value="contrato">Contrato</MenuItem>
+                  <MenuItem value="garantia">Garantia</MenuItem>
+                  <MenuItem value="sin contrato preventivo">Sin contrato-Preventivo</MenuItem>
+                  <MenuItem value="sin contrato correctivo">Sin contrato-Correctivo</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               <TextField

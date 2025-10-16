@@ -172,7 +172,7 @@ const FormMaintenance = forwardRef(({ equipos, salas, tecnihandleClose }, ref) =
           )}
         />
 
-        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <DatePicker
               label="Fecha"

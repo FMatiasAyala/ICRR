@@ -7,21 +7,24 @@ import Dashboard from './Dashboard/Dashboard';
 import UpsDashboard from './UpsDashboard';
 import { jwtDecode } from 'jwt-decode';
 import { useWebSocketContext } from "../WebSocket/useWebSocketContext"
-import { apiEquipos, apiSalas, apiTecnicos, apiMantenimiento, apiEventos, apiUps } from '../utils/Fetch'
+import { apiEquipos, apiSalas, apiTecnicos, apiMantenimiento, apiEventos, apiUps, apiTodosLosContratos } from '../utils/Fetch'
 import ReportEquipament from './ReportEquipament';
 import NewEquipamentModal from '../Equipos/NuevoEquipoModal';
 import Footer from '../utils/Footer'
+import PlanoKonva from '../Menu/PlanoVirtual/PlanoInteractivo';
 
 
 const Layout = () => {
     const { state: { estadoEquipos, equipos, tecnicos }, dispatch } = useWebSocketContext();
     const [salas, setSalas] = useState([]);
+    const [contratos, setContratos] = useState([]);
     const [ups, setUps] = useState([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const navigate = useNavigate();
 
     const token = localStorage.getItem('token');
     const user = token ? jwtDecode(token) : null;
+
 
     const [openEquipModal, setOpenEquipModal] = useState(false);
 
@@ -78,6 +81,18 @@ const Layout = () => {
             console.error('Error al cargar las salas:', error);
         }
     };
+    const fetchContratos = async () => {
+        try {
+            const response = await fetch(apiTodosLosContratos);
+            const data = await response.json();
+            setContratos(data);
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error al cargar los contratos:', error);
+        }
+    };
     const fetchUps = async () => {
         try {
             const response = await fetch(apiUps);
@@ -120,6 +135,7 @@ const Layout = () => {
         fetchTecnicos();
         fetchUps();
         fetchMantenimiento();
+        fetchContratos();
     }, []);
 
     return (<>
@@ -143,9 +159,11 @@ const Layout = () => {
                                 salas={salas}
                                 tecnicos={tecnicos}
                                 estadoEquipos={estadoEquipos}
+                                allContratos={contratos}
                             />} />
                         <Route path="/ups" element={<UpsDashboard salas={salas} ups={ups} />} />
                         <Route path="/reportEquipament" element={<ReportEquipament equipos={equipos} salas={salas} />} />
+                        <Route path="/planoVirtual" element={<PlanoKonva/>}/>
                     </Routes>
                     <Outlet />
                 </div>

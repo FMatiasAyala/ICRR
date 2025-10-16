@@ -20,7 +20,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Autocomplete
+  Autocomplete,
+  Dialog,
+  DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { Build, AssignmentInd, History, Event, Description, SaveAs, PowerOff, DesktopAccessDisabled } from '@mui/icons-material';
 import { apiModificacionEquipo, apiTecnicosEquipo, apiEventosFiltrados, apiDatosContrato, apiModificacionTecnico, apiBajaEquipo, apiEventos } from '../utils/Fetch';
@@ -544,85 +546,94 @@ const TecnicosEquipo = ({ tecnicosEquipo, equipo }) => {
 
 
 const CurrentDown = ({ equipo }) => {
-  const [evento, setEvento] = useState('');
-  const [falla, setFalla] = useState('');
-  const [condicion, setCondicion] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const [sbOpen, setSbOpen] = useState(false);
+  const [sbMsg, setSbMsg] = useState('');
+  const [sbType, setSbType] = useState('success'); // 'success' | 'error'
 
-  const handleSubmitDown = async (event) => {
-    event.preventDefault();
-
-    const token = localStorage.getItem('token');
-    let userId = null;
-
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      userId = decodedToken.id; // Asumiendo que el ID del usuario está en el token
+  const handleOpenConfirm = (e) => {
+    e.preventDefault();
+    if (!descripcion.trim()) {
+      setSbMsg('Por favor, escribí una descripción.');
+      setSbType('error');
+      setSbOpen(true);
+      return;
     }
+    setOpenConfirm(true);
+  };
 
-    const nuevoEvento = {
-      descripcion: evento,
-      id_equipo: equipo.id,
-      estado: "no operativo",
-      tipo_falla: "dado de baja",
-      id_usuario: userId,
-    };
+  const handleCloseConfirm = () => setOpenConfirm(false);
+
+  const doDown = async () => {
+    setLoading(true);
+    setOpenConfirm(false);
+
 
     try {
-      // 1. Primero registrar el evento
-      const responseTask = await fetch(apiEventos, {
+          const token = localStorage.getItem('token');
+    let userId = null;
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      userId = decodedToken.id;
+    }
+    console.log("id tker ",userId)
+      // 1) Crear evento de baja
+      const nuevoEvento = {
+        descripcion,
+        id_equipo: equipo.id,
+        estado: 'baja',
+        tipo_falla: 'dado de baja',
+        id_usuario: userId,
+      };
+
+      const r1 = await fetch(apiEventos, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nuevoEvento),
       });
 
-      if (!responseTask.ok) {
-        const errorData = await responseTask.json();
-        console.error('Error al guardar la tarea:', errorData);
-        return;
+      const t1 = await r1.text();
+      if (!r1.ok) {
+        throw new Error(`Error creando evento de baja (${r1.status}): ${t1}`);
       }
 
-      const eventoGuardado = await responseTask.json();
-      console.log('Tarea guardada correctamente:', eventoGuardado);
-
-      // 2. Después dar de baja el equipo
-      const responseDown = await fetch(apiBajaEquipo, {
+      // 2) Dar de baja el equipo
+      const r2 = await fetch(apiBajaEquipo, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_equipo: equipo.id }),
       });
 
-      if (!responseDown.ok) {
-        const errorData = await responseDown.json();
-        console.error('Error al dar de baja el equipo:', errorData);
-        return;
+      const t2 = await r2.text();
+      if (!r2.ok) {
+        throw new Error(`Error al dar de baja el equipo (${r2.status}): ${t2}`);
       }
 
-      const bajaConfirmada = await responseDown.json();
-      console.log('Equipo dado de baja:', bajaConfirmada);
+      setSbMsg('Equipo dado de baja correctamente.');
+      setSbType('success');
+      setSbOpen(true);
 
-    } catch (error) {
-      console.error('Error en la solicitud:', error);
+      // limpiar y avisar al padre
+      setDescripcion('');
+
+    } catch (err) {
+      console.error(err);
+      setSbMsg('No se pudo dar de baja el equipo.');
+      setSbType('error');
+      setSbOpen(true);
     } finally {
-      updateWeb();
-      setEvento('');
-      setFalla('');
-      setCondicion('');
-      handleClose();
+      setLoading(false);
     }
-  }
-
-
+  };
 
   return (
     <Box
+      component="form"
+      onSubmit={handleOpenConfirm}
       sx={{
-        top: '50%',
-        left: '50%',
         bgcolor: 'background.paper',
         width: { xs: '100%', sm: 600 },
         borderRadius: 4,
@@ -632,58 +643,71 @@ const CurrentDown = ({ equipo }) => {
         gap: 2,
       }}
     >
-      <Typography variant="h6">Baja de equipo</Typography>
-      <form onSubmit={handleSubmitDown}>
-        <TextField
-          label="Descripcion"
-          value={evento}
-          onChange={(e) => setEvento(e.target.value)}// Valor predeterminado
-          fullWidth
-          margin="normal"
-          required
-          multiline
-          rows={3}
-        />
+      <Typography variant="h6" fontWeight={700}>Baja de equipo</Typography>
 
-        <FormControl fullWidth>
-          <InputLabel>Condición</InputLabel>
-          <Select
-            value={"no operativo"} // Valor predeterminado
-            disabled // Campo no editable
-            sx={{ marginBottom: '5px' }}
-          >
-            <MenuItem value="operativo">Operativo</MenuItem>
-            <MenuItem value="no operativo">No Operativo</MenuItem>
-            <MenuItem value="revision">Revisión</MenuItem>
-          </Select>
-        </FormControl>
+      <TextField
+        label="Descripción"
+        value={descripcion}
+        onChange={(e) => setDescripcion(e.target.value)}
+        fullWidth
+        required
+        multiline
+        rows={3}
+      />
 
-        <FormControl fullWidth>
-          <InputLabel>Tipo de Evento</InputLabel>
-          <Select
-            value={"dado de baja"} // Valor predeterminado
-            disabled // Campo no editable
-          >
-            <MenuItem value="dado de baja">Dado de baja</MenuItem>
-          </Select>
-        </FormControl>
-        <Box mt={2} display="flex" justifyContent="center" gap={2}>
-          <Button
-            variant="contained"
-            color="error"
-            type='submit'
-            startIcon={<PowerOff />}
-            sx={{
-              fontSize: '16px',
-              padding: '10px 10px',
-              borderRadius: '8px',
-              textTransform: 'none',
-            }}
-          >
-            Dar de baja
+      <FormControl fullWidth>
+        <InputLabel>Condición</InputLabel>
+        <Select value="baja" disabled sx={{ mb: 1 }}>
+          <MenuItem value="operativo">Operativo</MenuItem>
+          <MenuItem value="no operativo">No Operativo</MenuItem>
+          <MenuItem value="revision">Revisión</MenuItem>
+          <MenuItem value="baja">Baja</MenuItem>
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth>
+        <InputLabel>Tipo de Evento</InputLabel>
+        <Select value="dado de baja" disabled>
+          <MenuItem value="dado de baja">Dado de baja</MenuItem>
+        </Select>
+      </FormControl>
+
+      <Box mt={1} display="flex" justifyContent="center" gap={2}>
+        <Button
+          variant="contained"
+          color="error"
+          type="submit"
+          startIcon={<PowerOff />}
+          disabled={loading}
+          sx={{ fontSize: 16, px: 2, borderRadius: 2, textTransform: 'none' }}
+        >
+          {loading ? 'Procesando…' : 'Dar de baja'}
+        </Button>
+      </Box>
+
+      {/* Confirmación */}
+      <Dialog open={openConfirm} onClose={handleCloseConfirm}>
+        <DialogTitle>Confirmar baja</DialogTitle>
+        <DialogContent>
+          <Typography>
+            ¿Confirmás dar de baja el equipo <b>{equipo?.modelo}</b> (ID {equipo?.id})?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirm}>Cancelar</Button>
+          <Button color="error" variant="contained" onClick={doDown} disabled={loading}>
+            Confirmar
           </Button>
-        </Box>
-      </form>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar open={sbOpen} autoHideDuration={5000} onClose={() => setSbOpen(false)}>
+        <Alert onClose={() => setSbOpen(false)} severity={sbType} sx={{ width: '100%' }}>
+          {sbMsg}
+        </Alert>
+      </Snackbar>
     </Box>
-  )
-}
+  );
+};
+

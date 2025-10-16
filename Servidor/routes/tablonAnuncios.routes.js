@@ -215,22 +215,22 @@ router.post("/create", (req, res) => {
 
 router.get("/anunciosFiltrados", async (req, res) => {
   const { searchTerm } = req.query;
-
-  const query = `SELECT a.idemp FROM tblempleado a
-                  WHERE a.idemp = ?
-                  AND a.idemp IN (
-                    SELECT idemp  
-                    FROM tblempleado 
-                    WHERE area in ('ADMISION', 'CALLCENTER') 
-                    AND estado = 'HAB' 
-                    AND servicio NOT IN ('RM')
-                  )`;
+  console.log(searchTerm)
+  const query = `SELECT a.servicio FROM tblusuario a
+                  WHERE a.alias = ?
+                  AND a.alias IN (
+                    SELECT alias  
+                    FROM tblusuario 
+                    WHERE area in ('ADMISION', 'CALLCENTER', 'ADMISION PM', 'ADMISION RMN', 'ADMISION CRR', 'ADMISION CONSUL', 'ADMISION SP', 'ADMISION FON') 
+                    AND estado = 1
+                  ) AND a.servicio not in ('RM')`;
   try {
     if (!searchTerm) {
       return res.status(400).json({ error: "searchTerm is required" });
     }
     const anuncioFiltro = await dbMysqlCrr.executeQueryParams(query, [searchTerm]);
     res.json(anuncioFiltro);
+    console.log(anuncioFiltro);
   } catch (err) {
     console.error("Error al ejecutar la consulta:", err);
     res.status(500).json({ error: "Error al ejecutar la consulta" });

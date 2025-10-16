@@ -1,27 +1,48 @@
-export const apiEquipos = "http://192.168.1.6:3002/cmms/equipos";
-export const apiSalas = "http://192.168.1.6:3002/cmms/salas";
-export const apiEventos = "http://192.168.1.6:3002/cmms/eventos";
-export const apiEventosFiltrados = "http://192.168.1.6:3002/cmms/eventosFiltrados"
-export const apiTecnicos = 'http://192.168.1.6:3002/cmms/tecnicos';
-export const apiAltaEquipos = 'http://192.168.1.6:3002/cmms/altaEquipos';
-export const apiMantenimiento = 'http://192.168.1.6:3002/cmms/mantenimiento/';
-export const apiMantenimientoPostpone = 'http://192.168.1.6:3002/cmms/mantenimientoPostpone/';
-export const apiCantidadesEventos = "http://192.168.1.6:3002/cmms/cantidadEventos";
-export const apiBajaEquipo = "http://192.168.1.6:3002/cmms/bajaEquipo";
-export const apiCargaContrato = "http://192.168.1.6:3002/cmms/cargaContratos";
-export const apiDatosContrato = "http://192.168.1.6:3002/cmms/datosContrato";
-export const apiContrato = "http://192.168.1.6:3002/cmms/fileContrato";
-export const apiUser = "http://192.168.1.6:3002/cmms/login";
-export const apiWebSocket = "http://192.168.1.6:3002/";
-export const apiUps = "http://192.168.1.6:3002/cmms/ups";
-export const apiTecnicosEquipo = "http://192.168.1.6:3002/cmms/tecnicosEquipo/";
-export const apiAltaTecnico = "http://192.168.1.6:3002/cmms/altaTecnicos";
-export const apiModificacionTecnico = "http://192.168.1.6:3002/cmms/modificacionTecnicos/";
-export const apiBajaTecnico = "http://192.168.1.6:3002/cmms/bajaTecnicos/";
-export const apiReportEventos = "http://192.168.1.6:3002/cmms/reporteEventos/";
-export const apiModificacionEquipo = "http://192.168.1.6:3002/cmms/modificacionEquipo/"
-export const apiAdjuntos = "http://192.168.1.6:3002/cmms/fileEvento"
-export const apiModificacionEvento = "http://192.168.1.6:3002/cmms/modificacionEvento/"
+
+const API_BASE = import.meta.env.VITE_API_URL;
+
+
+export const apiEquipos = `${API_BASE}/cmms/equipos`;
+export const apiSalas = `${API_BASE}/cmms/salas`;
+export const apiEventos = `${API_BASE}/cmms/eventos`;
+export const apiEventosFiltrados = `${API_BASE}/cmms/eventosFiltrados`;
+export const apiTecnicos = `${API_BASE}/cmms/tecnicos`;
+export const apiAltaEquipos = `${API_BASE}/cmms/altaEquipos`;
+export const apiMantenimiento = `${API_BASE}/cmms/mantenimiento/`;
+export const apiMantenimientoPostpone = `${API_BASE}/cmms/mantenimientoPostpone/`;
+export const apiCantidadesEventos = `${API_BASE}/cmms/cantidadEventos`;
+export const apiBajaEquipo = `${API_BASE}/cmms/bajaEquipo`;
+export const apiCargaContrato = `${API_BASE}/cmms/cargaContratos`;
+export const apiTodosLosContratos = `${API_BASE}/cmms/allContratos`;
+export const apiDatosContrato = `${API_BASE}/cmms/datosContrato`;
+export const apiContrato = `${API_BASE}/cmms/fileContrato`;
+export const apiEditContrato = `${API_BASE}/cmms/editContrato/`;
+export const apiUser = `${API_BASE}/cmms/login`;
+export const apiChangeUser = `${API_BASE}/cmms/changePassword/`;
+export const apiUserGet = `${API_BASE}/cmms/users`;
+export const apiWebSocket = `${API_BASE}`;
+export const apiUps = `${API_BASE}/cmms/ups/`;
+export const apiAltaUps =`${API_BASE}/cmms/altaUps/`;
+export const apiModUps =`${API_BASE}/cmms/modificacionUps/`;
+export const apiTecnicosEquipo = `${API_BASE}/cmms/tecnicosEquipo/`;
+export const apiAltaTecnico = `${API_BASE}/cmms/altaTecnicos`;
+export const apiModificacionTecnico = `${API_BASE}/cmms/modificacionTecnicos/`;
+export const apiBajaTecnico = `${API_BASE}/cmms/bajaTecnicos/`;
+export const apiReportEventos = `${API_BASE}/cmms/reporteEventos/`;
+export const apiModificacionEquipo = `${API_BASE}/cmms/modificacionEquipo/`;
+export const apiAdjuntos = `${API_BASE}/cmms/fileEvento`;
+export const apiModificacionEvento = `${API_BASE}/cmms/modificacionEvento/`;
+export const apiEquiposInf = `${API_BASE}/cmms/equiposInformaticos/`;
+export const apiAltaEquiposInf = `${API_BASE}/cmms/altaEquipoInformatico/`;
+export const apiModEquiposInf = `${API_BASE}/cmms/modificacionEquipoInformatico/`;
+export const apiPlanos = `${API_BASE}/cmms/planos/`;
+export const apiMatafuegos = `${API_BASE}/cmms/Matafuegos/`;
+export const apiAltaMatafuegos = `${API_BASE}/cmms/altaMatafuegos/`;
+export const apiModMatafuegos = `${API_BASE}/cmms/modificacionMatafuegos/`;
+export const apiRefrigeracion = `${API_BASE}/cmms/refrigeracion/`;
+export const apiAltaRefrigeracion = `${API_BASE}/cmms/altaRefrigeracion/`;
+export const apiModRefrigeracion = `${API_BASE}/cmms/modificacionRefrigeracion/`;
+
 
 
 

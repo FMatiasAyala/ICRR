@@ -13,10 +13,11 @@ import DashboardDesktop from './Dashboard/DashboardDesktop';
 import DashboardMobile from './Dashboard/DashboardMobile';
 import { useWebSocketContext } from '../WebSocket/useWebSocketContext';
 
-const EquipamentsList = ({ estadoEquipos, salas, onEquipoSeleccionado }) => {
+const EquipamentsList = ({ estadoEquipos, salas, onEquipoSeleccionado, allContratos }) => {
   const { state: { equipos } } = useWebSocketContext();
   const [filteredEquipos, setFilteredEquipos] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+    const [estadoSeleccionado, setEstadoSeleccionado] = useState(null); 
   const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
@@ -38,7 +39,7 @@ const EquipamentsList = ({ estadoEquipos, salas, onEquipoSeleccionado }) => {
           sala?.sala?.toLowerCase().includes(lowerQuery)
         );
 
-      return matchesText ;
+      return matchesText;
     });
   };
 
@@ -136,7 +137,7 @@ const EquipamentsList = ({ estadoEquipos, salas, onEquipoSeleccionado }) => {
         />
       ) : (
         <Masonry columns={{ xs: 1, sm: 2, md: 2 }} spacing={2}>
-          {Object.keys(groupedEquipos).map((key) => (
+          {Object.keys(groupedEquipos).map((key, i) => (
             <Box key={key}>
               <DashboardDesktop
                 groupedEquipos={{ [key]: groupedEquipos[key] }}
@@ -145,6 +146,12 @@ const EquipamentsList = ({ estadoEquipos, salas, onEquipoSeleccionado }) => {
                 getColorByEstado={getColorByEstado}
                 salas={salas}
                 estadoEquipos={estadoEquipos}
+                // resumen solo en la PRIMERA instancia
+                showResumen={i === 0}
+                // filtro controlado para que afecte a TODAS las columnas
+                estadoSeleccionado={estadoSeleccionado}
+                onEstadoSeleccionadoChange={setEstadoSeleccionado}
+                allContratos={allContratos}
               />
             </Box>
           ))}

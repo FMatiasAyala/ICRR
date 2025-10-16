@@ -2,11 +2,11 @@ import React, { useState, forwardRef } from 'react';
 import { Box, Typography, TextField, Button, Snackbar, Alert, IconButton, Stepper, Step, StepLabel, Grid, Paper, StepContent, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { apiCargaContrato} from '../utils/Fetch';
+import { apiCargaContrato } from '../utils/Fetch';
 import { parseISO } from 'date-fns';
 
 
-const FormContratos = forwardRef(({ contratoClose, equipo, onClose}, ref) => {
+const FormContratos = forwardRef(({ contratoClose= () => { }, equipo }, ref) => {
     const [description, setDescription] = useState('');
     const [update, setUpdate] = useState('');
     const [desde, setDesde] = useState(null);
@@ -51,37 +51,45 @@ const FormContratos = forwardRef(({ contratoClose, equipo, onClose}, ref) => {
 
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('descripcion', description);
-        formData.append('actualizacion', update);
-        formData.append('desde', desde ? format(parseISO(desde), 'yyyy-MM-dd') : null);
-        formData.append('hasta', hasta ? format(parseISO(hasta), 'yyyy-MM-dd') : null);
-        formData.append('cobertura_partes', coberturaPartes); // Nuevo campo
-        formData.append('cobertura_manoDeObra', coberturaManoDeObra);
-        formData.append('id_equipo', equipo.id); // Nuevo campo
-
+        if (description) formData.append('descripcion', description);
+        if (update) formData.append('actualizacion', update);
+        if (desde) formData.append('desde', format(parseISO(desde), 'yyyy-MM-dd'));
+        if (hasta) formData.append('hasta', format(parseISO(hasta), 'yyyy-MM-dd'));
+        if (coberturaPartes) formData.append('cobertura_partes', coberturaPartes);
+        if (coberturaManoDeObra) formData.append('cobertura_manoDeObra', coberturaManoDeObra);
+        formData.append('id_equipo', String(equipo.id));
 
         try {
-            const response = await fetch(apiCargaContrato, {
-                method: 'POST',
-                body: formData,
-            });
+            const response = await fetch(apiCargaContrato, { method: 'POST', body: formData });
 
-            if (response.ok) {
-                setSnackbarMessage('Contrato cargado exitosamente.');
-                setSnackbarSeverity('success');
-                setSnackbarOpen(true);
-                onClose()
-            } else {
-                throw new Error('Error al cargar el contrato.');
-
+            const contentType = response.headers.get('content-type') || '';
+            const raw = await response.text();  // SIEMPRE miro el body para debug
+            let data = null;
+            if (contentType.includes('application/json')) {
+                try { data = JSON.parse(raw); } catch { /* no pasa nada */ }
             }
-        } catch (error) {
-            console.error(error);
+
+            console.log('upload status=', response.status, 'body=', raw);
+
+            // si el server devolvió 2xx lo tomo como OK
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            // si vino JSON y ok === false, también lo trato como error
+            if (data && data.ok === false) throw new Error(data.error || 'UPLOAD_FAIL');
+
+            setSnackbarMessage('Contrato cargado exitosamente.');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+
+            // cerrá sólo si es función
+            if (typeof contratoClose === 'function') contratoClose();
+        } catch (err) {
+            console.error('Upload error:', err);
             setSnackbarMessage('Error al cargar el contrato.');
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
         }
-    };
+    }
 
 
     const renderStepContent = (step) => {

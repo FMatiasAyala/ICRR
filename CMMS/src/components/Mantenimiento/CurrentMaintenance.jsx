@@ -98,8 +98,8 @@ const CurrentMaintenance = ({ mantenimiento }) => {
                     </Typography>
                   )}
                   {man.comentario && (
-                    <Typography variant="body2">
-                      <strong>Comentario:</strong> {man.comentario}
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+                      <strong>Comentario:</strong> {(man.comentario || '').replaceAll('\\n', '\n')}
                     </Typography>
                   )}
                 </CardContent>

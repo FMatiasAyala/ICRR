@@ -27,11 +27,15 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^11.3.29",
     "jwt-decode": "^4.0.0",
+    "konva": "^9.3.22",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
+    "react-konva": "^18.2.12",
     "react-router-dom": "^6.27.0",
+    "react-toastify": "^11.0.5",
     "socket.io-client": "^4.8.1",
+    "use-image": "^1.1.4",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

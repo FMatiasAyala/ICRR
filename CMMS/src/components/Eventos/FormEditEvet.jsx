@@ -42,7 +42,7 @@ const FormEditEvento = ({ evento, onClose }) => {
     const handleAgregarRepuesto = () => {
         setRepuestos((prev) => [
             ...prev,
-            { repuesto: '', costo: '', observacion: '', proveedor:'', serial_number:'' }
+            { repuesto: '', costo: '', observacion: '', proveedor: '', serial_number: '', cobertura: '' }
         ]);
         setChange(true);
     };
@@ -183,12 +183,19 @@ const FormEditEvento = ({ evento, onClose }) => {
                                         >
                                             <Grid container spacing={2}>
                                                 <Grid item xs={12} sm={4}>
-                                                    <TextField
-                                                        label="Repuesto"
-                                                        fullWidth
-                                                        value={rep.repuesto}
-                                                        onChange={(e) => handleRepuestoFieldChange(index, 'repuesto', e.target.value)}
-                                                    />
+                                                    <FormControl fullWidth>
+                                                        <InputLabel>Repuesto</InputLabel>
+                                                        <Select
+                                                            value={rep.repuesto}
+                                                            onChange={(e) => handleRepuestoFieldChange(index, 'repuesto', e.target.value)}
+                                                        >
+                                                            <MenuItem value="bobina">Bobina</MenuItem>
+                                                            <MenuItem value="camilla">Camilla</MenuItem>
+                                                            <MenuItem value="fusible">Fusible</MenuItem>
+                                                            <MenuItem value="tubo">Tubo</MenuItem>
+                                                            <MenuItem value="motor">Motor</MenuItem>
+                                                        </Select>
+                                                    </FormControl>
                                                 </Grid>
                                                 <Grid item xs={12} sm={3}>
                                                     <TextField
@@ -222,6 +229,20 @@ const FormEditEvento = ({ evento, onClose }) => {
                                                         value={rep.serial_number || ''}
                                                         onChange={(e) => handleRepuestoFieldChange(index, 'serial_number', e.target.value)}
                                                     />
+                                                </Grid>
+                                                <Grid item xs={12} sm={4}>
+                                                    <FormControl fullWidth>
+                                                        <InputLabel>Cobertura</InputLabel>
+                                                        <Select
+                                                            value={rep.cobertura}
+                                                            onChange={(e) => handleRepuestoFieldChange(index, 'cobertura', e.target.value)}
+                                                        >
+                                                            <MenuItem value="contrato">Contrato</MenuItem>
+                                                            <MenuItem value="garantia">Garantia</MenuItem>
+                                                            <MenuItem value="sin contrato preventivo">Sin contrato-Preventivo</MenuItem>
+                                                            <MenuItem value="sin contrato correctivo">Sin contrato-Correctivo</MenuItem>
+                                                        </Select>
+                                                    </FormControl>
                                                 </Grid>
                                             </Grid>
                                         </Box>

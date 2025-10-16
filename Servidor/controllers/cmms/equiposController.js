@@ -11,19 +11,45 @@ exports.obtenerEquipos = async (req, res) => {
   }
 };
 
+// Baja idempotente + respuesta útil
 exports.bajaEquipo = async (req, res) => {
-  const { id_equipo } = req.body;
-  const query = "update tbl_equipomedico set baja = now() where id = ?";
   try {
-    await dbMysqlDev.executeQueryParams(query, [id_equipo]);
+    const { id_equipo } = req.body;
 
-    // Emitís el evento manualmente
-    broadcastUpdate("equipoDadoDeBaja", { id: id_equipo });
+    // Validación mínima
+    if (!id_equipo || isNaN(Number(id_equipo))) {
+      return res.status(400).json({ ok: false, error: "ID_INVALIDO" });
+    }
 
-    res.json({ success: true });
+    // 1) Intentá marcar la baja SOLO si aún no tenía baja
+    const sqlUpdate = `
+      UPDATE tbl_equipomedico
+      SET baja = NOW()
+      WHERE id = ?
+    `;
+    const result = await dbMysqlDev.executeQueryParams(sqlUpdate, [id_equipo]);
+
+    // 2) Traé el valor actual de baja para responder al front
+    const sqlSelect = `SELECT baja FROM tbl_equipomedico WHERE id = ? LIMIT 1`;
+    const rows = await dbMysqlDev.executeQueryParams(sqlSelect, [id_equipo]);
+    const baja_at = rows?.[0]?.baja || null;
+
+    const alreadyBaja = result?.affectedRows === 0 && baja_at !== null;
+
+    // Emití el evento SOLO si efectivamente se cambió el estado ahora
+    if (result?.affectedRows > 0) {
+      broadcastUpdate("equipoDadoDeBaja", { id: Number(id_equipo), baja_at });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      id_equipo: Number(id_equipo),
+      baja_at, // fecha/hora de baja (string ISO/SQL)
+      alreadyBaja, // true si ya estaba dado de baja
+    });
   } catch (err) {
     console.error("Error al dar de baja el equipo:", err);
-    res.status(500).json({ error: "Error al dar de baja el equipo" });
+    return res.status(500).json({ ok: false, error: "ERROR_BAJA_EQUIPO" });
   }
 };
 
@@ -188,7 +214,10 @@ exports.modificacionEquipo = async (req, res) => {
 
     const equipoModificado = rows;
 
-    broadcastUpdate("mensaje", { type: "equipoUpdate", data: equipoModificado });
+    broadcastUpdate("mensaje", {
+      type: "equipoUpdate",
+      data: equipoModificado,
+    });
 
     res.status(200).json({
       message: "Equipo modificado correctamente",

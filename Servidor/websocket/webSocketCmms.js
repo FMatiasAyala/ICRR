@@ -2,11 +2,16 @@ const { Server } = require("socket.io");
 
 let io; // Variable para almacenar la instancia de socket.io
 
-const initWebSocketCmms = (server) => {
+const initWebSocketCmms = (
+  server,
+  { corsOrigin = "http://192.168.1.231:3701", path = "/socket.io-cmms" } = {}
+) => {
   io = new Server(server, {
+    path,
     cors: {
-      origin: "http://192.168.1.6:3701/cmms", // Cambia esto según tu frontend
+      origin: corsOrigin, // Cambia esto según tu frontend
       methods: ["GET", "POST", "PUT", "DELETE"],
+      credentials: true,
     },
   });
 
@@ -35,4 +40,4 @@ const broadcastUpdate = (evento, data) => {
 };
 const getIo = () => io; // Para obtener la instancia de socket.io en otros módulos
 
-module.exports = { initWebSocketCmms, getIo , broadcastUpdate};
+module.exports = { initWebSocketCmms, getIo, broadcastUpdate };
