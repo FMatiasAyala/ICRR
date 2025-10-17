@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+
 const prisma = require("./prismaClient/prismaClient");
 const cors = require("cors");
 const { initWebSocket } = require("./websocket/webSocket");
@@ -9,6 +10,7 @@ const path = require("path");
 const routerTablon = require("./routes/tablonAnuncios.routes");
 const app = express();
 const PORT = process.env.PORT || 3000;
+require("dotenv").config();
 app.use(express.json());
 app.use(
   cors({

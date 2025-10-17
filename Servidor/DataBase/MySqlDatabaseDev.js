@@ -4,7 +4,7 @@ const configMySqlDev = {
     host: process.env.DB_HOST_MYSQL,
     user: process.env.DB_USER_MYSQL,
     password: process.env.DB_PASSWORD_MYSQL,
-    database: process.env.DB_NAME_MYSQL_DEV,
+    database: process.env.DB_NAME_MYSQL_CMMS,
   };
   
   const dbMysqlDev = new MySqlDatabaseDev(configMySqlDev);

@@ -1,6 +1,10 @@
-export const apiUser = 'http://192.168.1.6:3000/tablon/user';
-export const apiAnuncio = 'http://192.168.1.6:3000/tablon/anuncios/';
-export const apiAnuncioFiltrados = 'http://192.168.1.6:3000/tablon/anunciosFiltrados';
-export const apiAttachments = 'http://192.168.1.6:3000/';
-export const apiWebSocket = 'ws://192.168.1.6:3000/tablon/anuncios';
+const API_BASE =import.meta.env.VITE_API_URL
+const API_WEB_SOCKET =import.meta.env.VITE_BRIDGE_URL
+
+
+export const apiUser = `${API_BASE}/tablon/user`;
+export const apiAnuncio = `${API_BASE}tablon/anuncios/`;
+export const apiAnuncioFiltrados = `${API_BASE}/tablon/anunciosFiltrados`;
+export const apiAttachments = `${API_BASE}/`;
+export const apiWebSocket = `${API_WEB_SOCKET}/tablon/anuncios`;
 

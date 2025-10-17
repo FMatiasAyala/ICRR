@@ -12,7 +12,7 @@ const createFolderIfNotExists = (folderPath) => {
 // Configuración de multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const folderPath = "C:/htdocs/Matias/ICRR/Servidor/adjuntosEventos"; // Ruta donde guardar los archivos
+    const folderPath = "C:/CMMS_Folder/ICRR/Servidor/adjuntosEventos"; // Ruta donde guardar los archivos
     createFolderIfNotExists(folderPath);
     cb(null, folderPath); // Usar la carpeta especificada
   },

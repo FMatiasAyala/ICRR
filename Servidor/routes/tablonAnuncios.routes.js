@@ -196,9 +196,9 @@ router.get("/user", async (req, res) => {
 
 //Fitlra anuncios segun el servicio del usuario
 const configMySqlCrr = {
-  host: process.env.DB_HOST_MYSQL,
-  user: process.env.DB_USER_MYSQL,
-  password: process.env.DB_PASSWORD_MYSQL,
+  host: process.env.DB_HOST_MYSQL_CRR,
+  user: process.env.DB_USER_MYSQL_CRR,
+  password: process.env.DB_PASSWORD_MYSQL_CRR,
   database: process.env.DB_NAME_MYSQL_CRR,
 };
 

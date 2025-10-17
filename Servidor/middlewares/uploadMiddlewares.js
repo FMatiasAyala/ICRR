@@ -14,7 +14,7 @@ const createFolderIfNotExists = (folderPath) => {
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       const authorId = req.body.authorId;
-      const folderPath = path.join("C:/htdocs/Matias/ICRR/Servidor/uploads", authorId.toString());
+      const folderPath = path.join("C:/CMMS_Folder/ICRR/Servidor/uploads", authorId.toString());
       createFolderIfNotExists(folderPath);
       cb(null, folderPath);
     },
