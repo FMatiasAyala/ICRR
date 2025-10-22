@@ -56,13 +56,43 @@ exports.obtenerEventos = async (req, res) => {
 
 exports.eventosFiltrados = async (req, res) => {
   const { id_equipo } = req.query;
-  const query =
-    "SELECT e.id_evento AS evento_id,e.estado,e.desde,e.descripcion,e.hasta,e.tipo_falla,e.id_usuario,e.id_equipo,e.criticidad, re.id_repuesto,re.repuesto,re.costo,re.observacion,re.serial_number, re.proveedor, re.cobertura FROM tbl_eventos e LEFT JOIN tbl_repuestos_usados re ON e.id_evento = re.id_evento WHERE e.id_equipo = ?;";
+
+  const query = `
+    SELECT 
+      e.id_evento AS evento_id,
+      e.estado,
+      e.desde,
+      e.descripcion,
+      e.hasta,
+      e.tipo_falla,
+      e.id_usuario,
+      e.id_equipo,
+      e.criticidad,
+      re.id_repuesto,
+      re.repuesto,
+      re.costo,
+      re.observacion,
+      re.serial_number,
+      re.proveedor,
+      re.cobertura,
+      CASE 
+        WHEN aj.cantidad > 0 THEN 1 
+        ELSE 0 
+      END AS tiene_adjuntos
+    FROM tbl_eventos e
+    LEFT JOIN tbl_repuestos_usados re 
+      ON e.id_evento = re.id_evento
+    LEFT JOIN (
+      SELECT id_evento, COUNT(*) AS cantidad
+      FROM tbl_adjuntos_eventos
+      GROUP BY id_evento
+    ) aj ON e.id_evento = aj.id_evento
+    WHERE e.id_equipo = ?;
+  `;
 
   try {
     const rows = await dbMysqlDev.executeQueryParams(query, [id_equipo]);
 
-    // Agrupar eventos con sus repuestos
     const eventosMap = new Map();
 
     rows.forEach((row) => {
@@ -78,7 +108,7 @@ exports.eventosFiltrados = async (req, res) => {
           id_usuario: row.id_usuario,
           id_equipo: row.id_equipo,
           criticidad: row.criticidad,
-
+          tiene_adjuntos: !!row.tiene_adjuntos, // ✅ bandera
           repuestos: [],
         });
       }
@@ -100,6 +130,7 @@ exports.eventosFiltrados = async (req, res) => {
     res.json(eventos);
   } catch (err) {
     console.error("Error al obtener los eventos: ", err);
+    res.status(500).json({ error: "Error al obtener los eventos" });
   }
 };
 
@@ -220,12 +251,7 @@ exports.nuevoEvento = async (req, res) => {
 
     if (files && files.length > 0) {
       for (const file of files) {
-        const url = path
-          .relative(
-            baseDir,
-            file.path
-          )
-          .replace(/\\/g, "/");
+        const url = path.relative(baseDir, file.path).replace(/\\/g, "/");
 
         await dbMysqlDev.executeQueryParams(insertAdjunto, [
           id_evento,
@@ -273,8 +299,8 @@ exports.nuevoEvento = async (req, res) => {
     const eventoNuevo = rows;
     // Broadcast de la actualización
     broadcastUpdate("mensaje", {
-        type: 'eventoNuevo',
-        data: { ...eventoNuevo, repuestos: repuestosFinales },
+      type: "eventoNuevo",
+      data: { ...eventoNuevo, repuestos: repuestosFinales },
     });
     res.status(201).json({
       message: "Evento y archivos creados correctamente",
@@ -342,12 +368,7 @@ exports.modificacionEvento = async (req, res) => {
     // 2. Guardar archivos si existen
     if (archivos && archivos.length > 0) {
       for (const file of archivos) {
-        const url = path
-          .relative(
-            baseDir,
-            file.path
-          )
-          .replace(/\\/g, "/");
+        const url = path.relative(baseDir, file.path).replace(/\\/g, "/");
 
         const insertFileQuery = `
           INSERT INTO tbl_adjuntos_eventos (id_evento, url, descripcion, tipo)
@@ -460,7 +481,6 @@ exports.fileEvento = async (req, res) => {
         .status(404)
         .json({ error: "No se encontraron archivos para este evento" });
     }
-
 
     const archivosValidos = result
       .map((row) => {

@@ -5,8 +5,10 @@ uploads/*
 contratos/*
 planos/*
 adjuntosEventos/*
+adjuntosMantenimientos/*
 
 !uploads/.gitkeep
 !contratos/.gitkeep
 !planos/.gitkeep
 !adjuntosEventos/.gitkeep
+!adjuntosMantenimientos/.gitkeep

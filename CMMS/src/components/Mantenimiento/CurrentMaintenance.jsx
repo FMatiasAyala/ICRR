@@ -9,8 +9,14 @@ import {
   CardContent,
   Chip
 } from "@mui/material";
+import { useWebSocketContext } from "../WebSocket/useWebSocketContext";
+import FileDownloadButton from "../hooks/FileDownloadButton";
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import { apiAdjuntosMantenimiento } from "../utils/Fetch";
 
-const CurrentMaintenance = ({ mantenimiento }) => {
+const CurrentMaintenance = () => {
+  const { state: { mantenimientosFiltrados: mantenimiento } } = useWebSocketContext();
+
   const mantenimientosFuturos = mantenimiento
     .filter((man) =>
       ['programado', 'postergado'].includes(man.estado.toLowerCase())
@@ -101,6 +107,16 @@ const CurrentMaintenance = ({ mantenimiento }) => {
                     <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
                       <strong>Comentario:</strong> {(man.comentario || '').replaceAll('\\n', '\n')}
                     </Typography>
+                  )}
+                  <Divider sx={{ mb: 2 }} />
+                  {man.tiene_adjuntos === 1 ? (<FileDownloadButton
+                    endpoint={apiAdjuntosMantenimiento}
+                    params={{ id_mantenimiento: man.id_mantenimiento }}
+                    icono={<CloudDownloadIcon />}
+                    label="Descargar adjunto"
+                  />): (
+                    <>
+                    </>
                   )}
                 </CardContent>
               </Card>

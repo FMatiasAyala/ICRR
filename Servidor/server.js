@@ -37,6 +37,7 @@ const serverCmms = http.createServer(appCmms);
 const PORT_CMMS = 3002;
 const contratosPath = path.join(__dirname, "contratos");
 const adjuntosPath = path.join(__dirname, "adjuntosEventos");
+const adjuntosManPath = path.join(__dirname, "adjuntosMantenimientos");
 const planos = path.join(__dirname, "planos");
 
 appCmms.use(
@@ -49,6 +50,7 @@ appCmms.use(
 appCmms.use(express.json());
 appCmms.use("/contratos", express.static(contratosPath));
 appCmms.use("/adjuntosEventos", express.static(adjuntosPath));
+appCmms.use("/adjuntosMantenimientos", express.static(adjuntosManPath));
 appCmms.use("/cmms", routerCmms);
 appCmms.use("/planos", express.static(planos));
 

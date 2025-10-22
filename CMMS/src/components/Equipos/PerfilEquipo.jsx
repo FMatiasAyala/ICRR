@@ -25,7 +25,7 @@ import {
   DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { Build, AssignmentInd, History, Event, Description, SaveAs, PowerOff, DesktopAccessDisabled } from '@mui/icons-material';
-import { apiModificacionEquipo, apiTecnicosEquipo, apiEventosFiltrados, apiDatosContrato, apiModificacionTecnico, apiBajaEquipo, apiEventos } from '../utils/Fetch';
+import { apiModificacionEquipo, apiTecnicosEquipo, apiEventosFiltrados, apiDatosContrato, apiModificacionTecnico, apiBajaEquipo, apiEventos, apiMantenimientoFiltrados } from '../utils/Fetch';
 import { jwtDecode } from 'jwt-decode';
 import CurrentMaintenance from '../Mantenimiento/CurrentMaintenance';
 import CurrentEvents from '../Eventos/CurrentEvents';
@@ -104,11 +104,25 @@ const ProfileEquipament = ({ equipo, salas }) => {
       console.error('Error al obtener eventos:', error);
     }
   };
+  
+  const fetchMantenimientosFiltrados = async () => {
+    try {
+      const response = await fetch(`${apiMantenimientoFiltrados}?id_equipo=${equipo.id}`);
+      if (!response.ok) {
+        throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+      }
+      const data = await response.json();
+      dispatch({ type: "SET_MANTENIMIENTOS_FILTRADOS", payload: data });
+    } catch (error) {
+      console.error('Error al obtener eventos:', error);
+    }
+  };
 
   useEffect(() => {
     if (equipo?.id) {
       console.log("Cargando eventos, contrato y técnicos...");
       fetchEventosFiltrados();
+      fetchMantenimientosFiltrados();
       fecthDatosContrato();
       fetchTecnicosEquipo();
     }

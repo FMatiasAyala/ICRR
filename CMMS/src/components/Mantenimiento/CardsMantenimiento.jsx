@@ -28,7 +28,18 @@ const CardsMantenimiento = ({ salas }) => {
   const [newHoraHasta, setNewHoraHasta] = useState('');
   const [currentTab, setCurrentTab] = useState('main');
   const [openListado, setOpenListado] = useState(false);
+  const [tipoArchivo, setTipoArchivo] = useState("otros");
 
+  const [files, setFiles] = useState([]);
+
+  const handleFileChange = (e) => {
+    setFiles([...e.target.files]);
+  };
+
+  const handleOpenForm = (man, tab) => {
+    setCurrentTab(tab); // 'done' o 'postpone'
+    setSelectedMantenimiento(man);
+  };
   const obtenerNombreEquipo = (id_equipo) => {
     const equipo = equipos.find((e) => e.id === id_equipo);
     return equipo ? equipo.modelo : 'Equipo no encontrado';
@@ -39,35 +50,31 @@ const CardsMantenimiento = ({ salas }) => {
   };
 
   const handleDoneMantenimiento = async (id_mantenimiento, nuevoEstado) => {
-    const doneMantenimiento = {
-      comentario: comentarios,
-      estado: nuevoEstado
-    };
+    const formData = new FormData();
+    formData.append("estado", nuevoEstado);
+    formData.append("comentario", comentarios || "");
+    formData.append("tipo_archivo", tipoArchivo);
+
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
 
     try {
       const responseDone = await fetch(`${apiMantenimiento}${id_mantenimiento}`, {
-
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(doneMantenimiento),
+        method: "PUT",
+        body: formData, // importante: sin headers manuales
       });
+
       if (responseDone.ok) {
         setComentarios(null);
+        setFiles([]); // limpiar archivos
         setCurrentTab(null);
       } else {
-        console.error('Error al actualizar el mantenimiento:', responseDone.statusText);
+        console.error("Error al actualizar el mantenimiento:", responseDone.statusText);
       }
     } catch (error) {
-      console.error('Error al realizar la solicitud:', error);
+      console.error("Error al realizar la solicitud:", error);
     }
-
-  };
-
-  const handleOpenForm = (man, tab) => {
-    setCurrentTab(tab); // 'done' o 'postpone'
-    setSelectedMantenimiento(man);
   };
 
   const handlePostpone = async () => {
@@ -162,6 +169,28 @@ const CardsMantenimiento = ({ salas }) => {
                 multiline
                 rows={3}
                 sx={{ mt: 2, mb: 2 }}
+              />
+              <TextField
+                select
+                label="Tipo de archivo"
+                value={tipoArchivo}
+                onChange={(e) => setTipoArchivo(e.target.value)}
+                fullWidth
+                SelectProps={{ native: true }}
+                sx={{ mt: 2 }}
+              >
+                <option value="foto">Foto</option>
+                <option value="pdf">PDF</option>
+                <option value="documento">Documento</option>
+                <option value="planilla">Planilla</option>
+                <option value="otros">Otros</option>
+              </TextField>
+              <TextField
+                type="file"
+                inputProps={{ multiple: true }}
+                onChange={handleFileChange}
+                fullWidth
+                sx={{ mt: 2 }}
               />
 
               <Button

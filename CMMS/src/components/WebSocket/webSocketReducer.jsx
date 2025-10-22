@@ -6,6 +6,7 @@ export const initialState = {
   eventos: [],
   tecnicos: [],
   tecnicosPorEquipo: {},
+  mantenimientosFiltrados: []
 };
 
 export const webSocketReducer = (state, action) => {
@@ -128,9 +129,7 @@ export const webSocketReducer = (state, action) => {
         ...state.mantenimiento.filter(
           (m) => !nuevo.find((n) => n.id_mantenimiento === m.id_mantenimiento)
         ),
-
       ];
-
       return {
         ...state,
         mantenimiento: mantenimientosActualizados,
@@ -145,7 +144,11 @@ export const webSocketReducer = (state, action) => {
             : m
         ),
       };
-
+    case 'SET_MANTENIMIENTOS_FILTRADOS':
+      return {
+        ...state,
+        mantenimientosFiltrados: action.payload || [],
+      };
     //Equipos
     case 'SET_EQUIPOS_INICIALES':
       return {

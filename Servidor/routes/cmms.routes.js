@@ -16,6 +16,9 @@ const tecnicosControllers = require("../controllers/cmms/tecnicosController");
 const contratoController = require("../controllers/cmms/contratoController");
 const equiposInformaticos = require("../controllers/cmms/equiposInfController");
 const planosControllers = require("../controllers/cmms/planosController");
+const {
+  adjuntosMantenimientos,
+} = require("../middlewares/adjuntosManMiddlewares");
 
 require("dotenv").config();
 
@@ -45,15 +48,23 @@ router.put(
 
 //Mantenimientos
 router.get("/mantenimiento", mantenimientoControllers.obtenerMantenimientos);
-router.post("/mantenimiento", mantenimientoControllers.nuevoMantenimiento);
+router.get("/mantenimientoFiltrados", mantenimientoControllers.obtenerMantenimientosPorEquipo);
+router.get("/fileMantenimiento", mantenimientoControllers.fileMantenimiento);
+router.post(
+  "/mantenimiento",
+  adjuntosMantenimientos.array("files"),
+  mantenimientoControllers.nuevoMantenimiento
+);
 router.put(
   "/mantenimiento/:id",
+  adjuntosMantenimientos.array("files"),
   mantenimientoControllers.actualizarMantenimiento
 );
 router.put(
   "/mantenimientoPostpone/:id",
   mantenimientoControllers.reprogramarManteminiento
 );
+
 
 // Ficha Tecnicos
 router.get("/tecnicos", tecnicosControllers.obtenerTecnicos);
@@ -173,7 +184,6 @@ router.get("/users", authMiddleware, async (req, res) => {
   }
 });
 
-
 // POST /login
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
@@ -195,8 +205,8 @@ router.post("/login", async (req, res) => {
       id: user.id_usuario,
       username: user.username,
       role: user.role,
-      name:user.name,
-      lastname:user.lastname
+      name: user.name,
+      lastname: user.lastname,
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -209,7 +219,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Error en el servidor" });
   }
 });
-
 
 // PUT /changePassword
 router.put("/changePassword", authMiddleware, async (req, res) => {

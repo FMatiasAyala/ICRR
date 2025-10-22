@@ -562,12 +562,12 @@ const CurrentEvents = ({ equipo, salas }) => {
 
                                         <Divider sx={{ my: 1 }} />
 
-                                        <FileDownloadButton
+                                       {evento.tiene_adjuntos && (<FileDownloadButton
                                             endpoint={apiAdjuntos}
                                             params={{ id_evento: evento.id_evento }}
                                             icono={<CloudDownloadIcon />}
                                             label="Descargar adjunto"
-                                        />
+                                        />)}
                                     </CardContent>
 
                                     <Collapse in={isExpanded} timeout="auto" unmountOnExit>
