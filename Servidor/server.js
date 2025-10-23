@@ -58,7 +58,7 @@ initWebSocketCmms(serverCmms, { path: "/socket.io-cmms" });
 
 const wssVnc = createVncBridge({
   allowPorts: [5900, 5901, 5902],
-  allowSubnet: "192.168.",
+  allowSubnet: "192.",
 });
 
 // Esto es lo que evita que se pisen
