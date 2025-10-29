@@ -278,7 +278,7 @@ const DatosEquipo = ({ equipo, salas }) => {
         antecedentes: equipo.antecedentes || "",
         funcion: equipo.funcion || "",
         riesgo: equipo.riesgo || "",
-        alta: equipo.alta || ""
+        alta: new Date(equipo.alta).toISOString().split('T')[0] || ""
       });
     }
   }, [equipo]);
@@ -301,12 +301,12 @@ const DatosEquipo = ({ equipo, salas }) => {
         body: JSON.stringify(formData),
       });
       if (response.ok) {
-        setSnackbarMessage('Técnico guardado correctamente.');
+        setSnackbarMessage('Cambios guardados correctamente.');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
       } else {
         const data = await response.json();
-        setSnackbarMessage(data.message || 'Error al guardar el técnico.');
+        setSnackbarMessage(data.message || 'Error al guardar los cambios.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }

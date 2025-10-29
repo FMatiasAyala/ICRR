@@ -71,10 +71,21 @@ const FormEvento = forwardRef(({ handleClose, equipo }, ref) => {
     const token = localStorage.getItem('token');
     let userId = null;
     if (token) {
-      const decodedToken = jwtDecode(token);
-      userId = decodedToken.id;
-      console.log (userId)
+      try {
+        const decodedToken = jwtDecode(token);
+        // Verificamos que tenga 'id' y que no esté expirado
+        if (decodedToken.id && (!decodedToken.exp || decodedToken.exp * 1000 > Date.now())) {
+          userId = decodedToken.id;
+        } else {
+          console.warn("Token expirado o sin ID, eliminando token");
+          localStorage.removeItem('token');
+        }
+      } catch (err) {
+        console.error("Error al decodificar token:", err);
+        localStorage.removeItem('token');
+      }
     }
+    console.log("userId:", userId);
 
     const formData = new FormData();
     formData.append('descripcion', taskDescription);
